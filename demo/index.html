@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Fabric.js Vanilla Test</title>
+  <style>
+    canvas {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>Fabric.js Image Load Test</h2>
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+
+
+
+  <!-- ✅ Include the correct version of fabric.js BEFORE using it -->
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+<script>
+  const canvas = new fabric.Canvas('canvas');
+
+var imgElement = document.getElementById('my-image');
+const testUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/640px-PNG_transparency_demonstration_1.png'
+    fabric.Image.fromURL(testUrl, function(oImg) {
+  canvas.add(oImg);
+});
+
+</script>
+</body>
+</html>
+
+
+

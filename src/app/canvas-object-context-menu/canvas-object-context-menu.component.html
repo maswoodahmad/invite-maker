@@ -1,0 +1,69 @@
+<div
+  *ngIf="visible"
+  class="absolute w-64 bg-white shadow-xl rounded-md border border-gray-300 text-sm z-50"
+  [style.top.px]="position.top"
+  [style.left.px]="position.left"
+>
+
+
+  <!-- 🎨 Edit -->
+  <div class="px-4 py-2 font-medium text-gray-500">Edit</div>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(copy)">
+    <img src="../../assets/icons/clone.svg" class="w-4 h-4" alt="Copy" /> Copy
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(paste)">
+    <img src="../../assets/icons/paste.svg" class="w-4 h-4" alt="Paste" /> Paste
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(duplicate)">
+    <img src="../../assets/icons/clone.svg" class="w-4 h-4" alt="Duplicate" /> Duplicate
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(delete)">
+    <img src="../../assets/icons/delete-document.svg" class="w-4 h-4" alt="Delete" /> Delete
+  </button>
+
+  <hr class="my-2" />
+
+  <!-- 🔧 Adjust -->
+  <div class="px-4 py-2 font-medium text-gray-500">Adjust</div>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(align)">
+    <img src="../../assets/icons/sidebar-flip.svg" class="w-4 h-4" alt="Align" /> Align
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(comment)">
+    <img src="../../assets/icons/comment-alt-dots.svg" class="w-4 h-4" alt="Comment" /> Comment
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(link)">
+    <img src="../../assets/icons/link-alt.svg" class="w-4 h-4" alt="Link" /> Link
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(setBackground)">
+    <img src="../../assets/icons/background.svg" class="w-4 h-4" alt="Set Background" /> Set as Background
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(applyColors)">
+    <img src="../../assets/icons/color-palette_9014745.png" class="w-4 h-4" alt="Apply Colors" /> Apply Colors
+  </button>
+
+  <hr class="my-2" />
+
+  <!-- 🔒 Arrange -->
+  <div class="px-4 py-2 font-medium text-gray-500">Arrange</div>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="onSendBackward.emit()">
+    <img src="../../assets/icons/angle-down.svg" class="w-4 h-4" alt="Send Backward" /> Send Backward
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="onSendToBack.emit()">
+    <img src="../../assets/icons/angle-double-small-down.svg" class="w-4 h-4" alt="Send to Back" /> Send to Back
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="onBringForward.emit()">
+    <img src="../../assets/icons/angle-up.svg" class="w-4 h-4" alt="Bring Forward" /> Bring Forward
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="onBringToFront.emit()">
+    <img src="../../assets/icons/chevron-double-up.svg" class="w-4 h-4" alt="Bring to Front" /> Bring to Front
+  </button>
+  <hr class="my-2" />
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(lock)">
+    <img src="../../assets/icons/padlock-check.svg" class="w-4 h-4" alt="Lock" /> Lock
+  </button>
+  <button class="flex items-center gap-2 w-full px-3 py-1 hover:bg-gray-100 text-left text-xs leading-tight" (click)="emitAndClose(info)">
+    <img src="../../assets/icons/terms-info.svg" class="w-4 h-4" alt="Info" /> Info
+   
+  </button>
+
+</div>

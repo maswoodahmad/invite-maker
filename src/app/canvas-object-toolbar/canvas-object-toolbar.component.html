@@ -1,0 +1,72 @@
+<div class="flex items-center gap-2 bg-white border shadow px-2 py-1 rounded-lg text-xs">
+    <!-- If locked: only show Unlock -->
+    <ng-container *ngIf="object && isLocked(object); else unlocked">
+      <button
+        class="flex items-center gap-1 px-2 py-1 hover:bg-gray-100 rounded"
+        (click)="onUnlock.emit()"
+        title="Unlock"
+      >
+        <img src="../../assets/icons/lock-open-alt.svg" class="w-4 h-4" alt="Unlock" />
+        
+      </button>
+    </ng-container>
+  
+    <!-- If unlocked: show Lock, Duplicate, and Context Menu -->
+    <ng-template #unlocked>
+      <button
+        class="flex items-center gap-1 px-2 py-1 hover:bg-gray-100 rounded"
+        (click)="onDuplicate.emit()"
+        title="Duplicate"
+      >
+        <img src="assets/icons/clone.svg" class="w-4 h-4" alt="Duplicate" />
+        
+      </button>
+  
+      <button
+        class="flex items-center gap-1 px-2 py-1 hover:bg-gray-100 rounded"
+        (click)="onLock.emit()"
+        title="Lock"
+      >
+        <img src="../../assets/icons/padlock-check.svg" class="w-4 h-4" alt="Lock" />
+        
+      </button>
+
+      <button class="flex items-center gap-1 px-2 py-1 hover:bg-gray-100 rounded" (click)="onDelete.emit()" title="Delete">
+        <img src="../../assets/icons/trash-can-list.svg" class="w-4 h-4" alt="Delete" /> 
+      </button>
+  
+      <button
+        class="flex items-center gap-1 px-2 py-1 hover:bg-gray-100 rounded"
+        (click)="toggleContextMenu($event)"
+        title="More"
+      >
+        <img src="../../assets/icons/square-ellipsis-vertical.svg" class="w-4 h-4" alt="More"  />
+        
+      </button>
+    </ng-template>
+  </div>
+  
+  <!-- Context Menu Component -->
+  
+  
+  <!-- Context Menu Component -->
+  <app-canvas-object-context-menu
+ 
+  class="absolute z-50"
+  [visible]="contextMenuVisible"
+  [position]="contextMenuPosition"
+  (copy)="onCopy.emit()"
+  (paste)="onPaste.emit()"
+  (align)="onAlign.emit()"
+  (comment)="onComment.emit()"
+  (link)="onLink.emit()"
+  (lock)="onLock.emit()"
+  (onUnlock)="onUnlock.emit()"
+  (setBackground)="onSetBackground.emit()"
+  (applyColors)="onApplyColors.emit()"
+  (info)="onInfo.emit()"
+  (onSendBackward)="onSendBackward.emit()"
+  (onSendToBack)="onSendToBack.emit()"
+  (onBringForward)="onBringForward.emit()"
+  (onBringToFront)="onBringToFront.emit()"
+/>

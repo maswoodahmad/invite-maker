@@ -1,0 +1,32 @@
+.canvas-container-wrapper {
+  position: relative;
+  width: 100%;
+  height: 600px;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+  
+  .toolbar button,
+  .toolbar-mobile button {
+    padding: 0.5rem 1rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .toolbar input[type="file"] {
+    background: white;
+    color: black;
+  }
+
+  #canvas-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+  }

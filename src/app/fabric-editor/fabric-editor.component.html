@@ -1,0 +1,70 @@
+<div class="canvas-container-wrapper relative w-full h-[600px] overflow-visible" id="canvas-wrapper">
+    <canvas id="canvas"></canvas>
+
+   
+  
+    <app-canvas-object-toolbar
+      *ngIf="selectedObject"
+      [object]="selectedObject"
+  
+      (onDelete)="deleteObject()"
+      (onDuplicate)="duplicateObject()"
+      (onLock)="lockObject()"
+      (onUnlock)="unlockObject()"
+      (onContextMenu)="openContextMenu($event)"
+  
+      (onCopy)="onCopy()"
+      (onPaste)="onPaste()"
+      (onAlign)="onAlign()"
+      (onComment)="onComment()"
+      (onLink)="onLink()"
+      (onSetBackground)="onSetBackground()"
+      (onApplyColors)="onApplyColors()"
+      (onInfo)="onInfo()"
+  
+      (onBringToFront)="bringToFront()"
+      (onBringForward)="bringForward()"
+      (onSendToBack)="sendToBack()"
+      (onSendBackward)="sendBackward()"
+  
+      class="absolute z-50 transform -translate-x-1/2"
+      [ngStyle]="{
+        top: toolbarPosition.top + 'px',
+        left: toolbarPosition.left + 'px'
+      }"
+    ></app-canvas-object-toolbar>
+  </div>
+  
+  <!-- Desktop toolbar -->
+  <div class="toolbar hidden md:flex flex-wrap gap-2 mt-4 justify-center">
+    <button (click)="addText()">Add Text</button>
+    <input type="file" (change)="uploadImage($event)" />
+    <button (click)="zoomIn()">Zoom In</button>
+    <button (click)="zoomOut()">Zoom Out</button>
+    <button (click)="exportCanvas()">Download</button>
+  </div>
+  
+  <!-- Mobile floating toolbar -->
+  <div class="toolbar-mobile flex md:hidden fixed bottom-4 left-4 right-4 justify-around bg-white p-3 rounded-lg shadow">
+    <button (click)="addText()">📝</button>
+    <button (click)="zoomIn()">➕</button>
+    <button (click)="zoomOut()">➖</button>
+    <button (click)="exportCanvas()">⬇️</button>
+  </div>
+
+ 
+
+  <div class="recent-uploads mt-4">
+    <h3 class="text-sm font-medium mb-2">🖼️ Recent Uploads</h3>
+    <div class="flex gap-2 overflow-x-auto">
+      <img
+        *ngFor="let img of uploads.get()"
+        [src]="img.dataUrl"
+        class="w-20 h-20 object-cover rounded cursor-pointer border shrink-0 bg-white"
+        (click)="addImageFromHistory(img.dataUrl)"
+        title="image"
+      />
+    </div>
+  </div> 
+
+
