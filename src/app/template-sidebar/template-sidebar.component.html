@@ -1,0 +1,75 @@
+<div class="template-sidebar h-full w-full flex flex-col p-4 bg-white overflow-visible relative z-10">
+  <!-- Tabs -->
+  <div class="flex gap-4 border-b pb-2">
+    <button (click)="activeTab = 'templates'"
+      [ngClass]="{'font-bold border-b-2 border-blue-600': activeTab === 'templates'}" class="pb-1">
+      Templates
+    </button>
+    <button (click)="activeTab = 'myDesigns'"
+      [ngClass]="{'font-bold border-b-2 border-blue-600': activeTab === 'myDesigns'}" class="pb-1">
+      My Designs
+    </button>
+  </div>
+
+  <!-- Search -->
+  <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search templates..."
+    class="border rounded px-2 py-1 text-sm w-full mt-2" />
+
+  <!-- Tags -->
+  <div class="flex gap-2 overflow-x-auto p-1 mt-2">
+    <button *ngFor="let tag of availableTags" (click)="filterTemplatesByTag(tag)"
+      [class.bg-blue-600]="selectedTag === tag" [class.text-white]="selectedTag === tag"
+      class="px-3 py-1 border rounded text-sm whitespace-nowrap">
+      {{ tag }}
+    </button>
+    <button *ngIf="selectedTag" (click)="clearTagFilter()"
+      class="px-2 py-1 text-xs border rounded bg-gray-200 text-gray-700 ml-2">
+      ✕ Clear
+    </button>
+  </div>
+
+  <!-- Templates Grid -->
+  <div class="flex-1 overflow-y-auto mt-4 relative">
+    <div class="grid grid-cols-2 gap-1 pr-2">
+      <div *ngFor="let template of filteredTemplates" class="relative group">
+        <!-- Preview -->
+        <div class="overflow-hidden border shadow-sm cursor-pointer hover:shadow-md transition"
+          (click)="useTemplate(template)">
+          <img [src]="template.previewUrl || 'assets/templates/placeholder.png'" (error)="onImageError($event)"
+            alt="Preview" class="w-full aspect-[3/4] object-cover" />
+        </div>
+
+        <!-- Context button -->
+        <button (click)="toggleContextMenu($event, template)"
+        class="absolute top-2 right-2 rounded-md p-1.5 cursor-pointer
+        text-gray-500 bg-gray-100 hover:bg-gray-200 hover:text-gray-700 transition">
+          ⋮
+        </button>
+
+        <!-- Floating Context Menu -->
+        <div  #contextMenuRef *ngIf="openContextTemplate === template" class="fixed z-50 bg-white border rounded shadow-lg p-3 w-52"
+          [ngStyle]="contextMenuStyle" (click)="$event.stopPropagation()">
+          <div class="mb-2">
+            <p class="text-sm font-semibold">{{ template.name }}</p>
+            <p *ngIf="template.author" class="text-xs text-gray-500">By {{ template.author }}</p>
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <button class="text-white text-sm bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+              Copy Text Styles
+            </button>
+            <button class="text-white text-sm bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded">
+              Copy Colors
+            </button>
+            <button class="text-white text-sm bg-emerald-600 hover:bg-emerald-700 px-3 py-1 rounded">
+              Copy Background
+            </button>
+            <button class="text-white text-sm bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded">
+              Duplicate Template
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

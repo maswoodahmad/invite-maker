@@ -4,11 +4,13 @@ import * as fabric from 'fabric'; // works with v5 and v6 in Angular
 import { CanvasObjectToolbarComponent } from '../canvas-object-toolbar/canvas-object-toolbar.component';
 import { RecentUploadsService } from '../recent-uploads.service';
 import { deleteIcon } from '../../assets/icons/delete-icon';
+import {FormsModule} from '@angular/forms'
+
 
 @Component({
   selector: 'app-fabric-editor',
   standalone: true,
-  imports: [CommonModule, CanvasObjectToolbarComponent],
+  imports: [CommonModule, CanvasObjectToolbarComponent, FormsModule ],
   templateUrl: './fabric-editor.component.html',
   styleUrls: ['./fabric-editor.component.scss'],
 })
@@ -22,16 +24,23 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
   selectedObject: fabric.Object | null = null;
   toolbarPosition = { top: 0, left: 0 };
 
+  zoomPercent = 100;
+
   contextMenuVisible = false;
   contextMenuPosition = { top: 0, left: 0 };
 
-  @ViewChild('canvasWrapper', { static: true })
-  canvasWrapper!: ElementRef;
+
+
+  @ViewChild('canvasWrapper', { static: true }) canvasWrapper!: ElementRef;
+
+  @ViewChild('canvasScrollWrapper') canvasScrollWrapperRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('canvasOuter') canvasOuterRef!: ElementRef<HTMLDivElement>;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
     public uploads: RecentUploadsService,
 
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private zoomService: CanvasZoomService
   ) { }
 
   ngAfterViewInit(): void {
@@ -49,7 +58,7 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
       selection: true,
     });
 
-    this.drawGrid(this.gridSize);
+   // this.drawGrid(this.gridSize);
     this.addSnapToGrid();
     this.enablePanning();
     this.makeResponsive();
@@ -84,6 +93,9 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
       this.canvas.add(fabricImg);
     }
 
+    this.zoomService.init(this.canvas);
+    this.zoomService.refreshLayoutAndRecenter(this.canvasScrollWrapperRef.nativeElement, this.canvasOuterRef.nativeElement)
+
     // OPTIONAL: Test image (remove in prod)
   }
 
@@ -103,14 +115,20 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
   }
 
   drawGrid(size: number): void {
-    const w = this.canvas.width!;
-    const h = this.canvas.height!;
-    for (let i = 0; i < w; i += size) {
-      this.canvas.add(new fabric.Line([i, 0, i, h], { stroke: '#eee', selectable: false, evented: false }));
-    }
-    for (let i = 0; i < h; i += size) {
-      this.canvas.add(new fabric.Line([0, i, w, i], { stroke: '#eee', selectable: false, evented: false }));
-    }
+    const designArea = new fabric.Rect({
+      width: 794,
+      height: 1123,
+      fill: '#fff',
+      selectable: false,
+      evented: false,
+      stroke: '#ddd',
+      strokeDashArray: [5, 5],
+      originX: 'center',
+      originY: 'center',
+      left: this.canvas.getWidth() / 2,
+      top: this.canvas.getHeight() / 2,
+    });
+    this.canvas.add(designArea);
   }
 
   addSnapToGrid(): void {
@@ -370,26 +388,26 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
   openContextMenu(event: MouseEvent): void {
     const wrapper = document.getElementById('canvas-wrapper');
     if (!wrapper) return;
-  
+
     const wrapperRect = wrapper.getBoundingClientRect();
-  
+
     const menuWidth = 256; // Tailwind's w-64 = 16rem = 256px
     const padding = 8;
-  
+
     let left = event.clientX - wrapperRect.left;
     let top = event.clientY - wrapperRect.top;
-  
+
     // Clamp left if it would overflow the wrapper
     if (left + menuWidth > wrapperRect.width) {
       left = wrapperRect.width - menuWidth - padding;
     }
-  
+
     this.contextMenuPosition = {
       top,
       left,
     };
     this.contextMenuVisible = true;
-  
+
     event.preventDefault();
     event.stopPropagation();
   }
@@ -456,7 +474,7 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
 
     this.selectedObject.selectable = true;
     this.selectedObject.evented = true;
-  
+
     this.selectedObject.hasControls = true;
     this.selectedObject.hasBorders = true;
 
@@ -493,7 +511,20 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
     this.canvas.requestRenderAll();
   }
 
+
+   // Default 100%
+
+onZoomSliderChange(event: Event): void {
+  const percent = +(event.target as HTMLInputElement).value;
+  this.zoom = percent / 100;
+  this.canvas.setZoom(this.zoom);
+  this.canvas.requestRenderAll();
+}
+
   ngOnDestroy(): void {
     this.canvas?.dispose();
   }
-}
+}import { CanvasZoomService } from '../services/canvas-zoom.service';
+import { ProjectToolbarComponent } from '../project-toolbar/project-toolbar.component';
+import { SidebarComponent } from '../sidebar/sidebar.component';
+
