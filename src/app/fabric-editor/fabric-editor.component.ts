@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, OnDestroy, PLATFORM_ID, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, Input, OnDestroy, PLATFORM_ID, ViewChild } from '@angular/core';
 import * as fabric from 'fabric'; // works with v5 and v6 in Angular
 import { CanvasObjectToolbarComponent } from '../canvas-object-toolbar/canvas-object-toolbar.component';
 import { RecentUploadsService } from '../recent-uploads.service';
@@ -26,7 +26,10 @@ import { CanvasControlService } from '../services/canvas-control.service';
   styleUrls: ['./fabric-editor.component.scss'],
 })
 export class FabricEditorComponent implements AfterViewInit, OnDestroy {
+
   canvas!: fabric.Canvas;
+  @Input() template!: string;  // e.g., 'A4', 'Poster', 'Card'
+  @Input() data: any;
   zoom = 1;
   isPanning = false;
   lastPosX = 0;
@@ -60,7 +63,7 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.canvasControlService.registerInstance(this);
+    //this.canvasControlService.registerInstance(this);
 
     const canvasEl = document.getElementById('canvas') as HTMLCanvasElement;
     const wrapper = canvasEl.parentElement as HTMLElement;

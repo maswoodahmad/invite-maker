@@ -1,3 +1,4 @@
+import { CanvasProjectWrapperComponent } from './canvas-project-wrapper/canvas-project-wrapper.component';
 // app.routes.ts
 import { Routes } from '@angular/router';
 
@@ -10,7 +11,7 @@ export const routes: Routes = [
   {
     path: 'editor',
     loadComponent: () =>
-      import('./fabric-editor/fabric-editor.component').then(m => m.FabricEditorComponent)
+      import('./canvas-project-wrapper/canvas-project-wrapper.component').then(m => m.CanvasProjectWrapperComponent)
   },
   {
     path: 'invite/:token',

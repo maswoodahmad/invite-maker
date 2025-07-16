@@ -1,0 +1,55 @@
+<div class="p-4">
+
+  <!-- 🔍 Search Bar -->
+ 
+
+
+  <div class="relative shrink-0 mb-4 border-b pb-4">
+    <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search fonts..."
+      class="border rounded px-2 py-1 text-sm w-full pr-8" />
+
+    <!-- ✕ Clear Button (visible only if there's text or filter) -->
+    <button *ngIf="searchQuery || activeFilter" (click)="clearSearch()"
+      class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700" aria-label="Clear search">
+      ✕
+    </button>
+    </div>
+
+  <!-- 🔁 Conditional Layout -->
+  <div *ngIf="!activeFilter; else filteredView" class="space-y-6">
+
+    <!-- 📂 Category: Default Text Styles -->
+    <div>
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-semibold">Default text styles</h3>
+        <button (click)="applyCategoryFilter('Heading')" class="text-blue-600 text-sm">
+          See all
+        </button>
+      </div>
+      <div class="space-y-2">
+        <div class="p-3 border rounded">Heading</div>
+        <div class="p-3 border rounded">Subheading</div>
+        <div class="p-3 border rounded">Body</div>
+      </div>
+    </div>
+
+    <!-- 📂 Category: Dynamic Text -->
+    <div>
+      <h3 class="font-semibold mb-2">Dynamic text</h3>
+      <div class="p-3 border rounded flex items-center gap-2">
+        <img src="..." alt="Dynamic Icon" class="w-6 h-6" />
+        Page numbers
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔎 Filtered View -->
+  <ng-template #filteredView>
+    <div class="space-y-2">
+      <div *ngFor="let item of getFilteredTextItems()" class="p-3 border rounded">
+        {{ item.name }}
+      </div>
+    </div>
+  </ng-template>
+
+</div>

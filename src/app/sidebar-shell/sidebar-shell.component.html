@@ -1,0 +1,18 @@
+<div class="fixed top-14 bottom-10 left-20 w-[340px] z-40 bg-white shadow">
+  <div class="h-full overflow-hidden flex flex-col">
+
+    <!-- Optional: Fixed Header -->
+    <!-- <div class="p-4 border-b">Search or Tab Header</div> -->
+
+    <!-- Inner scrollable content -->
+    <div class="flex-1 overflow-y-auto">
+      <ng-container [ngSwitch]="activePanel">
+        <app-template-sidebar *ngSwitchCase="'design'"></app-template-sidebar>
+        <app-element-sidebar *ngSwitchCase="'elements'"></app-element-sidebar>
+        <app-text-sidebar *ngSwitchCase="'text'"></app-text-sidebar>
+
+        <div *ngSwitchDefault class="p-4 text-gray-400">Select a tool</div>
+      </ng-container>
+    </div>
+  </div>
+</div>

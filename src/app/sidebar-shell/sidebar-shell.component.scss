@@ -1,0 +1,16 @@
+.sidebar-wrapper {
+  transition: transform 0.3s ease;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 18rem; // 72
+  z-index: 50;
+  background-color: white;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+}
+
+/* sidebar-shell.component.scss */
+:host {
+  display: block;
+}

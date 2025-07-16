@@ -7,11 +7,14 @@
   <app-sidebar class="w-20 bg-gray-100 border-r fixed top-14 left-0 bottom-10 z-40" (toggle)="toggleSidebar($event)">
   </app-sidebar>
 
+
+  <app-sidebar-shell *ngIf="activeSidebar" [activePanel]="activeSidebar" #dynamicSidebar></app-sidebar-shell>
+
   <!-- Dynamic Side Panel (Design, Text, etc.) -->
-  <app-template-sidebar *ngIf="activeSidebar === 'design'" #dynamicSidebar
+  <!-- <app-template-sidebar *ngIf="activeSidebar === 'design'" #dynamicSidebar
     [@slideFade]="activeSidebar === 'design' ? 'visible' : 'hidden'"
     class="fixed left-20 top-14 bottom-10 w-[340px] bg-white shadow z-40">
-  </app-template-sidebar>
+  </app-template-sidebar> -->
 
   <!-- TODO: Add more sidebars later like this -->
   <!--

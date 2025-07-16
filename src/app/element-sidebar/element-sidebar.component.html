@@ -1,0 +1,48 @@
+<div class="w-full bg-white border-l h-full p-4 overflow-y-auto flex flex-col gap-6">
+
+  <!-- Search -->
+  <input type="text" placeholder="Search elements"
+    class="w-full px-3 py-2 border rounded-md text-sm focus:outline-none" />
+
+  <!-- Quick Tabs -->
+  <div class="flex gap-2 overflow-x-auto text-sm">
+    <button *ngFor="let tab of tabs" (click)="activeTab = tab" [class.bg-gray-200]="activeTab === tab"
+      class="px-3 py-1 rounded whitespace-nowrap border">
+      {{ tab }}
+    </button>
+  </div>
+
+  <!-- Recently Used -->
+  <div>
+    <h2 class="text-sm font-medium mb-2">Recently used</h2>
+    <div class="flex gap-2 overflow-x-auto">
+      <img *ngFor="let el of recentElements" [src]="el.src" class="w-20 h-20 object-cover rounded shadow-sm" />
+    </div>
+  </div>
+
+  <!-- Shapes -->
+  <div>
+    <h2 class="text-sm font-medium mb-2">Shapes</h2>
+    <div class="flex gap-2 flex-wrap">
+      <div *ngFor="let shape of shapes" class="w-10 h-10 bg-black cursor-pointer" (click)="selectShape(shape)"></div>
+    </div>
+  </div>
+
+  <!-- Graphics -->
+  <div>
+    <h2 class="text-sm font-medium mb-2">Graphics</h2>
+    <div class="flex gap-2 overflow-x-auto">
+      <img *ngFor="let graphic of graphics" [src]="graphic.src" class="w-20 h-20 rounded" />
+    </div>
+  </div>
+
+  <!-- AI Image Generator -->
+  <div>
+    <h2 class="text-sm font-medium mb-2">AI image generator</h2>
+    <button class="w-full px-4 py-2 bg-blue-100 text-blue-800 rounded mb-2">Generate your own</button>
+    <div *ngFor="let prompt of aiPrompts"
+      class="text-sm text-gray-700 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer">
+      “{{ prompt }}”
+    </div>
+  </div>
+</div>

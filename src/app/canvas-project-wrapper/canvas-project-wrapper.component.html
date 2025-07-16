@@ -1,0 +1,29 @@
+<!-- Canvas scroll area -->
+<div #scrollWrapper class="canvas-scroll-wrapper overflow-auto bg-gray-100" style="height: calc(100vh - 56px - 48px)">
+  <div class="flex justify-center">
+
+
+
+
+    <div class="canvas-project-container"  [ngStyle]="transformStyle" [ngStyle]="{ transform: 'translateX(' + sidebarOffset + 'px)' }">
+
+      <!-- Pages -->
+      <ng-container *ngFor="let page of pages">
+        <!-- <app-fabric-editor [template]="page.template" [data]="page.data"></app-fabric-editor> -->
+        <app-canvas-view
+        [width]="pageWidth"
+        [height]="pageHeight"
+        [data]="pageData"
+      ></app-canvas-view>
+      </ng-container>
+
+      <!-- Add page button -->
+      <div class="flex justify-center mt-6">
+        <button (click)="addPage()" class="bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
+          ➕ Add Page
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
