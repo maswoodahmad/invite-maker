@@ -13,6 +13,9 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { ProjectToolbarComponent } from './project-toolbar/project-toolbar.component';
 import { BottomBarComponent } from './bottom-bar/bottom-bar.component';
 import { TemplateSidebarComponent } from './template-sidebar/template-sidebar.component';
+import { CanvasZoomService } from './services/canvas-zoom.service';
+import { FabricEditorComponent } from './fabric-editor/fabric-editor.component';
+import { CanvasControlService } from './services/canvas-control.service';
 
 @Component({
   selector: 'app-root',
@@ -24,6 +27,7 @@ import { TemplateSidebarComponent } from './template-sidebar/template-sidebar.co
     ProjectToolbarComponent,
     BottomBarComponent,
     TemplateSidebarComponent,
+
     // Add other sidebar modules when needed
   ],
   animations: [
@@ -44,10 +48,15 @@ import { TemplateSidebarComponent } from './template-sidebar/template-sidebar.co
 export class AppComponent implements AfterViewInit {
   activeSidebar: 'design' | 'text' | 'elements' | 'uploads' | 'projects' | 'tools' | null = null;
   sidebarWidth = 80; // initial icon sidebar width
+  @ViewChild(FabricEditorComponent) canvasComponent!: FabricEditorComponent;
 
+  @ViewChild(TemplateSidebarComponent, { read: ElementRef })
+templateSidebarRef!: ElementRef<HTMLElement>;
   @ViewChild('dynamicSidebar') dynamicSidebarRef!: ElementRef<HTMLElement>;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef,  private zoomService: CanvasZoomService, private canvasControlService: CanvasControlService) {}
+
+
 
   ngAfterViewInit(): void {
     // Wait for sidebar to render
@@ -56,10 +65,22 @@ export class AppComponent implements AfterViewInit {
 
   toggleSidebar(type: typeof this.activeSidebar) {
     this.activeSidebar = this.activeSidebar === type ? null : type;
+    console.log(this.activeSidebar)
 
-    // Sidebar animation & width update after DOM update
-    setTimeout(() => this.updateSidebarWidth(), 50);
+    // Wait for sidebar animation & layout
+    setTimeout(() => {
+      this.updateSidebarWidth();
+
+
+      const templateSidebar = document.querySelector('app-template-sidebar') as HTMLElement;
+      const mainSidebar = document.querySelector('app-sidebar') as HTMLElement;
+      const mainSidebarWidth = mainSidebar?.offsetWidth || 0;
+  const shiftAmount = (templateSidebar?.offsetWidth || 0);
+  this.canvasControlService.shiftCanvasToRight(shiftAmount + mainSidebarWidth);
+  
+}, 300); // match your animation duration
   }
+
 
   updateSidebarWidth() {
     const dynamicEl = this.dynamicSidebarRef?.nativeElement;

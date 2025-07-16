@@ -5,14 +5,14 @@ import { CanvasObjectContextMenuComponent } from '../canvas-object-context-menu/
 
 @Component({
   selector: 'app-canvas-object-toolbar',
-  imports: [CommonModule, CanvasObjectContextMenuComponent],
+  imports: [CommonModule],
   templateUrl: './canvas-object-toolbar.component.html',
   styleUrl: './canvas-object-toolbar.component.scss'
 })
 export class CanvasObjectToolbarComponent {
   @Input() object: fabric.Object | null = null;
 
-  @Output() onDelete = new EventEmitter<void>();
+@Output() onDelete = new EventEmitter<void>();
 @Output() onDuplicate = new EventEmitter<void>();
 @Output() onLock = new EventEmitter<void>();
 @Output() onUnlock = new EventEmitter<void>();
@@ -47,13 +47,13 @@ isLocked(obj: fabric.Object | null | undefined): boolean {
   if(isLocked) {
     this.contextMenuVisible = false;
   }
-  
+
   return isLocked;
-  
-  
+
+
 }
 
-  
+
 
   toggleContextMenu(event: MouseEvent): void {
     event.preventDefault();
@@ -65,7 +65,7 @@ isLocked(obj: fabric.Object | null | undefined): boolean {
     };
   }
 
-  
-  
+
+
 }
 

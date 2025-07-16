@@ -4,13 +4,24 @@ import * as fabric from 'fabric'; // works with v5 and v6 in Angular
 import { CanvasObjectToolbarComponent } from '../canvas-object-toolbar/canvas-object-toolbar.component';
 import { RecentUploadsService } from '../recent-uploads.service';
 import { deleteIcon } from '../../assets/icons/delete-icon';
-import {FormsModule} from '@angular/forms'
+import { FormsModule } from '@angular/forms'
+import { CanvasZoomService } from '../services/canvas-zoom.service';
+import { TOOLBAR_CONFIG } from '../../assets/toolbar-config';
+import { CanvasObjectContextMenuComponent } from '../canvas-object-context-menu/canvas-object-context-menu.component';
+import { CanvasControlService } from '../services/canvas-control.service';
+
+
+
+
+
+
+
 
 
 @Component({
   selector: 'app-fabric-editor',
   standalone: true,
-  imports: [CommonModule, CanvasObjectToolbarComponent, FormsModule ],
+  imports: [CommonModule, CanvasObjectToolbarComponent, FormsModule , CanvasObjectContextMenuComponent],
   templateUrl: './fabric-editor.component.html',
   styleUrls: ['./fabric-editor.component.scss'],
 })
@@ -29,22 +40,27 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
   contextMenuVisible = false;
   contextMenuPosition = { top: 0, left: 0 };
 
+  toolbarConfig = TOOLBAR_CONFIG;
+
 
 
   @ViewChild('canvasWrapper', { static: true }) canvasWrapper!: ElementRef;
 
   @ViewChild('canvasScrollWrapper') canvasScrollWrapperRef!: ElementRef<HTMLDivElement>;
   @ViewChild('canvasOuter') canvasOuterRef!: ElementRef<HTMLDivElement>;
+  toolbarPresets!: { toolbar: { icon: string; label: string; type: string; action: string; }[]; };
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
     public uploads: RecentUploadsService,
 
     private cdr: ChangeDetectorRef,
-    private zoomService: CanvasZoomService
+    private zoomService: CanvasZoomService,
+    private canvasControlService: CanvasControlService
   ) { }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.canvasControlService.registerInstance(this);
 
     const canvasEl = document.getElementById('canvas') as HTMLCanvasElement;
     const wrapper = canvasEl.parentElement as HTMLElement;
@@ -79,13 +95,65 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
       this.selectedObject = null;
     });
 
+    this.canvas.on('object:moving', (e) => {
+      if (e.target === this.selectedObject) {
+        this.updateToolbarPosition(e.target);
+      }
+    });
+
+    this.canvas.on('object:scaling', (e) => {
+      if (e.target === this.selectedObject) {
+        this.updateToolbarPosition(e.target);
+      }
+    });
+
+    this.canvas.on('object:modified', (e) => {
+      if (e.target === this.selectedObject) {
+        this.updateToolbarPosition(e.target);
+      }
+    });
+
+    this.canvas.on('mouse:down', (e) => {
+      if (!e.target) {
+        // 🟦 User clicked on empty canvas area
+        this.selectedObject = null; // or null if you prefer
+        this.showToolbarFor('background'); // Your function to handle toolbar rendering
+      } else {
+        // 🟥 An object was clicked
+        this.selectedObject = e.target;
+        this.showToolbarFor(e.target);
+      }
+    });
+
+    this.canvasScrollWrapperRef.nativeElement.addEventListener('scroll', () => {
+      if (this.selectedObject) {
+        this.updateToolbarPosition(this.selectedObject);
+      }
+    });
+
+
+    this.canvas.on('object:moving', (e) => this.updateToolbarPosition(e.target));
+    this.canvas.on('mouse:wheel', () => {
+
+      setTimeout(() => {
+        if(this.selectedObject)  this.updateToolbarPosition(this.selectedObject)
+      }, 50);
+});
+    this.canvas.on('after:render', () => {
+  if( this.selectedObject)
+  this.updateToolbarPosition(this.selectedObject);
+    });
+
+
+
+
     const img = new Image();
     img.src = 'https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png';
 
     img.onload = () => {
       const fabricImg = new fabric.Image(img, {
-        left: 50,
-        top: 50,
+        left: 500,
+        top: 500,
         scaleX: 0.5,
         scaleY: 0.5,
       });
@@ -367,50 +435,76 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
 
 
 
-  updateToolbarPosition(obj: fabric.Object): void {
+  updateToolbarPosition(object: fabric.Object) {
+    if (!this.canvasScrollWrapperRef?.nativeElement || !object || !this.canvas) return;
+
+    const wrapper = this.canvasScrollWrapperRef.nativeElement as HTMLElement;
     const zoom = this.canvas.getZoom();
-    const rect = obj.getBoundingRect();
-    const vpt = this.canvas.viewportTransform || [1, 0, 0, 1, 0, 0];
 
-    const canvasEl = this.canvas.getElement();
-    const wrapper = document.getElementById('canvas-wrapper')!;
-    const canvasRect = canvasEl.getBoundingClientRect();
+    const objRect = object.getBoundingRect(); // ✅ true = absolute on canvas
     const wrapperRect = wrapper.getBoundingClientRect();
 
-    const left = (rect.left * zoom + vpt[4]) + canvasRect.left - wrapperRect.left + rect.width * zoom / 2;
-    const top = (rect.top * zoom + vpt[5]) + canvasRect.top - wrapperRect.top - 50;
+    const scrollLeft = wrapper.scrollLeft;
+    const scrollTop = wrapper.scrollTop;
 
-    this.toolbarPosition = { top, left };
-    this.cdr.detectChanges(); // 🔁 trigger re-render
-  }
+    const toolbarHeight = 40;
+    const gap = 8;
 
+    // ✅ Convert object position to wrapper-relative
+    const topInWrapper = (objRect.top * zoom) - scrollTop;
+    const leftInWrapper = ((objRect.left + objRect.width / 2) * zoom) - scrollLeft;
 
-  openContextMenu(event: MouseEvent): void {
-    const wrapper = document.getElementById('canvas-wrapper');
-    if (!wrapper) return;
+    const topAbove = topInWrapper - toolbarHeight - gap;
+    const topBelow = topInWrapper + objRect.height * zoom + gap;
 
-    const wrapperRect = wrapper.getBoundingClientRect();
+    const isAboveVisible = topAbove > 0;
+    const isBelowVisible = topBelow + toolbarHeight < wrapper.clientHeight;
 
-    const menuWidth = 256; // Tailwind's w-64 = 16rem = 256px
-    const padding = 8;
+    const top = isAboveVisible
+      ? topAbove
+      : isBelowVisible
+        ? topBelow
+        : Math.max(0, topAbove);
 
-    let left = event.clientX - wrapperRect.left;
-    let top = event.clientY - wrapperRect.top;
-
-    // Clamp left if it would overflow the wrapper
-    if (left + menuWidth > wrapperRect.width) {
-      left = wrapperRect.width - menuWidth - padding;
-    }
-
-    this.contextMenuPosition = {
+    // ✅ Set centered, visible position
+    this.toolbarPosition = {
       top,
-      left,
+      left: leftInWrapper,
     };
-    this.contextMenuVisible = true;
-
-    event.preventDefault();
-    event.stopPropagation();
   }
+
+
+
+
+
+openContextMenu(event: MouseEvent): void {
+  const wrapper = document.getElementById('canvas-wrapper');
+  if (!wrapper) return;
+
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const menuWidth = 256;
+  const estimatedMenuHeight = 220;
+  const padding = 8;
+
+  let left = event.clientX - wrapperRect.left;
+  let top = event.clientY - wrapperRect.top;
+
+  // Clamp horizontally
+  if (left + menuWidth > wrapperRect.width) {
+    left = wrapperRect.width - menuWidth - padding;
+  }
+
+  // Clamp vertically
+  const maxTop = wrapperRect.height - estimatedMenuHeight - padding;
+  top = Math.min(top, maxTop);
+  top = Math.max(top, padding); // prevent going above too
+
+  this.contextMenuPosition = { top, left };
+  this.contextMenuVisible = true;
+
+  event.preventDefault();
+  event.stopPropagation();
+}
 
 
 
@@ -524,7 +618,52 @@ onZoomSliderChange(event: Event): void {
   ngOnDestroy(): void {
     this.canvas?.dispose();
   }
-}import { CanvasZoomService } from '../services/canvas-zoom.service';
-import { ProjectToolbarComponent } from '../project-toolbar/project-toolbar.component';
-import { SidebarComponent } from '../sidebar/sidebar.component';
+
+
+
+  selectedObjectType: 'text' | 'image' | 'shape' | 'background' | null = null;
+
+  onObjectSelected(obj: fabric.Object): void {
+    this.selectedObject = obj;
+
+    if (obj.type === 'textbox' || obj.type === 'i-text' || obj.type === 'text') {
+      this.selectedObjectType = 'text';
+    } else if (obj.type === 'image') {
+      this.selectedObjectType = 'image';
+    } else if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle') {
+      this.selectedObjectType = 'shape';
+    } else if (obj === this.canvas.backgroundImage) {
+      this.selectedObjectType = 'background';
+    } else {
+      this.selectedObjectType = null;
+    }
+  }
+
+
+  showToolbarFor(obj: any) {
+    if (obj === 'background') {
+      this.toolbarPresets = this.toolbarConfig['background'];
+    } else if (obj.type === 'textbox') {
+      this.toolbarPresets = this.toolbarConfig['text'];
+    } else if (obj.type === 'image') {
+      this.toolbarPresets = this.toolbarConfig['image'];
+    } else if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle') {
+      this.toolbarPresets = this.toolbarConfig['shape'];
+    }
+  }
+  // This will be bound to your canvas container
+transformStyle = {
+  transform: 'translateX(0px)',
+  transition: 'transform 0.3s ease'
+};
+
+shiftCanvasToRight(shiftAmount: number): void {
+  this.transformStyle = {
+    transform: `translateX(${shiftAmount}px)`,
+    transition: 'transform 0.3s ease'
+  };
+  console.log('Shifted canvas by:', shiftAmount);
+}
+
+}
 

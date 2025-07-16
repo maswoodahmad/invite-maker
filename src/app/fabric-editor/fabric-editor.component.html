@@ -1,23 +1,29 @@
-<!-- ✅ Scrollable Canvas Wrapper -->
-<div #canvasScrollWrapper class="canvas-scroll-wrapper flex-1 overflow-auto relative z-0 bg-gray-100"
-  style="height: calc(100vh - 3.5rem - 2.5rem);"> <!-- Adjust for header/footer -->
+<div #canvasScrollWrapper class="canvas-scroll-wrapper flex-1 overflow-auto bg-gray-100 relative z-0"
+  style="height: calc(100vh - 3.5rem - 2.5rem);">
 
-  <!-- ✅ Very Large Canvas Area for Zoom -->
-  <div #canvasOuter class="canvas-outer absolute w-[100%] h-[100%] mx-auto pt-10 pb-20">
-
-    <!-- ✅ Fabric Canvas Element -->
-    <canvas id="canvas" class="block w-full h-full"></canvas>
-
-    <!-- ✅ Floating Toolbar (Object Controls) -->
-    <app-canvas-object-toolbar *ngIf="selectedObject" [object]="selectedObject" (onDelete)="deleteObject()"
-      (onDuplicate)="duplicateObject()" (onLock)="lockObject()" (onUnlock)="unlockObject()"
-      (onContextMenu)="openContextMenu($event)" (onCopy)="onCopy()" (onPaste)="onPaste()" (onAlign)="onAlign()"
-      (onComment)="onComment()" (onLink)="onLink()" (onSetBackground)="onSetBackground()"
-      (onApplyColors)="onApplyColors()" (onInfo)="onInfo()" (onBringToFront)="bringToFront()"
-      (onBringForward)="bringForward()" (onSendToBack)="sendToBack()" (onSendBackward)="sendBackward()"
-      class="absolute z-50 transform -translate-x-1/2"
-      [ngStyle]="{ top: toolbarPosition.top + 'px', left: toolbarPosition.left + 'px' }">
-    </app-canvas-object-toolbar>
-
+  <!-- ✅ Translatable wrapper -->
+  <div class="transform-wrapper w-full h-full" [ngStyle]="transformStyle">
+    <div  #canvasOuter class="canvas-outer w-[2000px] h-[2000px] relative pt-10 pb-20">
+      <canvas id="canvas" class="block w-full h-full"></canvas>
+    </div>
   </div>
 </div>
+
+<!-- ✅ Floating Toolbar (outside) -->
+<app-canvas-object-toolbar *ngIf="selectedObject" [object]="selectedObject"
+class="fixed z-50 transform -translate-x-1/2"
+[ngStyle]="{ top: toolbarPosition.top + 'px', left: toolbarPosition.left + 'px' }" (onDelete)="deleteObject()"
+  (onDuplicate)="duplicateObject()" (onLock)="lockObject()" (onUnlock)="unlockObject()"
+  (onContextMenu)="openContextMenu($event)" />
+
+
+
+
+
+
+<!-- Context Menu Component -->
+<app-canvas-object-context-menu class="absolute z-50" [visible]="contextMenuVisible" [position]="contextMenuPosition"
+(onCopy)="onCopy()" (onPaste)="onPaste()" (onAlign)="onAlign()"
+(onComment)="onComment()" (onLink)="onLink()" (onSetBackground)="onSetBackground()" (onApplyColors)="onApplyColors()"
+(onInfo)="onInfo()" (onBringToFront)="bringToFront()" (onBringForward)="bringForward()" (onSendToBack)="sendToBack()"
+(onSendBackward)="sendBackward()" />

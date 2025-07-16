@@ -18,8 +18,8 @@ export class CanvasZoomService {
     this.attachMouseWheelZoom();
 
     // Default canvas size (big enough for any template)
-    canvas.setWidth(4000);
-    canvas.setHeight(4000);
+    canvas.setWidth(2000);
+    canvas.setHeight(2000);
 
     // Calculate layout component sizes
     const header = document.querySelector('app-project-toolbar') as HTMLElement;
@@ -213,12 +213,38 @@ export class CanvasZoomService {
   // }
 
 
-  refreshLayoutAndRecenter(wrapper:HTMLElement, outer : HTMLElement) {
-    setTimeout(() => {
-  
+  refreshLayoutAndRecenter(
+    wrapper: HTMLElement,
+    outer: HTMLElement,
+    focusObject?: fabric.Object
+  ) {
+    const zoom = this.canvas.getZoom();
 
-      const scrollTop = (outer.scrollHeight - wrapper.clientHeight) / 2;
-      const scrollLeft = (outer.scrollWidth - wrapper.clientWidth) / 2;
+    setTimeout(() => {
+      let scrollLeft: number;
+      let scrollTop: number;
+
+      const layoutOffsetLeft = this.layoutOffsets.sidebar || 0;
+
+      if (focusObject) {
+        const objRect = focusObject.getBoundingRect();
+        scrollLeft =
+          (objRect.left + objRect.width / 2) * zoom - wrapper.clientWidth / 2;
+        scrollTop =
+          (objRect.top + objRect.height / 2) * zoom - wrapper.clientHeight / 2;
+      } else {
+        // ✅ Fix: subtract left margin (sidebar) from canvas width
+        const centerX = this.canvas.getWidth() * zoom / 2;
+        const centerY = this.canvas.getHeight() * zoom / 2;
+
+        scrollLeft = centerX - (wrapper.clientWidth / 2 - layoutOffsetLeft);
+        scrollTop = centerY - wrapper.clientHeight / 2;
+      }
+      console.log('Scroll info', {
+        wrapperScrollWidth: wrapper.scrollWidth,
+        wrapperClientWidth: wrapper.clientWidth,
+        scrollLeft,
+      });
 
       wrapper.scrollTo({ top: scrollTop, left: scrollLeft, behavior: 'smooth' });
     }, 0);
