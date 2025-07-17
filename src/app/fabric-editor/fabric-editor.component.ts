@@ -51,7 +51,7 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('canvasScrollWrapper') canvasScrollWrapperRef!: ElementRef<HTMLDivElement>;
   @ViewChild('canvasOuter') canvasOuterRef!: ElementRef<HTMLDivElement>;
-  toolbarPresets!: { toolbar: { icon: string; label: string; type: string; action: string; }[]; };
+  toolbarPresets!: {  type: string; label: string; icon: string; key: string }[];
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object,
     public uploads: RecentUploadsService,
@@ -645,7 +645,7 @@ onZoomSliderChange(event: Event): void {
 
   showToolbarFor(obj: any) {
     if (obj === 'background') {
-      this.toolbarPresets = this.toolbarConfig['background'];
+      this.toolbarPresets = this.toolbarConfig['page'];
     } else if (obj.type === 'textbox') {
       this.toolbarPresets = this.toolbarConfig['text'];
     } else if (obj.type === 'image') {

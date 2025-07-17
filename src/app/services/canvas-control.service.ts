@@ -25,5 +25,8 @@ export class CanvasControlService {
     this.editorInstance?.restoreCanvasTransform();
   }
 
+  updateToolbarOffset(): void {
+    this.editorInstance?.updateToolbarOffset();
+  }
 
 }

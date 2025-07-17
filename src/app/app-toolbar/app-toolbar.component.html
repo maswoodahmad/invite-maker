@@ -1,0 +1,19 @@
+<div class="flex items-center gap-2 px-4 py-2 shadow rounded-lg bg-white">
+  <ng-container *ngFor="let tool of tools">
+    <ng-container [ngSwitch]="tool.type">
+      <!-- <select *ngSwitchCase="'font-family'" class="rounded border px-2 py-1">
+        <option *ngFor="let font of tool.options">{{ font }}</option>
+      </select> -->
+
+      <div *ngSwitchCase="'font-size'" class="flex items-center border rounded px-2 py-1">
+        <button class="px-1">-</button>
+        <span class="px-2">154</span>
+        <button class="px-1">+</button>
+      </div>
+
+      <button *ngSwitchDefault class="rounded px-2 py-1 hover:bg-gray-100">
+        {{ tool.icon || tool.label }}
+      </button>
+    </ng-container>
+  </ng-container>
+</div>

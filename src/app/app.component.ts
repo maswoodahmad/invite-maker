@@ -27,7 +27,7 @@ import { SidebarShellComponent } from './sidebar-shell/sidebar-shell.component';
     SidebarComponent,
     ProjectToolbarComponent,
     BottomBarComponent,
-    TemplateSidebarComponent,
+
     SidebarShellComponent
 
     // Add other sidebar modules when needed
@@ -160,6 +160,7 @@ export class AppComponent implements AfterViewInit {
         availableWidth,
         availableHeight
       );
+      this.canvasControlService.updateToolbarOffset();
     }
 
 

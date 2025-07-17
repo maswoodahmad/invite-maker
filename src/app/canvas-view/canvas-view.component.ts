@@ -1,3 +1,4 @@
+import { CanvasService } from './../services/canvas.service';
 import { isPlatformBrowser } from '@angular/common';
 import {
   Component,
@@ -25,7 +26,7 @@ export class CanvasViewComponent implements AfterViewInit {
   @Input() data: any;
 
   canvas!: fabric.Canvas;
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object,  private canvasService : CanvasService) {}
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -42,6 +43,8 @@ export class CanvasViewComponent implements AfterViewInit {
     if (this.data) {
       this.canvas.loadFromJSON(this.data, () => this.canvas.renderAll());
     }
+
+    this.canvasService.setCanvas(this.canvas);
 
     // Optional: Add zoom/pan init here or expose service later
   }

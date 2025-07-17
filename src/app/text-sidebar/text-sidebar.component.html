@@ -1,7 +1,7 @@
 <div class="p-4">
 
   <!-- 🔍 Search Bar -->
- 
+
 
 
   <div class="relative shrink-0 mb-4 border-b pb-4">
@@ -15,6 +15,13 @@
     </button>
     </div>
 
+
+      <button class="w-full px-4 py-2 bg-blue-200 text-blue-800 rounded mb-2 flex items-center justify-center gap-2" (click) = "addTextBox()">
+        <img src="../../assets/icons/t.svg" class="w-4 h-4" alt="Text" />
+        Add a text box
+      </button>
+
+
   <!-- 🔁 Conditional Layout -->
   <div *ngIf="!activeFilter; else filteredView" class="space-y-6">
 
@@ -26,11 +33,10 @@
           See all
         </button>
       </div>
-      <div class="space-y-2">
-        <div class="p-3 border rounded">Heading</div>
-        <div class="p-3 border rounded">Subheading</div>
-        <div class="p-3 border rounded">Body</div>
-      </div>
+      <div class="flex flex-col space-y-2 text-left">
+        <button class="p-3 border rounded font-bold text-xl text-left" (click) = "chooseFontWeight($event)">Heading</button>
+        <button class="p-3 border rounded font-medium text-lg text-left" (click) = "chooseFontWeight($event)">Subheading</button>
+        <button class="p-3 border rounded font-light text-sm text-left" (click) = "chooseFontWeight($event)">Body</button></div>
     </div>
 
     <!-- 📂 Category: Dynamic Text -->
