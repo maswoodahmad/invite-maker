@@ -1,11 +1,12 @@
 
 import { CanvasControlService } from './../services/canvas-control.service';
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, ElementRef, HostListener, Inject, Input, PLATFORM_ID, ViewChild } from '@angular/core';
 import { FabricEditorComponent } from '../fabric-editor/fabric-editor.component';
 import { CanvasViewComponent } from '../canvas-view/canvas-view.component';
 import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
 import { PagesToolbarComponent } from '../pages-toolbar/pages-toolbar.component';
+import { TemplateService } from '../services/template.service';
 
 @Component({
   selector: 'app-canvas-project-wrapper',
@@ -16,7 +17,23 @@ import { PagesToolbarComponent } from '../pages-toolbar/pages-toolbar.component'
 export class CanvasProjectWrapperComponent {
   @ViewChild('scrollWrapper') scrollWrapperRef!: ElementRef<HTMLDivElement>;
 
-  constructor(private canvasControlService: CanvasControlService) { }
+  constructor(private canvasControlService: CanvasControlService, private templateService: TemplateService,
+
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) { }
+
+
+  ngOnInit() {
+    this.templateService.templateSelected$.subscribe(template => {
+      this.pageWidth = template.width;
+      this.pageHeight = template.height;
+      this.addPage();
+    });
+
+    setTimeout(() => {
+      this.calculateAndShiftCanvas();
+    })
+  }
 
   ngAfterViewInit() {
 
@@ -31,7 +48,7 @@ export class CanvasProjectWrapperComponent {
 
   activePageIndex = 0;
 
-  addPage() {
+  addPage(template?: { width: number; height: number; }) {
     this.pages.push({ id: this.pages.length + 1, template: 'A4', data: {} });
     this.activePageIndex = this.pages.length - 1;
   }
@@ -40,8 +57,8 @@ export class CanvasProjectWrapperComponent {
     this.sidebarOffset = offset;
   }
 
-  pageWidth = 1000 * .5; // A4 default
-  pageHeight = 500 * .5;
+  pageWidth = 1000 ; // A4 default
+  pageHeight = 500;
   pageData = null;
 
   transformStyle = {
@@ -78,6 +95,49 @@ export class CanvasProjectWrapperComponent {
 
     console.log('Applied transform:', this.transformStyle);
   }
+
+
+  calculateAndShiftCanvas(): void {
+
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const header = document.getElementById('header');
+    const footer = document.getElementById('footer');
+    const sidebar = document.getElementById('sidebar');
+
+    const headerHeight = header?.offsetHeight || 0;
+    const footerHeight = footer?.offsetHeight || 0;
+    const sidebarWidth = sidebar?.offsetWidth || 0;
+
+    const totalWidth = window.innerWidth;
+    const totalHeight = window.innerHeight;
+
+    const availableWidth = totalWidth - sidebarWidth;
+    const availableHeight = totalHeight - headerHeight - footerHeight;
+
+    const templateWidth = this.pageWidth || 1000;
+    const templateHeight = this.pageHeight || 1000;
+
+    const scaleX = availableWidth / templateWidth;
+    const scaleY = availableHeight / templateHeight;
+    const scale = Math.min(scaleX, scaleY, 1); // Never upscale beyond 100%
+
+    // ✅ 2. Center the canvas using leftover space
+    const translateX = (availableWidth - templateWidth * scale) / 2;
+    const translateY = (availableHeight - templateHeight * scale) / 2;
+
+    // ✅ 3. Apply transform style
+    this.transformStyle = {
+      transform: `scale(${scale})`,
+      transition: 'transform 0.3s ease'
+    };
+    this.toolbarOffset = 0;
+
+    console.log('Applied transform:', this.transformStyle);
+
+
+  }
+
 
 
   restoreCanvasTransform(): void {
@@ -127,5 +187,11 @@ export class CanvasProjectWrapperComponent {
 
   onRenamePage(): void {
     this.pageNames[this.activePageIndex] = 'newName';
+  }
+
+
+  @HostListener('window:resize')
+  onResize() {
+    this.calculateAndShiftCanvas();
   }
 }

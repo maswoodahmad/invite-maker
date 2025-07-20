@@ -1,14 +1,14 @@
 <!-- Fixed Top Header -->
-<app-project-toolbar class="fixed top-0 left-0 right-0 z-50 h-14" />
+<app-project-toolbar id= "header" class="fixed top-0 left-0 right-0 z-50 h-14" />
 
 <!-- Main layout area -->
 <div class="flex h-screen pt-14 overflow-hidden">
   <!-- Fixed Left Icon Sidebar -->
-  <app-sidebar class="w-20 bg-gray-100 border-r fixed top-14 left-0 bottom-10 z-40" (toggle)="toggleSidebar($event)">
+  <app-sidebar id="sidebar"  class="w-20 bg-gray-100 border-r fixed top-14 left-0 bottom-10 z-40" >
   </app-sidebar>
 
 
-  <app-sidebar-shell *ngIf="activeSidebar" [activePanel]="activeSidebar" #dynamicSidebar></app-sidebar-shell>
+  <app-sidebar-shell *ngIf="activeSidebar"  #dynamicSidebar></app-sidebar-shell>
 
   <!-- Dynamic Side Panel (Design, Text, etc.) -->
   <!-- <app-template-sidebar *ngIf="activeSidebar === 'design'" #dynamicSidebar
@@ -33,4 +33,4 @@
 </div>
 
 <!-- Fixed Bottom Footer -->
-<app-bottom-bar class="fixed bottom-0 left-20 right-0 z-50 h-10 bg-white border-t" />
+<app-bottom-bar id="footer" class="fixed bottom-0 left-20 right-0 z-50 h-10 bg-white border-t" />

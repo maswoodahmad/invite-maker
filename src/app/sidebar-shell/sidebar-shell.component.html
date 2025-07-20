@@ -6,10 +6,11 @@
 
     <!-- Inner scrollable content -->
     <div class="flex-1 overflow-y-auto">
-      <ng-container [ngSwitch]="activePanel">
+      <ng-container [ngSwitch]="activeSidebar">
         <app-template-sidebar *ngSwitchCase="'design'"></app-template-sidebar>
         <app-element-sidebar *ngSwitchCase="'elements'"></app-element-sidebar>
         <app-text-sidebar *ngSwitchCase="'text'"></app-text-sidebar>
+        <app-page-number-settings *ngSwitchCase = "'pages'"></app-page-number-settings>
 
         <div *ngSwitchDefault class="p-4 text-gray-400">Select a tool</div>
       </ng-container>

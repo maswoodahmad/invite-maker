@@ -5,7 +5,10 @@ import {
   ViewChildren,
   QueryList,
   ElementRef,
-  ViewChild
+  ViewChild,
+  output,
+  Output,
+  EventEmitter
 } from '@angular/core';
 import {
   CommonModule,
@@ -22,11 +25,13 @@ import {
 import {
   CanvasZoomService
 } from '../services/canvas-zoom.service';
+import { PageSizePopupComponent } from '../page-size-popup/page-size-popup.component';
+
 
 @Component({
   selector: 'app-template-sidebar',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, CommonModule],
+  imports: [NgFor, NgIf, FormsModule, CommonModule, PageSizePopupComponent],
   templateUrl: './template-sidebar.component.html',
   styleUrls: ['./template-sidebar.component.scss']
 })
@@ -42,7 +47,10 @@ export class TemplateSidebarComponent implements OnInit {
 
 
 
-contextMenuStyle: { top: string; left: string } = { top: '0px', left: '0px' };
+
+
+
+  contextMenuStyle: { top: string; left: string } = { top: '0px', left: '0px' };
 
   constructor(
     private templateService: TemplateService,
@@ -232,6 +240,8 @@ contextMenuStyle: { top: string; left: string } = { top: '0px', left: '0px' };
     this.openContextTemplate = null;
   }
 
+ 
+
 
 
   toggleContextMenu(event: MouseEvent, template: Template): void {
@@ -255,13 +265,13 @@ contextMenuStyle: { top: string; left: string } = { top: '0px', left: '0px' };
 
 
 
-        const rect = button.getBoundingClientRect();
-        // ... do your logic
-        let menuHeight =   200;
-        if (this.contextMenuRef) {
-           menuHeight = this.contextMenuRef.nativeElement.offsetHeight;
-          console.log('Context menu height:', menuHeight);
-        }
+      const rect = button.getBoundingClientRect();
+      // ... do your logic
+      let menuHeight = 200;
+      if (this.contextMenuRef) {
+        menuHeight = this.contextMenuRef.nativeElement.offsetHeight;
+        console.log('Context menu height:', menuHeight);
+      }
 
 
 
@@ -282,7 +292,7 @@ contextMenuStyle: { top: string; left: string } = { top: '0px', left: '0px' };
 
       this.contextMenuStyle = {
         top: `${top}px`,
-        left: `${left-60}px`
+        left: `${left - 60}px`
       };
     }, 0); // wait for next render so menu DOM is present
   }
@@ -295,4 +305,11 @@ contextMenuStyle: { top: string; left: string } = { top: '0px', left: '0px' };
   handleOutsideClick = () => {
     this.openContextTemplate = null;
   };
+
+
+  showPagePopup = false;
+
+
+
+
 }

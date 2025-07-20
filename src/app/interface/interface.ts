@@ -59,3 +59,27 @@ export interface DesignSize {
   height: number;  // in pixels
   label: string;   // e.g. "A4 (210mm x 297mm)"
 }
+
+export type PageNumberPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
+
+
+export interface CustomFabricObject extends fabric.Object {
+  data?: any;
+  pageNumber?: number;
+  selected?: boolean;
+}
+
+export type SidebarView =
+  | 'design'
+  | 'text'
+  | 'elements'
+  | 'uploads'
+  | 'projects'
+  | 'tools'
+  |'pages'
+  | null;
+
+export interface CustomCanvasObject extends fabric.Canvas {
+  number?: number;
+  selected?: boolean;
+  }

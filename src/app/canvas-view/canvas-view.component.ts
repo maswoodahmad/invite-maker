@@ -11,6 +11,7 @@ import {
   PLATFORM_ID
 } from '@angular/core';
 import * as fabric from 'fabric';
+import { CanvasManagerService } from '../services/canvas-manager.service';
 
 @Component({
   selector: 'app-canvas-view',
@@ -25,8 +26,17 @@ export class CanvasViewComponent implements AfterViewInit {
   @Input() height = 1123;
   @Input() data: any;
 
+
   canvas!: fabric.Canvas;
-  constructor(@Inject(PLATFORM_ID) private platformId: Object,  private canvasService : CanvasService) {}
+  @Input() isActive = false;
+
+
+
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private canvasService: CanvasService,
+    protected canvasManagerService: CanvasManagerService
+  ) { }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -45,6 +55,20 @@ export class CanvasViewComponent implements AfterViewInit {
     }
 
     this.canvasService.setCanvas(this.canvas);
+
+    this.canvasManagerService.registerCanvas(this.canvas);
+
+
+
+    this.canvas.on('mouse:down', (e) => {
+      if (!e.target) {
+        // No object clicked — entire canvas is selected
+        this.canvasManagerService.setActiveCanvas(this.canvas); // still mark it active
+        this.canvasManagerService.setCanvasFocusState('full');
+      } else {
+        this.canvasManagerService.setCanvasFocusState('object');
+      }
+    });
 
     // Optional: Add zoom/pan init here or expose service later
   }

@@ -1,23 +1,39 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CanvasService } from '../services/canvas.service';
-
 
 import * as fabric from 'fabric';
+
+import { CanvasService } from '../services/canvas.service';
+import { CanvasManagerService } from './../services/canvas-manager.service';
+import { SidebarStateService } from '../services/sidebar-state.service';
+
 import { TextPreset, TextPresets } from '../../assets/textPresets';
 
 @Component({
   selector: 'app-text-sidebar',
-  imports: [FormsModule, CommonModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './text-sidebar.component.html',
   styleUrl: './text-sidebar.component.scss'
 })
 export class TextSidebarComponent {
   searchQuery: string = '';
   activeFilter: string | null = null;
+  fontSettings!: TextPreset;
 
-  constructor(private canvasService : CanvasService) {}
+  textItems = [
+    { name: 'Heading', category: 'Default' },
+    { name: 'Subheading', category: 'Default' },
+    { name: 'Body', category: 'Default' },
+    { name: 'Page numbers', category: 'Dynamic' },
+  ];
+
+  constructor(
+    private canvasService: CanvasService,
+    private canvasManagerService: CanvasManagerService,
+    private sidebarState: SidebarStateService
+  ) { }
 
   onSearch() {
     this.activeFilter = this.searchQuery.trim() || null;
@@ -28,14 +44,11 @@ export class TextSidebarComponent {
     this.onSearch();
   }
 
-  textItems = [
-    { name: 'Heading', category: 'Default' },
-    { name: 'Subheading', category: 'Default' },
-    { name: 'Body', category: 'Default' },
-    { name: 'Page numbers', category: 'Dynamic' },
-  ];
-
-  fontSettings!: TextPreset;
+  clearSearch() {
+    this.searchQuery = '';
+    this.activeFilter = null;
+    this.onSearch();
+  }
 
   getFilteredTextItems() {
     return this.textItems.filter(item =>
@@ -43,82 +56,58 @@ export class TextSidebarComponent {
     );
   }
 
-  clearSearch() {
-    this.searchQuery = '';
-    this.activeFilter = null;
-    this.onSearch(); // Optionally reset filtered list
-  }
-
   addTextBox(): void {
-    const canvas = this.canvasService.getCanvas();
-    const defaultFontSettings = {
-      fontSize: 16,
-      fontWeight: 'normal',
-      fill: '#000',
-    };
+    const canvas = this.canvasManagerService.getActiveCanvas();
+    if (!canvas) return;
 
-    if (canvas == null) return;
-    console.log("Canvas:", canvas);
-    console.log("Objects count before add:", canvas.getObjects().length);
+    const lastPosition = this.canvasService.getAndUpdateObjectPosition(canvas);
     const textbox = new fabric.Textbox("Birthday", {
+      left: lastPosition.x,
+      top: lastPosition.y,
       fontFamily: 'PlayList Script',
       fontWeight: '900',
       fontSize: 50,
       textTransform: 'uppercase',
-       left: 100,
-       top: 200,
-      // width: 550,
-      // ...defaultFontSettings,
-      // ...this.fontSettings
-
-    });
-
-    const textbox2 = new fabric.Textbox("Happy", {
-      fontFamily: 'Pacifico',
-      fontSize: 30,
-      fontStyle: 'italic',
-      textTransform: 'uppercase',
-       left: 100,
-       top: 100,
-      // width: 550,
-      // ...defaultFontSettings,
-      // ...this.fontSettings
-
-    });
-
-    textbox.set({
       editable: true,
       selectable: true,
-      evented: true,
+      evented: true
     });
 
-    canvas.setZoom(1);
-
     setTimeout(() => {
-      canvas.add(textbox2)
       canvas.add(textbox);
       canvas.setActiveObject(textbox);
-      console.log("Objects count before add:", canvas.getObjects().length);
       canvas.requestRenderAll();
     }, 100);
-
   }
 
   chooseFontWeight(event: MouseEvent) {
-
-    const label = (event.target as HTMLElement).innerText.trim().toLocaleLowerCase();
+    const label = (event.target as HTMLElement).innerText.trim().toLowerCase();
+    const preset = TextPresets[label];
 
     const canvas = this.canvasService.getCanvas();
-    this.fontSettings = TextPresets[label];
-    if (canvas) {
-      const active = canvas?.getActiveObject() as fabric.Textbox;
-      if (!active) return;
+    const active = canvas?.getActiveObject() as fabric.Textbox;
 
-      active.set("fontSize", this.fontSettings.fontSize);
-      active.set("fontWeight", this.fontSettings.fontSize);
-      canvas.requestRenderAll();
-    }
+    if (!canvas || !active || !preset) return;
 
+    active.set({
+      fontSize: preset.fontSize,
+      fontWeight: preset.fontWeight,
+      fontStyle: preset.fontStyle,
+    });
+
+    canvas.requestRenderAll();
   }
 
+  // Sidebar interactions
+  openSidebar() {
+    this.sidebarState.open('text');
+  }
+
+  togglePages() {
+    this.sidebarState.toggleSidebar('text');
+  }
+
+  openPageSidebar() {
+    this.sidebarState.open('pages');
+  }
 }

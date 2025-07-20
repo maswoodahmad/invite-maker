@@ -32,6 +32,17 @@
     </div>
   </div>
 
+
+  <app-page-size-popup *ngIf="showPagePopup"  (close)="showPagePopup = false">
+  </app-page-size-popup>
+
+  <button class="w-full px-4 py-2 bg-blue-200 text-blue-800 rounded mb-2 flex items-center justify-center gap-2"
+    (click)="showPagePopup = true">
+    <img src="../../assets/icons/add-document.svg" class="w-4 h-4" alt="Text" />
+    Add a custom size page
+  </button>
+
+
   <!-- 🧩 Scrollable Templates Grid -->
   <div class="flex-1 overflow-y-auto px-4 py-2">
     <div class="grid grid-cols-2 gap-2 pr-2">

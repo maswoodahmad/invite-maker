@@ -17,6 +17,8 @@ import { CanvasZoomService } from './services/canvas-zoom.service';
 import { FabricEditorComponent } from './fabric-editor/fabric-editor.component';
 import { CanvasControlService } from './services/canvas-control.service';
 import { SidebarShellComponent } from './sidebar-shell/sidebar-shell.component';
+import { SidebarStateService } from './services/sidebar-state.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -48,7 +50,7 @@ import { SidebarShellComponent } from './sidebar-shell/sidebar-shell.component';
   templateUrl: './app.component.html',
 })
 export class AppComponent implements AfterViewInit {
-  activeSidebar: 'design' | 'text' | 'elements' | 'uploads' | 'projects' | 'tools' | null = null;
+  activeSidebar: 'design' | 'text' | 'elements' | 'uploads' | 'projects' | 'tools' |'pages'| null = null;
   sidebarWidth = 80; // initial icon sidebar width
   @ViewChild(FabricEditorComponent) canvasComponent!: FabricEditorComponent;
 
@@ -57,7 +59,9 @@ export class AppComponent implements AfterViewInit {
 
   templateSidebarWidth: number = 400;
 
-  constructor(private cdr: ChangeDetectorRef, private zoomService: CanvasZoomService, private canvasControlService: CanvasControlService) { }
+  constructor(private cdr: ChangeDetectorRef, private zoomService: CanvasZoomService, private canvasControlService: CanvasControlService,
+    private sidebarService: SidebarStateService
+  ) { }
 
 
 
@@ -67,10 +71,19 @@ export class AppComponent implements AfterViewInit {
   }
 
   private previousSidebarVisible = false;
-
+  private sub = Subscription.EMPTY;
 
   @ViewChild(TemplateSidebarComponent) templateSidebarRef!: TemplateSidebarComponent;
 
+
+  ngOnInit() {
+    this.sub = this.sidebarService.activeSidebar$.subscribe(type => {
+      const wasOpen = this.activeSidebar === type;
+      this.activeSidebar = type;
+
+      setTimeout(() => this.canvasControlService.adjustCanvasPosition(wasOpen), 350);
+    });
+  }
 
 
   // ngAfterViewChecked(): void {
@@ -122,54 +135,15 @@ export class AppComponent implements AfterViewInit {
   //   }, 300); // match your animation duration
   // }
 
-  toggleSidebar(type: typeof this.activeSidebar) {
-    const wasOpen = this.activeSidebar === type;
-    this.activeSidebar = wasOpen ? null : type;
-    setTimeout(() => this.adjustCanvasPosition(wasOpen), 350);
-    // Delay any layout logic to wait for sidebar to appear in DOM
-    // delay must match your animation + DOM render timing
-  }
+  // toggleSidebar(type: typeof this.activeSidebar) {
+  //   const wasOpen = this.activeSidebar === type;
+  //   this.activeSidebar = wasOpen ? null : type;
+  //   setTimeout(() => this.adjustCanvasPosition(wasOpen), 350);
+  //   // Delay any layout logic to wait for sidebar to appear in DOM
+  //   // delay must match your animation + DOM render timing
+  // }
 
-  adjustCanvasPosition(wasOpen: boolean) {
-    const header = document.querySelector('app-header') as HTMLElement;
-    const footer = document.querySelector('app-footer') as HTMLElement;
-    const mainSidebar = document.querySelector('app-sidebar') as HTMLElement;
-    const templateSidebar = document.querySelector('app-template-sidebar') as HTMLElement;
-
-    const headerHeight = header?.offsetHeight || 0;
-    const footerHeight = footer?.offsetHeight || 0;
-    const mainSidebarWidth = mainSidebar?.offsetWidth || 0;
-    const templateSidebarWidth = templateSidebar?.offsetWidth || 340;
-
-    const effectiveTemplateSidebarWidth = wasOpen ? 0 : templateSidebarWidth;
-
-    // Calculate current viewport available to canvas
-    const availableWidth = window.innerWidth - mainSidebarWidth - effectiveTemplateSidebarWidth;
-
-    const availableHeight = window.innerHeight - headerHeight - footerHeight;
-
-    const templateWidth = 794;
-    const templateHeight = 1123;
-
-    if (wasOpen) {
-      this.canvasControlService.restoreCanvasTransform();
-    } else {
-      this.canvasControlService.shiftCanvasIntoViewport(
-        templateWidth,
-        templateHeight,
-        availableWidth,
-        availableHeight
-      );
-      this.canvasControlService.updateToolbarOffset();
-    }
-
-
-    if (wasOpen) {
-      console.log('Sidebar was closed → expanding canvas');
-    } else {
-      console.log('Sidebar was opened → reducing canvas space');
-    }
-  }
+  
 
   updateSidebarWidth() {
     const dynamicEl = this.dynamicSidebarRef?.nativeElement;

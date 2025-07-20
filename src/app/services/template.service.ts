@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { Subject } from "rxjs";
 
 export interface Template
  {
@@ -63,4 +64,14 @@ export class TemplateService {
   getTemplateById(id: string): Template | undefined {
     return this.templates.find(t => t.id === id);
   }
+
+
+  private templateSelectedSource = new Subject<{ width: number; height: number }>();
+  templateSelected$ = this.templateSelectedSource.asObservable();
+
+  emitTemplateSelected(data: { width: number; height: number }) {
+    this.templateSelectedSource.next(data);
+  }
+
+  
 }
