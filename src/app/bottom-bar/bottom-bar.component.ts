@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CanvasZoomService } from '../services/canvas-zoom.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { LayerPanelComponent } from '../canvas/layer-panel.component';
 
 @Component({
   selector: 'app-bottom-bar',

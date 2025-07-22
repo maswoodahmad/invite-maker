@@ -63,10 +63,19 @@ export interface DesignSize {
 export type PageNumberPosition = 'bottom-left' | 'bottom-center' | 'bottom-right';
 
 
+
+
+
 export interface CustomFabricObject extends fabric.Object {
+  id?: string;
+  name?: string;
+  locked?: boolean;
+  hidden?: boolean;
+  selected?: boolean;
+  number?: number;
   data?: any;
   pageNumber?: number;
-  selected?: boolean;
+
 }
 
 export type SidebarView =
@@ -76,10 +85,35 @@ export type SidebarView =
   | 'uploads'
   | 'projects'
   | 'tools'
-  |'pages'
+  | 'pages'
+  |'fonts'
   | null;
 
 export interface CustomCanvasObject extends fabric.Canvas {
   number?: number;
   selected?: boolean;
   }
+
+
+export interface AppFont {
+  name: string; // e.g. 'Roboto'
+  url?: string; // external link if lazy loaded
+  isLoaded?: boolean;
+  isPopular?: boolean;
+  previewText?: string;
+}
+
+export interface AppLanguage {
+  code?: string; // e.g. 'hindi'
+  label: string; // label
+
+}
+
+export interface CanvasLayer {
+  id: string;
+  name?: string;
+  object: fabric.Object;
+  hidden: boolean;
+  locked: boolean;
+  preview?: string; // dataURL or asset
+}

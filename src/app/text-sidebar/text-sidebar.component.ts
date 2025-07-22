@@ -78,6 +78,9 @@ export class TextSidebarComponent {
       canvas.setActiveObject(textbox);
       canvas.requestRenderAll();
     }, 100);
+
+    console.log('Object:', textbox);
+    console.log('Selectable:', textbox.selectable, 'Has controls:', textbox.hasControls);
   }
 
   chooseFontWeight(event: MouseEvent) {
@@ -109,5 +112,9 @@ export class TextSidebarComponent {
 
   openPageSidebar() {
     this.sidebarState.open('pages');
+  }
+
+  openFontComp() {
+    this.sidebarState.open('fonts');
   }
 }

@@ -19,6 +19,7 @@ import { CanvasControlService } from './services/canvas-control.service';
 import { SidebarShellComponent } from './sidebar-shell/sidebar-shell.component';
 import { SidebarStateService } from './services/sidebar-state.service';
 import { Subscription } from 'rxjs';
+import { SidebarView } from './interface/interface';
 
 @Component({
   selector: 'app-root',
@@ -50,7 +51,7 @@ import { Subscription } from 'rxjs';
   templateUrl: './app.component.html',
 })
 export class AppComponent implements AfterViewInit {
-  activeSidebar: 'design' | 'text' | 'elements' | 'uploads' | 'projects' | 'tools' |'pages'| null = null;
+  activeSidebar:SidebarView = null;
   sidebarWidth = 80; // initial icon sidebar width
   @ViewChild(FabricEditorComponent) canvasComponent!: FabricEditorComponent;
 
@@ -143,7 +144,7 @@ export class AppComponent implements AfterViewInit {
   //   // delay must match your animation + DOM render timing
   // }
 
-  
+
 
   updateSidebarWidth() {
     const dynamicEl = this.dynamicSidebarRef?.nativeElement;

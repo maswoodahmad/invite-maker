@@ -58,17 +58,19 @@ export class CanvasViewComponent implements AfterViewInit {
 
     this.canvasManagerService.registerCanvas(this.canvas);
 
+    this.canvasService.initCanvas(this.canvas);
 
 
-    this.canvas.on('mouse:down', (e) => {
-      if (!e.target) {
-        // No object clicked — entire canvas is selected
-        this.canvasManagerService.setActiveCanvas(this.canvas); // still mark it active
-        this.canvasManagerService.setCanvasFocusState('full');
-      } else {
-        this.canvasManagerService.setCanvasFocusState('object');
-      }
-    });
+
+    // this.canvas.on('mouse:down', (e) => {
+    //   if (!e.target) {
+    //     // No object clicked — entire canvas is selected
+    //     this.canvasManagerService.setActiveCanvas(this.canvas); // still mark it active
+    //     this.canvasManagerService.setCanvasFocusState('full');
+    //   } else {
+    //     this.canvasManagerService.setCanvasFocusState('object');
+    //   }
+    // });
 
     // Optional: Add zoom/pan init here or expose service later
   }

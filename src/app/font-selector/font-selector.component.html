@@ -1,0 +1,67 @@
+<div class="w-72 h-full overflow-y-auto bg-white border-r border-gray-200 flex flex-col relative">
+  <!-- Close Button -->
+  <button (click)="onClose()" class="absolute top-2 right-2 text-gray-500 hover:text-black text-xl">
+    &times;
+  </button>
+
+  <!-- Header -->
+  <div class="p-4 border-b">
+    <h2 class="text-lg font-semibold">Fonts</h2>
+  </div>
+
+  <!-- Search + Language Filter -->
+  <div class="px-4 py-2 space-y-3 border-b">
+    <input type="text" [(ngModel)]="searchText" placeholder="Search fonts..."
+      class="w-full p-2 border border-gray-300 rounded-md text-sm" />
+
+    <select [(ngModel)]="selectedLanguage" class="w-full p-2 border border-gray-300 rounded-md text-sm">
+      <option value="">All Languages</option>
+      <option *ngFor="let lang of languageOptions" [value]="lang.code">{{ lang.label }}</option>
+    </select>
+
+    <!-- Price Filter -->
+    <div class="flex items-center gap-3">
+      <label class="flex items-center space-x-1 text-sm">
+        <input type="checkbox" [(ngModel)]="showFree" class="accent-indigo-600" />
+        <span>Free</span>
+      </label>
+      <label class="flex items-center space-x-1 text-sm">
+        <input type="checkbox" [(ngModel)]="showPro" class="accent-indigo-600" />
+        <span>Pro</span>
+      </label>
+    </div>
+
+    <!-- Apply Filters Button -->
+    <button (click)="applyFilters()" class="w-full bg-indigo-600 text-white text-sm py-2 rounded hover:bg-indigo-700">
+      Apply Filters
+    </button>
+  </div>
+
+  <!-- Category Tabs -->
+  <!-- <div class="flex overflow-x-auto border-b text-sm font-medium">
+    <button *ngFor="let cat of categories" (click)="selectedCategory = cat"
+      [class.bg-indigo-100]="selectedCategory === cat" class="px-4 py-2 flex-shrink-0 hover:bg-indigo-50">
+      {{ cat }}
+    </button>
+  </div> -->
+
+  <!-- Font List -->
+  <div class="flex-1 overflow-y-auto divide-y divide-gray-100">
+    <div *ngFor="let font of filteredFonts" class="p-3 hover:bg-gray-50 cursor-pointer" (click)="onFontSelect(font)">
+      <div class="flex justify-between items-center">
+        <div>
+          <p [ngStyle]="{ fontFamily: font.name }" class="text-base leading-snug truncate">
+            {{ font.previewText || font.name }}
+          </p>
+          <p class="text-xs text-gray-500">{{ font.name }}</p>
+        </div>
+        <!-- <span *ngIf="font.price === 'Pro'" class="text-yellow-500 text-xs font-semibold">👑</span> -->
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div *ngIf="isLoadingMore" class="py-4 text-center text-sm text-gray-500">
+      Loading more fonts...
+    </div>
+  </div>
+</div>

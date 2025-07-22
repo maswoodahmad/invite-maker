@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "name": "Roboto",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
+    "previewText": "Roboto"
+  },
+  {
+    "id": "2",
+    "name": "Open Sans",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Open+Sans&display=swap",
+    "previewText": "Open Sans"
+  },
+  {
+    "id": "3",
+    "name": "Lato",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Lato&display=swap",
+    "previewText": "Lato"
+  },
+  {
+    "id": "4",
+    "name": "Montserrat",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Montserrat&display=swap",
+    "previewText": "Montserrat"
+  },
+  {
+    "id": "5",
+    "name": "Poppins",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Poppins&display=swap",
+    "previewText": "Poppins"
+  },
+  {
+    "id": "6",
+    "name": "Merriweather",
+    "category": "serif",
+    "url": "https://fonts.googleapis.com/css2?family=Merriweather&display=swap",
+    "previewText": "Merriweather"
+  },
+  {
+    "id": "7",
+    "name": "Playfair Display",
+    "category": "serif",
+    "url": "https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap",
+    "previewText": "Playfair Display"
+  },
+  {
+    "id": "8",
+    "name": "Raleway",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Raleway&display=swap",
+    "previewText": "Raleway"
+  },
+  {
+    "id": "9",
+    "name": "Oswald",
+    "category": "sans-serif",
+    "url": "https://fonts.googleapis.com/css2?family=Oswald&display=swap",
+    "previewText": "Oswald"
+  },
+  {
+    "id": "10",
+    "name": "Dancing Script",
+    "category": "handwriting",
+    "url": "https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap",
+    "previewText": "Dancing Script"
+  }
+]

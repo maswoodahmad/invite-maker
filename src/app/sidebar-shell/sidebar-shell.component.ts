@@ -8,6 +8,8 @@ import { CanvasControlService } from '../services/canvas-control.service';
 import { SidebarView } from '../interface/interface';
 import { SidebarStateService } from '../services/sidebar-state.service';
 import { PageNumberSettingsComponent } from '../page-number-settings/page-number-settings.component';
+import { FontSelectorComponent } from '../font-selector/font-selector.component';
+
 
 @Component({
   selector: 'app-sidebar-shell',
@@ -16,7 +18,8 @@ import { PageNumberSettingsComponent } from '../page-number-settings/page-number
      ElementSidebarComponent,
      CommonModule,
     TextSidebarComponent,
-     PageNumberSettingsComponent
+    PageNumberSettingsComponent,
+     FontSelectorComponent
 
   ],
   templateUrl: './sidebar-shell.component.html',

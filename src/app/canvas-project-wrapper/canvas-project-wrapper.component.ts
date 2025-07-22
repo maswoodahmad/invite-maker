@@ -7,10 +7,11 @@ import { CanvasViewComponent } from '../canvas-view/canvas-view.component';
 import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
 import { PagesToolbarComponent } from '../pages-toolbar/pages-toolbar.component';
 import { TemplateService } from '../services/template.service';
+import { LayerPanelComponent } from '../canvas/layer-panel.component';
 
 @Component({
   selector: 'app-canvas-project-wrapper',
-  imports: [CommonModule, CanvasViewComponent, AppToolbarComponent, PagesToolbarComponent],
+  imports: [CommonModule, CanvasViewComponent, AppToolbarComponent, PagesToolbarComponent, LayerPanelComponent],
   templateUrl: './canvas-project-wrapper.component.html',
   styleUrl: './canvas-project-wrapper.component.scss'
 })

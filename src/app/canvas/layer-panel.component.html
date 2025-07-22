@@ -1,0 +1,33 @@
+<div class="w-28 bg-white text-gray-900 p-2 h-full overflow-y-auto shadow-md border-r border-gray-200">
+  <h2 class="text-lg font-bold mb-2 flex items-center gap-2">
+    <button (click)="fetchData()">
+      <svg class="w-5 h-5">...</svg>
+      Layers
+    </button>
+  </h2>
+<div *ngIf="isLayerPanelVisible">
+  <div *ngFor="let layer of layers"
+    class="bg-white w-24 h-24 flex justify-center rounded hover:bg-neutral-100 cursor-pointer border border-gray-200"
+    (click)="selectLayer(layer)" cdkDrag>
+
+    <div class="relative w-24 h-24 rounded overflow-hidden bg-checkerboard  shadow-sm">
+      <img [src]="layer.preview" class="w-full h-full object-cover" />
+
+      <!-- Visibility Button -->
+      <button (click)="toggleVisibility(layer, $event)"
+        class="absolute top-1 right-1 bg-white bg-opacity-70 hover:bg-opacity-100 p-1 rounded"
+        title="Toggle Visibility">
+        <img [src]="!layer.hidden ? 'assets/icons/eye.svg' : 'assets/icons/eye-crossed.svg'" class="w-4 h-4" />
+      </button>
+
+      <!-- Lock/Unlock Button -->
+      <button (click)="toggleLock(layer, $event)"
+        class="absolute bottom-1 right-1 bg-white bg-opacity-70 hover:bg-opacity-100 p-1 rounded" title="Toggle Lock">
+        <img [src]="layer.locked ? 'assets/icons/padlock-check.svg' : 'assets/icons/lock-open-alt.svg'"
+          class="w-4 h-4" />
+      </button>
+    </div>
+
+  </div>
+</div>
+</div>
