@@ -9,6 +9,7 @@ import { CanvasManagerService } from './../services/canvas-manager.service';
 import { SidebarStateService } from '../services/sidebar-state.service';
 
 import { TextPreset, TextPresets } from '../../assets/textPresets';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-text-sidebar',
@@ -72,6 +73,8 @@ export class TextSidebarComponent {
       selectable: true,
       evented: true
     });
+
+    (textbox as any).id = uuidv4();
 
     setTimeout(() => {
       canvas.add(textbox);

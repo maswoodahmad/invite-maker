@@ -1,5 +1,5 @@
+import { SidebarView } from './../interface/interface';
 import { BehaviorSubject } from "rxjs";
-import { SidebarView } from "../interface/interface";
 import { Injectable } from "@angular/core";
 
 @Injectable({
@@ -13,8 +13,8 @@ export class SidebarStateService {
     return this.activeSidebarSubject.getValue();
   }
 
-  close() {
-    this.activeSidebarSubject.next(null);
+  close(view: SidebarView) {
+    this.activeSidebarSubject.next(view);
   }
 
   open(view: SidebarView) {

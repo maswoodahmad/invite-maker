@@ -75,6 +75,7 @@ export interface CustomFabricObject extends fabric.Object {
   number?: number;
   data?: any;
   pageNumber?: number;
+  tyep?: string;
 
 }
 
@@ -117,3 +118,6 @@ export interface CanvasLayer {
   locked: boolean;
   preview?: string; // dataURL or asset
 }
+
+
+export type ToolbarMode = 'text' | 'image' | 'shape' | 'page' | null;

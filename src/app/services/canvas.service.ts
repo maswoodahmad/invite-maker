@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import * as fabric from 'fabric';
+import { v4 as uuidv4 } from 'uuid';
 import {
   CanvasLayer,
   CustomFabricObject,
@@ -16,16 +17,18 @@ export class CanvasService {
   lastPosition = { x: 100, y: 100 };
   offsetStep = 30;
 
-  setCanvas(canvas: fabric.Canvas) {
-    this.canvasSignal.set(canvas);
 
-    // Setup event listeners for layer tracking
-    canvas.on('object:added', () => this.refreshLayers());
-    canvas.on('object:removed', () => this.refreshLayers());
-    canvas.on('object:modified', () => this.refreshLayers());
 
-    // Initial fetch
-    this.refreshLayers();
+  readonly activeObjectSignal = signal<fabric.Object | null >(null);
+
+
+
+
+
+
+  setCanvas(canvas: fabric.Canvas|null) {
+    this.initCanvas(canvas);
+
   }
 
   getCanvas(): fabric.Canvas | null {
@@ -136,6 +139,8 @@ export class CanvasService {
     this.layersSignal.set(layers);
   }
 
+
+
   selectObject(obj: CustomFabricObject) {
     this.getCanvas()?.setActiveObject(obj);
     this.getCanvas()?.renderAll();
@@ -153,21 +158,17 @@ export class CanvasService {
 
     if (isLocked) {
       this.unlockObject(obj);
-      return !isLocked;
-
+      } else {
+      this.lockObject(obj);
     }
 
-    obj.selectable = isLocked;
-    obj.evented = !isLocked;
-    obj.lockMovementX = !isLocked;
-    obj.lockMovementY = !isLocked;
 
-    // ✅ Resizing
-    obj.lockScalingX = !isLocked;
-    obj.lockScalingY = !isLocked;
-    obj.hasControls = !isLocked;
 
-    this.getCanvas()?.renderAll();
+    const canvas = this.getCanvas();
+
+    canvas?.discardActiveObject(); // 🧼 Clear any existing selection
+    canvas?.setActiveObject(obj);
+    canvas?.renderAll();
     this.refreshLayers(); // Update lock state in layers
     return !isLocked;
   }
@@ -221,13 +222,33 @@ export class CanvasService {
 
 
 
-  initCanvas(canvas: fabric.Canvas) {
+
+  initCanvas(canvas: fabric.Canvas | null) {
+    if (!canvas) return;
+
     this.canvasSignal.set(canvas);
 
     canvas.on('object:added', () => this.refreshLayers());
     canvas.on('object:removed', () => this.refreshLayers());
     canvas.on('object:modified', () => this.refreshLayers());
+
+    // Track active object on selection
+    canvas.on('selection:created', (e) => {
+      const active = e.selected?.[0] || null;
+      this.activeObjectSignal.set(active);
+    });
+
+    canvas.on('selection:updated', (e) => {
+      const active = e.selected?.[0] || null;
+      this.activeObjectSignal.set(active);
+    });
+
+    canvas.on('selection:cleared', () => {
+      this.activeObjectSignal.set(null);
+    });
   }
+
+
 
 
 
@@ -250,11 +271,52 @@ export class CanvasService {
     obj.lockScalingY = false;
     obj.lockRotation = false;
 
-
-  this.getCanvas()?.renderAll();
-  this.refreshLayers(); // Update lock state in layers
+    this.getCanvas()?.discardActiveObject();
+    this.getCanvas()?.setActiveObject(obj);
+    this.getCanvas()?.renderAll();
+    this.refreshLayers(); // Update lock state in layers
   return !isLocked;
-}
+  }
+
+
+  lockObject(obj: fabric.Object): boolean {
+    const isLocked = obj.lockMovementX && obj.lockMovementY;
+
+
+
+    obj.selectable = false;
+    obj.evented = false;
+
+    obj.hasControls = false;
+    obj.hasBorders = true;
+
+    obj.lockMovementX = true;
+    obj.lockMovementY = true;
+    obj.lockScalingX = true;
+    obj.lockScalingY = true;
+    obj.lockRotation = true;
+
+    this.getCanvas()?.discardActiveObject();
+    this.getCanvas()?.setActiveObject(obj);
+    this.getCanvas()?.renderAll();
+    this.refreshLayers(); // Update lock state in layers
+    return !isLocked;
+  }
+
+
+
+  getObjectById(id: string): fabric.Object | undefined {
+    const canvas = this.getCanvas();
+    if (!canvas) return;
+
+    return canvas.getObjects().find(obj => (obj as any).id === id);
+  }
+
+
+
+
+
+
 
 
 }

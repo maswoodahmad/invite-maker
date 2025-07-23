@@ -80,7 +80,7 @@ export class FontSelectorComponent implements OnInit {
 
 
   onClose() {
-    this.sidebarState.close();
+    this.sidebarState.close('text');
   }
 
   applyFilters() { }

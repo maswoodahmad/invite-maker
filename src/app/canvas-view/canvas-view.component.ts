@@ -8,10 +8,12 @@ import {
   Input,
   ChangeDetectionStrategy,
   Inject,
-  PLATFORM_ID
+  PLATFORM_ID,
+  HostListener
 } from '@angular/core';
 import * as fabric from 'fabric';
 import { CanvasManagerService } from '../services/canvas-manager.service';
+import { CanvasClipboardService } from '../services/canvas-clipboard.service';
 
 @Component({
   selector: 'app-canvas-view',
@@ -35,7 +37,8 @@ export class CanvasViewComponent implements AfterViewInit {
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private canvasService: CanvasService,
-    protected canvasManagerService: CanvasManagerService
+    protected canvasManagerService: CanvasManagerService,
+    private canvasClipboardService: CanvasClipboardService
   ) { }
 
   ngAfterViewInit(): void {
@@ -89,5 +92,58 @@ export class CanvasViewComponent implements AfterViewInit {
       transition: 'transform 0.3s ease'
     };
     console.log('Shifted canvas by:', shiftAmount);
+  }
+
+
+  @HostListener('window:keydown.control.c', ['$event'])
+  handleCopy(e: KeyboardEvent) {
+    e.preventDefault();
+    console.log("copy pressed");
+    this.canvasClipboardService.copy(this.canvas);
+  }
+
+  @HostListener('window:keydown.control.x', ['$event'])
+  handleCut(e: KeyboardEvent) {
+    e.preventDefault();
+    console.log("cut pressed");
+    this.canvasClipboardService.cut(this.canvas);
+  }
+
+  @HostListener('window:keydown.control.v', ['$event'])
+  handlePaste(e: KeyboardEvent) {
+    e.preventDefault();
+    console.log("paste pressed");
+    this.canvasClipboardService.paste(this.canvas);
+  }
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (event.ctrlKey || event.metaKey) {
+      switch (event.key.toLowerCase()) {
+        case 'c':
+          event.preventDefault();
+          this.canvasClipboardService.copy(this.canvas);
+          break;
+        case 'x':
+          event.preventDefault();
+          this.canvasClipboardService.cut(this.canvas);
+          break;
+        case 'v':
+          event.preventDefault();
+          this.canvasClipboardService.paste(this.canvas);
+          break;
+        case 'backspace':
+          event.preventDefault();
+          this.canvasClipboardService.deleteSelected(this.canvas);
+          break;
+      }
+    }
+  }
+
+  ngOnDestroy() {
+    const canvas = this.canvasService.getCanvas();
+    if (canvas) {
+      canvas.dispose(); // Properly destroy canvas and remove listeners
+      this.canvasService.setCanvas(null); // Clear signal to avoid stale state
+    }
   }
 }

@@ -43,7 +43,7 @@ export class PageNumberSettingsComponent {
   }
 
   closeSidebar() {
-    this.sidebarState.close();
+    this.sidebarState.close('text');
   }
 
   pageSelection() {

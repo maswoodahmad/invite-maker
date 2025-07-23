@@ -1,40 +1,31 @@
-<!-- Canvas scroll area -->
+<!-- Floating toolbar and layer panel (always visible) -->
+<div class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-4 right-6 top-20"
+  [ngStyle]="transformStyleForToolbar">
+  <app-layer-panel></app-layer-panel>
+
+  <app-app-toolbar *ngIf="canvasService.activeObjectSignal()" [mode]="activeObjectType()"></app-app-toolbar>
+</div>
+
+<!-- Scrollable canvas area -->
 <div #scrollWrapper class="canvas-scroll-wrapper overflow-auto bg-gray-100" style="height: calc(100vh - 56px - 48px)">
   <div class="flex justify-center relative">
-
-
-    <div class="fixed z-20 transition-all duration-300 flex items-start gap-4" [ngStyle]="{
-          top: '64px',
-          left: '10%',
-          transform: 'translateX(' + toolbarOffset + 'px) scale(0.9)'
-        }" [ngStyle]="transformStyleForToolbar">
-      <app-app-toolbar [mode]="'text'"></app-app-toolbar>
-      <app-layer-panel></app-layer-panel>
-      </div>
-
     <div class="canvas-project-container" [ngStyle]="transformStyle"
       [ngStyle]="{ transform: 'translateX(' + sidebarOffset + 'px)' }">
 
-      <!-- Pages Toolbar -->
 
-
-      <!-- Pages -->
       <ng-container *ngFor="let page of pages">
-        <!-- <app-fabric-editor [template]="page.template" [data]="page.data"></app-fabric-editor> -->
+        <ng-container *ngIf="pages.length>1">
         <app-pages-toolbar (addPage)="addPage()" (deletePage)="onDeletePage()" (duplicatePage)="onDuplicatePage()"
-          (renamePage)="onRenamePage()">
-        </app-pages-toolbar>
-
-        <app-canvas-view [width]="pageWidth" [height]="pageHeight" [data]="pageData"></app-canvas-view>
+          (renamePage)="onRenamePage()"></app-pages-toolbar>
       </ng-container>
+        <app-canvas-view [width]="pageWidth" [height]="pageHeight" [data]="pageData"></app-canvas-view>
 
-      <!-- Add page button -->
+</ng-container>
       <div class="flex justify-center mt-6">
         <button (click)="addPage()" class="bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
           ➕ Add Page
         </button>
       </div>
-
     </div>
   </div>
 </div>

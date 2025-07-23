@@ -1,13 +1,16 @@
 
 import { CanvasControlService } from './../services/canvas-control.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, ElementRef, HostListener, Inject, Input, PLATFORM_ID, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, HostListener, Inject, Input, PLATFORM_ID, Signal, ViewChild } from '@angular/core';
 import { FabricEditorComponent } from '../fabric-editor/fabric-editor.component';
 import { CanvasViewComponent } from '../canvas-view/canvas-view.component';
 import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
 import { PagesToolbarComponent } from '../pages-toolbar/pages-toolbar.component';
 import { TemplateService } from '../services/template.service';
 import { LayerPanelComponent } from '../canvas/layer-panel.component';
+import { CanvasService } from '../services/canvas.service';
+import * as fabric from 'fabric'
+import { CustomFabricObject, ToolbarMode } from '../interface/interface';
 
 @Component({
   selector: 'app-canvas-project-wrapper',
@@ -17,11 +20,16 @@ import { LayerPanelComponent } from '../canvas/layer-panel.component';
 })
 export class CanvasProjectWrapperComponent {
   @ViewChild('scrollWrapper') scrollWrapperRef!: ElementRef<HTMLDivElement>;
+  activeObjectType!: Signal<ToolbarMode>;
 
   constructor(private canvasControlService: CanvasControlService, private templateService: TemplateService,
+    public canvasService: CanvasService,
+    @Inject(PLATFORM_ID) private platformId: Object,
 
-    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
+
+
+
 
 
   ngOnInit() {
@@ -34,6 +42,22 @@ export class CanvasProjectWrapperComponent {
     setTimeout(() => {
       this.calculateAndShiftCanvas();
     })
+    this.activeObjectType = computed((): ToolbarMode => {
+      const obj = this.canvasService.activeObjectSignal();
+      if (!obj) return null;
+
+      if (obj instanceof fabric.Textbox) return 'text';
+      if (obj instanceof fabric.Image) return 'image';
+      if (obj instanceof fabric.Rect || obj instanceof fabric.Circle) return 'shape';
+      // Add page-related check if needed
+      return null;
+    });
+
+
+
+
+
+
   }
 
   ngAfterViewInit() {
@@ -41,6 +65,13 @@ export class CanvasProjectWrapperComponent {
     this.canvasControlService.registerInstance(this);
 
   }
+
+  isLayerPanelVisible = false;
+
+ 
+
+
+
 
   pageNames: string[] = [];
 
@@ -105,6 +136,8 @@ export class CanvasProjectWrapperComponent {
     const header = document.getElementById('header');
     const footer = document.getElementById('footer');
     const sidebar = document.getElementById('sidebar');
+
+
 
     const headerHeight = header?.offsetHeight || 0;
     const footerHeight = footer?.offsetHeight || 0;

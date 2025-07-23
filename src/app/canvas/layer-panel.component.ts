@@ -1,6 +1,6 @@
 import { Component, inject, Input, Signal, computed } from '@angular/core';
 import { CanvasService } from '../services/canvas.service';
-import { CanvasLayer } from '../interface/interface';
+import { CanvasLayer, CustomFabricObject } from '../interface/interface';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -16,15 +16,19 @@ export class LayerPanelComponent {
   isLocked = false;
   isVisible = true;
 
+  layerText = "";
+
   isLayerPanelVisible = false;
 
-  fetchData() {
-    this.layers;
+
+
+
+  toggleLayerPanel() {
     this.isLayerPanelVisible = !this.isLayerPanelVisible;
+    this.layerText = this.layerText.length == 0 ? "Layers" : "";
   }
 
   get layers() {
-
     return this.layersSignal();
   }
 
@@ -42,6 +46,6 @@ export class LayerPanelComponent {
   toggleLock(layer: CanvasLayer, event: Event) {
     event.stopPropagation();
 
-   this.isLocked =  this.canvasService.toggleLock(layer.object);
+    this.isLocked = this.canvasService.toggleLock(layer.object);
   }
 }

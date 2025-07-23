@@ -41,9 +41,18 @@ export class SidebarShellComponent {
   ngOnInit() {
     this.sidebarState.activeSidebar$.subscribe((view: SidebarView | null) => {
       const wasOpen = this.activeSidebar !== null;
+      const isOpen = view !== null;
+
+      const visibilityChanged = wasOpen !== isOpen;
+
       this.activeSidebar = view;
-      setTimeout(() => this.adjustCanvasPosition(wasOpen), 350);
+
+      
+      if (visibilityChanged) {
+        setTimeout(() => this.adjustCanvasPosition(wasOpen), 350);
+      }
     });
+
   }
 
 

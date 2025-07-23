@@ -1,8 +1,8 @@
-<div class="w-28 bg-white text-gray-900 p-2 h-full overflow-y-auto shadow-md border-r border-gray-200">
-  <h2 class="text-lg font-bold mb-2 flex items-center gap-2">
-    <button (click)="fetchData()">
-      <svg class="w-5 h-5">...</svg>
-      Layers
+<div id="layer" class="bg-white text-gray-900 p-2 h-full right-0  overflow-y-auto shadow-md border-r border-gray-200 cursor-pointer">
+  <h2 class="text-lg font-bold mb-2">
+    <button (click)="toggleLayerPanel()" class="flex items-center gap-2 cursor-pointer">
+      <img src="assets/icons/layers.svg" alt="layers"  class="w-4 h-4">
+      {{layerText}}
     </button>
   </h2>
 <div *ngIf="isLayerPanelVisible">
