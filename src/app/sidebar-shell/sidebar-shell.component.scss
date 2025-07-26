@@ -14,3 +14,8 @@
 :host {
   display: block;
 }
+
+.scrollable {
+  -webkit-overflow-scrolling: touch; /* Enables momentum scrolling */
+   -webkit-overflow-scrolling: touch;
+}

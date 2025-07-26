@@ -1,3 +1,4 @@
+import { CanvasService } from './services/canvas.service';
 import {
   Component,
   ViewChild,
@@ -20,6 +21,10 @@ import { SidebarShellComponent } from './sidebar-shell/sidebar-shell.component';
 import { SidebarStateService } from './services/sidebar-state.service';
 import { Subscription } from 'rxjs';
 import { SidebarView } from './interface/interface';
+
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+
+
 
 @Component({
   selector: 'app-root',
@@ -55,21 +60,31 @@ export class AppComponent implements AfterViewInit {
   sidebarWidth = 80; // initial icon sidebar width
   @ViewChild(FabricEditorComponent) canvasComponent!: FabricEditorComponent;
 
+  readonly A4_WIDTH = 794;
+  readonly A4_HEIGHT = 1123;
+
+
+
 
   @ViewChild('dynamicSidebar') dynamicSidebarRef!: ElementRef<HTMLElement>;
 
   templateSidebarWidth: number = 400;
 
   constructor(private cdr: ChangeDetectorRef, private zoomService: CanvasZoomService, private canvasControlService: CanvasControlService,
-    private sidebarService: SidebarStateService
+    public sidebarService: SidebarStateService,
+    private breakpointObserver: BreakpointObserver,
+    private canvasService : CanvasService
   ) { }
 
 
 
   ngAfterViewInit(): void {
     // Wait for sidebar to render
-    setTimeout(() => this.updateSidebarWidth(), 50);
+    //setTimeout(() => this.updateSidebarWidth(), 50);
+    
   }
+
+  isMobile = false;
 
   private previousSidebarVisible = false;
   private sub = Subscription.EMPTY;
@@ -78,71 +93,25 @@ export class AppComponent implements AfterViewInit {
 
 
   ngOnInit() {
-    this.sub = this.sidebarService.activeSidebar$.subscribe(type => {
-      const wasOpen = this.activeSidebar === type;
-      this.activeSidebar = type;
+    // this.sidebarService.activeSidebar$.subscribe((type) => {
+    //   const isOpen = type != null;
+    //   this.canvasControlService.adjustCanvasPosition(isOpen);
+    // });
 
-      setTimeout(() => this.canvasControlService.adjustCanvasPosition(wasOpen), 350);
+
+
+
+    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+      this.isMobile = result.matches;
     });
+
+
   }
 
 
-  // ngAfterViewChecked(): void {
-  //   const sideToolBar = document.querySelector('app-template-sidebar') as HTMLElement;
 
-  //   const isNowVisible = !!sideToolBar;
-  //   if (isNowVisible && !this.previousSidebarVisible) {
-  //     // Sidebar just became visible
 
-  //     this.templateSidebarWidth = sideToolBar.offsetWidth;
 
-  //     const mainSidebar = document.querySelector('app-sidebar') as HTMLElement;
-  //     const mainSidebarWidth = mainSidebar?.offsetWidth || 0;
-
-  //     const templateWidth = 794;
-  //     const templateHeight = 1123;
-
-  //     this.canvasControlService.shiftCanvasIntoViewport(
-  //       templateWidth,
-  //       templateHeight,
-  //       mainSidebarWidth,
-  //       this.templateSidebarWidth
-  //     );
-  //   }
-
-  //   this.previousSidebarVisible = isNowVisible;
-  // }
-
-  // toggleSidebar(type: typeof this.activeSidebar) {
-  //   this.activeSidebar = this.activeSidebar === type ? null : type;
-
-  //   // Wait for DOM to reflect sidebar visibility
-  //   setTimeout(() => {
-  //     const mainSidebar = document.querySelector('app-sidebar') as HTMLElement;
-  //     const mainSidebarWidth = mainSidebar?.offsetWidth || 0;
-
-  //     const templateSidebarWidth =
-  //       this.templateSidebarRef?.nativeElement?.offsetWidth || 0;
-
-  //     const templateWidth = 794;
-  //     const templateHeight = 1123;
-
-  //     this.canvasControlService.shiftCanvasIntoViewport(
-  //       templateWidth,
-  //       templateHeight,
-  //       mainSidebarWidth,
-  //       templateSidebarWidth
-  //     );
-  //   }, 300); // match your animation duration
-  // }
-
-  // toggleSidebar(type: typeof this.activeSidebar) {
-  //   const wasOpen = this.activeSidebar === type;
-  //   this.activeSidebar = wasOpen ? null : type;
-  //   setTimeout(() => this.adjustCanvasPosition(wasOpen), 350);
-  //   // Delay any layout logic to wait for sidebar to appear in DOM
-  //   // delay must match your animation + DOM render timing
-  // }
 
 
 
@@ -156,9 +125,6 @@ export class AppComponent implements AfterViewInit {
     this.cdr.markForCheck(); // ensures Angular reflects new layout
   }
 
-  getCanvasMarginLeft(): string {
-    return `${this.sidebarWidth}px`;
-  }
 
 
 }

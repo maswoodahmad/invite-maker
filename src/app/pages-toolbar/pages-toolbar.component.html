@@ -1,7 +1,121 @@
-<!-- pages-toolbar.component.html -->
-<div class="flex gap-2 mb-4">
-  <button (click)="addPage.emit()">➕ New Page</button>
-  <button (click)="duplicatePage.emit()">📄 Duplicate</button>
-  <button (click)="deletePage.emit()">🗑️ Delete</button>
-  <button (click)="rename()">✏️ Rename</button>
+<div class="flex flex-row-reverse justify-between items-center mb-4 gap-4">
+  <!-- Right Side: Action Buttons -->
+  <div class="flex items-center gap-2 w-auto flex-shrink-0">
+    <ng-container *ngIf="totalPages >1 ">
+      <div class="relative group">
+        <button [disabled]="pageNumber == 1" (click)="moveUp.emit()" class="px-2 py-1 text-sm cursor-pointer hover:bg-gray-100
+            disabled:opacity-50 disabled:cursor-not-allowed">
+          <img src="assets/icons/up.svg" alt="move page up" class="w-6 h-6">
+        </button>
+        <!-- Tooltip -->
+        <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+               bg-gray-800 text-white text-xs rounded px-3 py-1
+               whitespace-nowrap min-w-[100px] text-center
+               opacity-0 group-hover:opacity-100 transition-opacity duration-100
+               pointer-events-none z-50">
+          Move up
+        </div>
+      </div>
+      <div class="relative group">
+        <button [disabled]="pageNumber === totalPages" (click)="moveDown.emit()" class="px-2 py-1 text-sm cursor-pointer hover:bg-gray-100
+            disabled:opacity-50 disabled:cursor-not-allowed">
+          <img src="assets/icons/down.svg" alt="move page down" class="w-6 h-6">
+        </button>
+        <!-- Tooltip -->
+        <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+               bg-gray-800 text-white text-xs rounded px-3 py-1
+               whitespace-nowrap min-w-[100px] text-center
+               opacity-0 group-hover:opacity-100 transition-opacity duration-100
+               pointer-events-none z-50">
+          Move Down
+        </div>
+      </div>
+      <div class="relative group">
+        <button (click)="onHideClick()" class="px-2 py-1  hover:bg-gray-100 text-sm cursor-pointer">
+          <img [src]="isHidden? 'assets/icons/eye.svg' : 'assets/icons/eye-crossed.svg'" class="w-6 h-6 ">
+        </button>
+        <!-- Tooltip -->
+        <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+               bg-gray-800 text-white text-xs rounded px-3 py-1
+               whitespace-nowrap min-w-[80px] text-center
+               opacity-0 group-hover:opacity-100 transition-opacity duration-100
+               pointer-events-none z-50">
+          {{ isHidden ? 'Unhide page' : 'Hide Page' }}
+        </div>
+      </div>
+
+
+
+
+
+      <div class="relative group">
+        <button (click)="deletePage.emit()" class="px-2 py-1  hover:bg-gray-100 text-sm cursor-pointer">
+          <img src="assets/icons/trash.svg" alt="move page down" class="w-6 h-6">
+        </button>
+        <!-- Tooltip -->
+        <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+               bg-gray-800 text-white text-xs rounded px-3 py-1
+               whitespace-nowrap min-w-[80px] text-center
+               opacity-0 group-hover:opacity-100 transition-opacity duration-100
+               pointer-events-none z-50">
+          Delete page
+        </div>
+      </div>
+    </ng-container>
+
+
+      <div  class="relative group">
+        <button (click)="onLock()" class="px-2 py-1  hover:bg-gray-100 text-sm cursor-pointer">
+          <img [src]="isLocked ? 'assets/icons/unlock.svg' : 'assets/icons/padlock-check.svg'" class="w-6 h-6 ">
+        </button>
+        <!-- Tooltip -->
+        <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+                             bg-gray-800 text-white text-xs rounded px-3 py-1
+                             whitespace-nowrap min-w-[80px] text-center
+                             opacity-0 group-hover:opacity-100 transition-opacity duration-100
+                             pointer-events-none z-50">
+          {{ !isLocked ? 'Unlock page' : 'Lock Page' }}
+        </div>
+      </div>
+
+
+    <div class="relative group">
+      <button (click)="duplicatePage()" class="px-2 py-1  hover:bg-gray-100 text-sm cursor-pointer">
+        <img src="assets/icons/duplicate.svg" alt="move page down" class="w-6 h-6">
+      </button>
+      <!-- Tooltip -->
+      <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+            bg-gray-800 text-white text-xs rounded px-3 py-1
+            whitespace-nowrap min-w-[80px] text-center
+            opacity-0 group-hover:opacity-100 transition-opacity duration-100
+            pointer-events-none z-50">
+        Duplicate page
+      </div>
+    </div>
+    <div class="relative group">
+      <button (click)="addPage.emit()" class="px-2 py-1 hover:bg-gray-100 text-sm cursor-pointer">
+        <img src="assets/icons/add.svg" alt="Add Page" class="w-6 h-6" />
+      </button>
+      <!-- Tooltip -->
+      <div class="absolute bottom-full mb-1 left-1/2 -translate-x-1/2
+            bg-gray-800 text-white text-xs rounded px-3 py-1
+            whitespace-nowrap min-w-[80px] text-center
+            opacity-0 group-hover:opacity-100 transition-opacity duration-100
+            pointer-events-none z-50">
+        Add Page
+      </div>
+    </div>
+  </div>
+  <ng-container *ngIf="totalPages >1">
+    <!-- Left Side: Page Info -->
+  <div class="flex items-center gap-2 w-1/2 min-w-0">
+    <span class="whitespace-nowrap text-sm font-medium font-bold">Page-{{ pageNumber }}</span>
+    <textarea [(ngModel)]="value" (focus)="onFocus()" (blur)="onBlur()"
+      [ngClass]="{ 'text-gray-400': !typed, 'text-black': typed, 'font-bold': typed }"
+      [attr.placeholder]="placeHolderText"
+      class="border-b border-dashed border-gray-500 h-8 px-2 text-sm leading-[1.8rem] pb-0 pt-[2px] resize-none w-52"
+      rows="1">
+    </textarea>
+  </div>
+  </ng-container>
 </div>

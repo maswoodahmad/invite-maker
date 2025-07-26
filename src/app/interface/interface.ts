@@ -1,3 +1,4 @@
+
 // Core types representing a multi-page design project
 import * as fabric from 'fabric';
 export interface DesignProject {
@@ -121,3 +122,34 @@ export interface CanvasLayer {
 
 
 export type ToolbarMode = 'text' | 'image' | 'shape' | 'page' | null;
+
+
+export interface SidebarItem {
+  key: SidebarView;
+  label: string;
+  icon: string;
+}
+
+export const SIDEBAR_ITEMS = [
+  { key: 'design', label: 'Design', icon: 'assets/icons/web-design.svg' },
+  { key: 'elements', label: 'Elements', icon: 'assets/icons/elements.svg' },
+  { key: 'text', label: 'Text', icon: 'assets/icons/text.svg' },
+  { key: 'uploads', label: 'Uploads', icon: 'assets/icons/upload.svg' },
+  { key: 'projects', label: 'Projects', icon: 'assets/icons/folder.svg' },
+  { key: 'tools', label: 'Tools', icon: 'assets/icons/tools.svg' }
+] as const satisfies SidebarItem[];
+
+export interface CanvasPage {
+  id:   string;                  // Can use UUID if needed
+  title?: string;                       // Page title
+  template?: string;                    // e.g., 'A4', 'Poster'
+  width?: number;                       // Optional custom size
+  height?: number;
+  layers?: CanvasLayer[];              // Optional if you track layers separately
+  data?: any;                           // fabric.Canvas JSON or state
+  createdBy?: string;                   // Optional: user ID or name
+  createdAt?: Date;                     // Timestamp
+  updatedAt?: Date;                     // Last modified
+  isVisible?: boolean;                  //to check if needed to export or download
+  isLocked?: boolean;                   // to check if object is modifiable
+}

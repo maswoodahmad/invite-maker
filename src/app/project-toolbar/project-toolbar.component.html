@@ -1,47 +1,37 @@
-<div class="sticky top-0 z-50 w-full bg-white border-b px-4 py-2 flex items-center justify-between shadow-sm">
-  <!-- Left section: Project Info -->
-  <div class="flex items-center gap-4">
+<div
+  class="sticky top-0 z-50 w-full bg-white   px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-sm gap-2">
+
+  <!-- Top Row: Project Info -->
+  <div class="flex flex-wrap items-center gap-2 sm:gap-4">
     <input [(ngModel)]="projectName"
-      class="text-lg font-semibold border-none focus:outline-none focus:ring-0 bg-transparent"
+      class="text-base sm:text-lg font-semibold border-none focus:outline-none focus:ring-0 bg-transparent"
       placeholder="Untitled Project" />
 
-    <button (click)="renameProject()" class="text-sm text-blue-600 hover:underline">Rename</button>
+    <button (click)="renameProject()" class="text-xs sm:text-sm text-blue-600 hover:underline">Rename</button>
 
-    <span class="text-gray-400 text-sm">|</span>
+    <span class="hidden sm:inline text-gray-400 text-sm">|</span>
 
-    <span class="text-sm text-gray-500">Last saved: {{ lastSaved | date:'short' }}</span>
+    <span class="hidden sm:inline text-sm text-gray-500">Last saved: {{ lastSaved | date:'short' }}</span>
   </div>
 
-  <!-- Right section: Actions -->
-  <div class="flex items-center gap-3">
-    <button class="text-sm hover:underline" (click)="undo()">Undo</button>
-    <button class="text-sm hover:underline" (click)="redo()">Redo</button>
+  <!-- Bottom Row: Action buttons -->
+  <div class="flex flex-wrap items-center gap-2 sm:gap-3 justify-end text-sm">
+    <button class="hover:underline hidden sm:inline" (click)="undo()">Undo</button>
+    <button class="hover:underline hidden sm:inline" (click)="redo()">Redo</button>
 
-    <button class="text-sm hover:underline" (click)="duplicateProject()">Duplicate</button>
-    <button class="text-sm hover:underline text-red-500" (click)="deleteProject()">Delete</button>
+    <button class="hover:underline hidden sm:inline" (click)="duplicateProject()">Duplicate</button>
+    <button class="hover:underline hidden sm:inline text-red-500" (click)="deleteProject()">Delete</button>
 
-    <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded text-sm" (click)="saveProject()">Save</button>
-
-    <!-- <select [(ngModel)]="selectedSize" (change)="onSizeChange()">
-      <option *ngFor="let size of sizes" [value]="size.name">{{ size.label }}</option>
-    </select> -->
-
-    <!-- Show inputs for custom size only -->
-    <!-- <div *ngIf="selectedSize === 'Custom'" class="flex gap-2 mt-2">
-      <input type="number" [(ngModel)]="customWidth" placeholder="Width (px)" class="border p-1 w-28" />
-      <input type="number" [(ngModel)]="customHeight" placeholder="Height (px)" class="border p-1 w-28" />
-      <button (click)="applyCustomSize()" class="bg-blue-500 text-white px-3 py-1 rounded">Apply</button>
-      </div> -->
-
+    <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded" (click)="saveProject()">Save</button>
 
     <div class="relative">
-      <button class="text-sm hover:underline" (click)="toggleShareMenu()">Share</button>
-      <!-- Add dropdown here if needed -->
+      <button class="hover:underline" (click)="toggleShareMenu()">Share</button>
     </div>
 
-    <div class="flex items-center gap-2">
+    <!-- User Info (avatar + name) -->
+    <div class="hidden sm:flex items-center gap-2">
       <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" class="w-6 h-6 rounded-full" />
-      <span class="text-sm text-gray-600">User Name</span>
+      <span class="text-gray-600">User Name</span>
     </div>
   </div>
 </div>

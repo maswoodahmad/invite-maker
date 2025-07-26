@@ -1,36 +1,31 @@
-<!-- Fixed Top Header -->
-<app-project-toolbar id= "header" class="fixed top-0 left-0 right-0 z-50 h-14" />
+<!-- Fixed Header -->
+<app-project-toolbar id="app-header" class="fixed top-0 border-b left-0 right-0 z-50 h-14" />
 
-<!-- Main layout area -->
+<!-- Layout shell -->
 <div class="flex h-screen pt-14 overflow-hidden">
-  <!-- Fixed Left Icon Sidebar -->
-  <app-sidebar id="sidebar"  class="w-20 bg-gray-100 border-r fixed top-14 left-0 bottom-10 z-40" >
-  </app-sidebar>
+
+  <!-- Left Sidebar for Desktop -->
+<!-- Desktop Sidebar (LEFT) -->
+<app-sidebar *ngIf="!isMobile" [position]="'left'"></app-sidebar>
+
+<!-- Mobile Sidebar (BOTTOM) -->
+<app-sidebar *ngIf="isMobile" [position]="'bottom'"></app-sidebar>
+
+  <!-- Dynamic Sidebar Shell -->
+<app-sidebar-shell [isMobile]="isMobile" id="side-nav-bar" *ngIf="sidebarService.isOpen" [ngClass]="{
+
+    'fixed left-20 top-14 bottom-10 w-[340px] bg-white shadow z-40': !isMobile,
 
 
-  <app-sidebar-shell *ngIf="activeSidebar"  #dynamicSidebar></app-sidebar-shell>
+    'fixed inset-x-0 bottom-0 top-0 bg-white z-50 overflow-y-auto transition-transform duration-300': isMobile
+  }">
+</app-sidebar-shell>
 
-  <!-- Dynamic Side Panel (Design, Text, etc.) -->
-  <!-- <app-template-sidebar *ngIf="activeSidebar === 'design'" #dynamicSidebar
-    [@slideFade]="activeSidebar === 'design' ? 'visible' : 'hidden'"
-    class="fixed left-20 top-14 bottom-10 w-[340px] bg-white shadow z-40">
-  </app-template-sidebar> -->
-
-  <!-- TODO: Add more sidebars later like this -->
-  <!--
-  <app-elements-sidebar
-    *ngIf="activeSidebar === 'elements'"
-    #dynamicSidebar
-    class="fixed left-20 top-14 bottom-10 w-[300px] bg-white shadow z-40">
-  </app-elements-sidebar>
-  -->
-
-  <!-- Routed Content Area -->
-  <div class="flex-1 transition-all duration-300 relative overflow-hidden"
-    [ngStyle]="{ 'margin-left': getCanvasMarginLeft() }">
+  <!-- Routed Canvas & Content Area -->
+  <div class="flex-1 relative overflow-hidden transition-all duration-300">
     <router-outlet></router-outlet>
   </div>
 </div>
 
-<!-- Fixed Bottom Footer -->
-<app-bottom-bar id="footer" class="fixed bottom-0 left-20 right-0 z-50 h-10 bg-white border-t" />
+<!-- Footer -->
+<app-bottom-bar *ngIf="!isMobile" id="app-footer" class="fixed bottom-0 left-20 right-0 z-50 h-10 bg-white border-t" />

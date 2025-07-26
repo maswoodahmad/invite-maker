@@ -1,11 +1,15 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, PLATFORM_ID, Inject } from '@angular/core';
 import * as fabric from 'fabric';
 import { v4 as uuidv4 } from 'uuid';
 import {
   CanvasLayer,
   CustomFabricObject,
+  DesignSize,
   PageNumberPosition
 } from '../interface/interface';
+
+
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasService {
@@ -17,6 +21,9 @@ export class CanvasService {
   lastPosition = { x: 100, y: 100 };
   offsetStep = 30;
 
+  constructor(@Inject(PLATFORM_ID) private platformId: any) {
+
+  }
 
 
   readonly activeObjectSignal = signal<fabric.Object | null >(null);
@@ -314,10 +321,65 @@ export class CanvasService {
 
 
 
+  // resizeAndCenterCanvas(dimension: DesignSize) {
+
+  //   if (!isPlatformBrowser(this.platformId)) return;
+  //   const canvasEl = document.getElementById('canvas') as HTMLCanvasElement;
+  //   const wrapperEl = document.getElementById('canvas-wrapper') as HTMLElement;
+
+  //   if (!canvasEl || !wrapperEl) return;
+
+  //   const wrapperWidth = wrapperEl.clientWidth;
+  //   const wrapperHeight = wrapperEl.clientHeight;
+  //   const scaleX = wrapperWidth / dimension.width;
+  //   const scaleY = wrapperHeight / dimension.height;
+  //   const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
+
+  //   // Apply zoom to fabric canvas
+
+  //   const canvas = this.getCanvas();
+  //   canvas?.setZoom(scale);
+
+  //   // Set actual canvas CSS size (not internal resolution)
+  //   canvasEl.style.width = `${dimension.width * scale}px`;
+  //   canvasEl.style.height = `${dimension.height * scale}px`;
+
+  //   // Center it horizontally and vertically
+  //   canvasEl.style.marginLeft = `${(wrapperWidth - dimension.width * scale) / 2}px`;
+  //   canvasEl.style.marginTop = `${(wrapperHeight - dimension.height * scale) / 2}px`;
+  //   canvasEl.style.display = 'block';
+  // }
 
 
 
+  resizeAndCenterCanvas(config: {
+    width: number,
+    height: number,
+    name: string,
+    label: string,
+    viewportWidth: number,
+    viewportHeight: number
+  }) {
+    if (!isPlatformBrowser(this.platformId)) return;
 
+    const wrapper = document.getElementById('canvas-wrapper');
+    if (!wrapper) return;
+
+    const canvasEl = wrapper.querySelector('canvas') as HTMLCanvasElement;
+    if (!canvasEl) return;
+
+    const vw = config.viewportWidth ?? window.innerWidth;
+    const vh = config.viewportHeight ?? window.innerHeight;
+
+    const scale = Math.min(
+      (vw - 64) / config.width,  // leave some margin
+      (vh - 120) / config.height
+    );
+
+    wrapper.style.transform = `scale(${scale})`;
+    wrapper.style.transformOrigin = 'top center';
+    wrapper.style.marginTop = `${(vh - config.height * scale) / 2}px`;
+  }
 
 }
 

@@ -1,4 +1,3 @@
-<!-- Floating toolbar and layer panel (always visible) -->
 <div class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-4 right-6 top-20"
   [ngStyle]="transformStyleForToolbar">
   <app-layer-panel></app-layer-panel>
@@ -6,26 +5,32 @@
   <app-app-toolbar *ngIf="canvasService.activeObjectSignal()" [mode]="activeObjectType()"></app-app-toolbar>
 </div>
 
-<!-- Scrollable canvas area -->
-<div #scrollWrapper class="canvas-scroll-wrapper overflow-auto bg-gray-100" style="height: calc(100vh - 56px - 48px)">
-  <div class="flex justify-center relative">
-    <div class="canvas-project-container" [ngStyle]="transformStyle"
-      [ngStyle]="{ transform: 'translateX(' + sidebarOffset + 'px)' }">
+<!-- Scrollable Canvas Area -->
+<div class="w-full h-full bg-gray-200 overflow-auto" style="height: calc(100vh - 56px - 40px)"
+  >
+  <div class="flex items-center justify-center min-h-full py-12 px-4" style="min-height: calc(100vh - 56px - 40px);">
+    <div id="canvas-wrapper" class="canvas-project-container relative" style="touch-action: none; width: auto; max-width: 100%;">
+
+      <!-- Pages Toolbar -->
+      <ng-container *ngFor="let page of pages; let i = index  ">
+
+          <app-pages-toolbar [pageInfo] ="page" [totalPages] = "pages.length" [pageNumber]="i + 1 " (addPage)="addPage()" (deletePage)="onDeletePage()" (duplicate)="onDuplicatePage($event)"
+           (titleChange)="onTitleUpdated($event)" (hide)="onHidePage($event)" (moveDown)="onPageDown(i)" (moveUp)="onPageUp(i)" (lock)="onLockToggle($event)">
+          </app-pages-toolbar>
 
 
-      <ng-container *ngFor="let page of pages">
-        <ng-container *ngIf="pages.length>1">
-        <app-pages-toolbar (addPage)="addPage()" (deletePage)="onDeletePage()" (duplicatePage)="onDuplicatePage()"
-          (renamePage)="onRenamePage()"></app-pages-toolbar>
+        <!-- Canvas View -->
+        <app-canvas-view  [data]="page">
+        </app-canvas-view>
       </ng-container>
-        <app-canvas-view [width]="pageWidth" [height]="pageHeight" [data]="pageData"></app-canvas-view>
 
-</ng-container>
+      <!-- Add Page Button -->
       <div class="flex justify-center mt-6">
         <button (click)="addPage()" class="bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
           ➕ Add Page
         </button>
       </div>
+
     </div>
   </div>
 </div>

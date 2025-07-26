@@ -1,56 +1,86 @@
 import { Injectable } from '@angular/core';
-import * as fabric from 'fabric'
+import * as fabric  from 'fabric';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CanvasManagerService {
-
-  private canvases: fabric.Canvas[] = [];
-  private activeIndex = 0;
+  private canvasMap = new Map<string, fabric.Canvas>();
+  private activeCanvasId: string | null = null;
   private focusState: 'object' | 'full' = 'object';
 
-  registerCanvas(canvas: fabric.Canvas) {
-    this.canvases.push(canvas);
+  /**
+   * Registers a canvas instance under a unique page ID.
+   */
+  registerCanvas(pageId: string, canvas: fabric.Canvas): void {
+    this.canvasMap.set(pageId, canvas);
   }
 
-  getAllCanvases() {
-    return this.canvases;
+  /**
+   * Removes canvas when no longer needed.
+   */
+  unregisterCanvas(pageId: string): void {
+    this.canvasMap.delete(pageId);
+    if (this.activeCanvasId === pageId) {
+      this.activeCanvasId = null;
+    }
   }
 
-  setActiveCanvas(canvas: fabric.Canvas) {
-    this.activeIndex = this.canvases.indexOf(canvas);
+  /**
+   * Get all canvas instances
+   */
+  getAllCanvases(): fabric.Canvas[] {
+    return Array.from(this.canvasMap.values());
   }
 
-  getActiveCanvas() {
-    return this.canvases[this.activeIndex];
+  /**
+   * Get canvas by its unique page ID
+   */
+  getCanvasById(pageId: string): fabric.Canvas | undefined {
+    return this.canvasMap.get(pageId);
   }
 
+  /**
+   * Mark a canvas as active using page ID
+   */
+  setActiveCanvasById(pageId: string): void {
+    if (this.canvasMap.has(pageId)) {
+      this.activeCanvasId = pageId;
+    }
+  }
+
+  /**
+   * Get the currently active canvas
+   */
+  getActiveCanvas(): fabric.Canvas | null {
+    return this.activeCanvasId ? this.canvasMap.get(this.activeCanvasId) || null : null;
+  }
+
+  /**
+   * Set canvas focus mode (used for UI state)
+   */
   setCanvasFocusState(state: 'object' | 'full') {
     this.focusState = state;
   }
 
-  getCanvasFocusState() {
+  /**
+   * Get current canvas focus mode
+   */
+  getCanvasFocusState(): 'object' | 'full' {
     return this.focusState;
   }
 
-  focusNextCanvas() {
-    if (this.activeIndex < this.canvases.length - 1) {
-      this.activeIndex++;
-      this.setFocusTo(this.canvases[this.activeIndex]);
+  /**
+   * Scroll canvas into view and optionally mark it active
+   */
+  scrollToCanvas(pageId: string, makeActive = true) {
+    const canvas = this.canvasMap.get(pageId);
+    if (canvas) {
+      canvas.wrapperEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (makeActive) {
+        this.setActiveCanvasById(pageId);
+        this.setCanvasFocusState('full');
+      }
     }
-  }
-
-  focusPreviousCanvas() {
-    if (this.activeIndex > 0) {
-      this.activeIndex--;
-      this.setFocusTo(this.canvases[this.activeIndex]);
-    }
-  }
-
-  private setFocusTo(canvas: fabric.Canvas) {
-    this.setActiveCanvas(canvas);
-    canvas.wrapperEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    this.setCanvasFocusState('full'); // since whole canvas will be selected again
   }
 }

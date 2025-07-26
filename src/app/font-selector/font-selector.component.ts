@@ -40,6 +40,7 @@ export class FontSelectorComponent implements OnInit {
       this.fonts = fonts;
       // applyFilters based on category, language, search, etc.
       const wasOpen = true;
+      const isNowOpen = true;
 
       setTimeout(() => this.canvasControlService.adjustCanvasPosition(wasOpen), 350);
     });
@@ -49,6 +50,7 @@ export class FontSelectorComponent implements OnInit {
       this.languageOptions = lang;
       // applyFilters based on category, language, search, etc.
       const wasOpen = true;
+      const isNowOpen = true;
 
       setTimeout(() => this.canvasControlService.adjustCanvasPosition(wasOpen), 350);
     });

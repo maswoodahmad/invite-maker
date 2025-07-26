@@ -25,4 +25,10 @@ export class SidebarStateService {
     const current = this.current;
     this.activeSidebarSubject.next(current === view ? null : view);
   }
+
+  get isOpen() {
+
+     return this.current === null ? false : true;
+
+  }
 }

@@ -10,7 +10,9 @@ import { TemplateService } from '../services/template.service';
 import { LayerPanelComponent } from '../canvas/layer-panel.component';
 import { CanvasService } from '../services/canvas.service';
 import * as fabric from 'fabric'
-import { CustomFabricObject, ToolbarMode } from '../interface/interface';
+import { CanvasPage, CustomFabricObject, ToolbarMode } from '../interface/interface';
+import { v4 as uuidv4 } from 'uuid';
+import { CanvasManagerService } from '../services/canvas-manager.service';
 
 @Component({
   selector: 'app-canvas-project-wrapper',
@@ -21,15 +23,17 @@ import { CustomFabricObject, ToolbarMode } from '../interface/interface';
 export class CanvasProjectWrapperComponent {
   @ViewChild('scrollWrapper') scrollWrapperRef!: ElementRef<HTMLDivElement>;
   activeObjectType!: Signal<ToolbarMode>;
+  title: string = 'Add page title'
 
   constructor(private canvasControlService: CanvasControlService, private templateService: TemplateService,
     public canvasService: CanvasService,
     @Inject(PLATFORM_ID) private platformId: Object,
+    private canvasManagerService : CanvasManagerService
 
   ) { }
 
 
-
+  isSidebarOpen = false;
 
 
   ngOnInit() {
@@ -68,28 +72,58 @@ export class CanvasProjectWrapperComponent {
 
   isLayerPanelVisible = false;
 
- 
 
 
+  sidebarWidth = 0;
 
 
   pageNames: string[] = [];
 
-  pages = [{ id: 1, template: 'A4', data: {} }];
+  pages: CanvasPage[] = [
+    {
+      id: uuidv4(),
+      title: 'Cover Page',
+      template: 'A4',
+      width: 794,
+      height: 1123,
+      createdBy: 'Touheed',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isVisible: true,
+      isLocked : false
+    }
+  ];
+
+
   sidebarOffset = 0;
 
   activePageIndex = 0;
 
-  addPage(template?: { width: number; height: number; }) {
-    this.pages.push({ id: this.pages.length + 1, template: 'A4', data: {} });
-    this.activePageIndex = this.pages.length - 1;
+  addPage(canvasPage?: CanvasPage) {
+
+    if (canvasPage) {
+      this.pages.push(canvasPage)
+    } else {
+      this.pages.push({
+        id: uuidv4(),
+        title: this.title,
+        template: 'A4', width: 794,
+        height: 1123,
+        data: {}, // serialized fabric JSON
+        createdBy: 'Touheed',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isVisible: true
+      });
+      this.activePageIndex = this.pages.length - 1;
+    }
   }
 
   shiftLayout(offset: number) {
     this.sidebarOffset = offset;
   }
 
-  pageWidth = 1000 ; // A4 default
+  pageWidth = 1000; // A4 default
   pageHeight = 500;
   pageData = null;
 
@@ -103,31 +137,52 @@ export class CanvasProjectWrapperComponent {
     transition: 'transform 0.3s ease'
   };
   toolbarOffset = 0;
+
+
   shiftCanvasIntoViewport(
     templateWidth: number,
     templateHeight: number,
     availableWidth: number,
-    availableHeight: number
+    availableHeight: number,
+
   ): void {
     // ✅ 1. Calculate best-fit scale to fully fit canvas in available viewport
-    const scaleX = availableWidth / templateWidth;
-    const scaleY = availableHeight / templateHeight;
-    const scale = Math.min(scaleX, scaleY, 1); // Never upscale beyond 100%
+    // const scaleX = availableWidth / templateWidth;
+    // const scaleY = availableHeight / templateHeight;
+    // const scale = Math.min(scaleX, scaleY, 1); // Never upscale beyond 100%
 
-    // ✅ 2. Center the canvas using leftover space
-    const translateX = (availableWidth - templateWidth * scale) / 2;
-    const translateY = (availableHeight - templateHeight * scale) / 2;
+    // // ✅ 2. Center the canvas using leftover space
+    // const translateX = (availableWidth - templateWidth * scale) / 2;
+    // const translateY = (availableHeight - templateHeight * scale) / 2;
 
-    // ✅ 3. Apply transform style
-    this.transformStyle = {
-      transform: `translateX(${translateX}px) scale(${scale})`,
-      transition: 'transform 0.3s ease'
-    };
-    this.toolbarOffset = 0;
+    // // ✅ 3. Apply transform style
+    // this.transformStyle = {
+    //   transform: `translateX(${translateX + this.sidebarOffset}px) scale(${scale})`,
+    //   transition: 'transform 0.3s ease'
+    // };
+    // this.toolbarOffset = 0;
 
-    console.log('Applied transform:', this.transformStyle);
+
+
+    // console.log('Applied transform:', this.transformStyle);
   }
 
+
+  genericUpdate(updatedPage: CanvasPage) {
+    const index = this.pages.findIndex(p => p.id === updatedPage.id);
+    if (index !== -1) {
+      this.pages[index] = updatedPage;
+    }
+    console.log(this.pages[index])
+}
+
+  onTitleUpdated(updatedPage: CanvasPage) {
+    this.genericUpdate(updatedPage);
+  }
+
+  onHidePage(updatedPage: CanvasPage) {
+    this.genericUpdate(updatedPage);
+  }
 
   calculateAndShiftCanvas(): void {
 
@@ -166,6 +221,7 @@ export class CanvasProjectWrapperComponent {
       transition: 'transform 0.3s ease'
     };
     this.toolbarOffset = 0;
+    this.sidebarWidth = 340;
 
     console.log('Applied transform:', this.transformStyle);
 
@@ -217,7 +273,10 @@ export class CanvasProjectWrapperComponent {
 
   }
 
-  onDuplicatePage() {this.addPage()}
+  onDuplicatePage(updatedPage: CanvasPage) {
+    console.log('📥 Received duplicated page in parent:', updatedPage);
+     this.addPage(updatedPage);
+  }
 
   onRenamePage(): void {
     this.pageNames[this.activePageIndex] = 'newName';
@@ -228,4 +287,51 @@ export class CanvasProjectWrapperComponent {
   onResize() {
     this.calculateAndShiftCanvas();
   }
+
+  onPageUp(index: number) {
+    if (index > 0) {
+      [this.pages[index - 1], this.pages[index]] = [this.pages[index], this.pages[index - 1]];
+    }
+  }
+
+  onPageDown(index: number) {
+    if (index < this.pages.length - 1) {
+      [this.pages[index + 1], this.pages[index]] = [this.pages[index], this.pages[index + 1]];
+    }
+  }
+
+  onLockToggle(updatedCanvas: CanvasPage) {
+    const shouldLock = !!updatedCanvas.isLocked;
+    this.genericUpdate(updatedCanvas);
+
+    const canvas = this.canvasManagerService.getCanvasById(updatedCanvas.id);
+    if (!canvas) return;
+
+    // Lock/unlock movement
+    canvas.getObjects().forEach(obj => {
+      obj.lockMovementX = shouldLock;
+      obj.lockMovementY = shouldLock;
+      obj.selectable = !shouldLock;
+      obj.evented = !shouldLock;
+    });
+
+    console.log("islocked", shouldLock)
+    canvas.getObjects().forEach(obj => {
+      console.log('Object:', obj, {
+        selectable: obj.selectable,
+        evented: obj.evented,
+        lockMovementX: obj.lockMovementX,
+        lockMovementY: obj.lockMovementY
+      });
+    });
+
+    // Disable selection and interaction if locked
+    canvas.selection = !shouldLock;
+    canvas.skipTargetFind = shouldLock;
+
+    // Clear active object
+    canvas.discardActiveObject();
+    canvas.renderAll();
+  }
+
 }

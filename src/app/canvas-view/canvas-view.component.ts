@@ -14,6 +14,7 @@ import {
 import * as fabric from 'fabric';
 import { CanvasManagerService } from '../services/canvas-manager.service';
 import { CanvasClipboardService } from '../services/canvas-clipboard.service';
+import { CanvasPage } from '../interface/interface';
 
 @Component({
   selector: 'app-canvas-view',
@@ -24,15 +25,17 @@ import { CanvasClipboardService } from '../services/canvas-clipboard.service';
 export class CanvasViewComponent implements AfterViewInit {
   @ViewChild('canvasEl', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  @Input() width = 794;   // Default A4
-  @Input() height = 1123;
-  @Input() data: any;
+  // @Input() width = 400;   // Default A4
+  // @Input() height = 400;
+  @Input() data: CanvasPage | any;
 
 
   canvas!: fabric.Canvas;
   @Input() isActive = false;
 
 
+  readonly A4_WIDTH = 794;
+  readonly A4_HEIGHT = 1123;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -41,41 +44,68 @@ export class CanvasViewComponent implements AfterViewInit {
     private canvasClipboardService: CanvasClipboardService
   ) { }
 
+
+
+   tempData = {
+    width: this.A4_WIDTH, height: this.A4_HEIGHT,
+    name: 'canvas',
+    label: 'canvas'
+   }
+  viewportWidth = 1400
+  viewportHeight = 700;
+
   ngAfterViewInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const el = this.canvasRef.nativeElement;
 
-    el.width = this.width;
-    el.height = this.height;
+      if (!isPlatformBrowser(this.platformId)) return;
 
-    this.canvas = new fabric.Canvas(el, {
-      preserveObjectStacking: true,
-      selection: true,
-    });
+      const el = this.canvasRef.nativeElement;
 
-    if (this.data) {
-      this.canvas.loadFromJSON(this.data, () => this.canvas.renderAll());
-    }
+      // Set desired canvas size
+      el.width = this.A4_WIDTH;
+      el.height = this.A4_HEIGHT;
 
-    this.canvasService.setCanvas(this.canvas);
+      // Clean up any old fabric.Canvas instance if exists
+      const existingCanvas =  this.canvasManagerService.getCanvasById(this.data.id);
+      if (existingCanvas) {
+        existingCanvas.dispose(); // This clears event listeners and removes bindings
+      }
 
-    this.canvasManagerService.registerCanvas(this.canvas);
+      // Create fresh canvas instance
+      this.canvas = new fabric.Canvas(el, {
+        preserveObjectStacking: true,
+        selection: true,
+      });
 
-    this.canvasService.initCanvas(this.canvas);
+      // Register and set canvas
+      this.canvasManagerService.registerCanvas(this.data.id, this.canvas);
+      this.canvasService.setCanvas(this.canvas);
+      this.canvasManagerService.setActiveCanvasById(this.data.id);
+
+      // Load design JSON (if present)
+      if (this.data.data) {
+        this.canvas.loadFromJSON(this.data.data).then(() => {
+          this.canvas.renderAll();
+
+          if (this.data.isLocked) {
+            this.onLockToggle(this.data);
+          }
+        });
+      } else {
+        this.canvas.renderAll();
+      }
+
+      // Init and center
+      this.canvasService.initCanvas(this.canvas);
+      this.viewportWidth = window.innerWidth;
+      this.viewportHeight = window.innerHeight;
+      this.canvasService.resizeAndCenterCanvas({
+        ...this.tempData,
+        viewportWidth: this.viewportWidth,
+        viewportHeight: this.viewportHeight,
+      });
 
 
 
-    // this.canvas.on('mouse:down', (e) => {
-    //   if (!e.target) {
-    //     // No object clicked — entire canvas is selected
-    //     this.canvasManagerService.setActiveCanvas(this.canvas); // still mark it active
-    //     this.canvasManagerService.setCanvasFocusState('full');
-    //   } else {
-    //     this.canvasManagerService.setCanvasFocusState('object');
-    //   }
-    // });
-
-    // Optional: Add zoom/pan init here or expose service later
   }
 
   getCanvasInstance(): fabric.Canvas {
@@ -146,4 +176,49 @@ export class CanvasViewComponent implements AfterViewInit {
       this.canvasService.setCanvas(null); // Clear signal to avoid stale state
     }
   }
+
+
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    if (isPlatformBrowser(this.platformId)) {
+      this.canvasService.resizeAndCenterCanvas({ ...this.tempData, viewportWidth: this.viewportWidth, viewportHeight: this.viewportHeight });
+    }
+  }
+
+
+  onLockToggle(updatedCanvas: CanvasPage) {
+    const shouldLock = !!updatedCanvas.isLocked;
+
+
+    const canvas = this.canvasManagerService.getCanvasById(updatedCanvas.id);
+    if (!canvas) return;
+
+    // Lock/unlock movement
+    canvas.getObjects().forEach(obj => {
+      obj.lockMovementX = shouldLock;
+      obj.lockMovementY = shouldLock;
+      obj.selectable = !shouldLock;
+      obj.evented = !shouldLock;
+    });
+
+    console.log("islocked", shouldLock)
+    canvas.getObjects().forEach(obj => {
+      console.log('Object:', obj, {
+        selectable: obj.selectable,
+        evented: obj.evented,
+        lockMovementX: obj.lockMovementX,
+        lockMovementY: obj.lockMovementY
+      });
+    });
+
+    // Disable selection and interaction if locked
+    canvas.selection = !shouldLock;
+    canvas.skipTargetFind = shouldLock;
+
+    // Clear active object
+    canvas.discardActiveObject();
+    canvas.renderAll();
+  }
+
 }

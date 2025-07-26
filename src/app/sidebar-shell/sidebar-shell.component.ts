@@ -1,5 +1,5 @@
 import { CommonModule, NgSwitch } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, effect, EventEmitter, HostListener, Input, Output } from '@angular/core';
 import { TemplateLoaderService } from '../services/template-loader.service';
 import { TemplateSidebarComponent } from '../template-sidebar/template-sidebar.component';
 import { ElementSidebarComponent } from '../element-sidebar/element-sidebar.component';
@@ -31,69 +31,50 @@ import { FontSelectorComponent } from '../font-selector/font-selector.component'
 })
 export class SidebarShellComponent {
 
+  @Input() isMobile = false;
 
   constructor(private canvasControlService: CanvasControlService, public sidebarState: SidebarStateService){}
 
   activeSidebar: SidebarView = null;
 
+  drawerState: 'full' | 'half' | 'closed' = 'full';
 
 
   ngOnInit() {
-    this.sidebarState.activeSidebar$.subscribe((view: SidebarView | null) => {
-      const wasOpen = this.activeSidebar !== null;
-      const isOpen = view !== null;
 
-      const visibilityChanged = wasOpen !== isOpen;
+    this.sidebarState.activeSidebar$.subscribe(type => {
+      this.activeSidebar = type;
 
-      this.activeSidebar = view;
+      const isOpen = type != null;
 
-      
-      if (visibilityChanged) {
-        setTimeout(() => this.adjustCanvasPosition(wasOpen), 350);
-      }
-    });
+      setTimeout(() => {
+        this.canvasControlService.adjustCanvasPosition(isOpen);
+      },);
 
+
+
+    })
   }
 
+  private touchStartY = 0;
 
-  adjustCanvasPosition(wasOpen: boolean) {
-    const header = document.querySelector('app-header') as HTMLElement;
-    const footer = document.querySelector('app-footer') as HTMLElement;
-    const mainSidebar = document.querySelector('app-sidebar') as HTMLElement;
-    const templateSidebar = document.querySelector('app-template-sidebar') as HTMLElement;
+  @HostListener('touchstart', ['$event'])
+  onTouchStart(event: TouchEvent) {
+    this.touchStartY = event.touches[0].clientY;
+  }
 
-    const headerHeight = header?.offsetHeight || 0;
-    const footerHeight = footer?.offsetHeight || 0;
-    const mainSidebarWidth = mainSidebar?.offsetWidth || 0;
-    const templateSidebarWidth = templateSidebar?.offsetWidth || 340;
-
-    const effectiveTemplateSidebarWidth = wasOpen ? 0 : templateSidebarWidth;
-
-    // Calculate current viewport available to canvas
-    const availableWidth = window.innerWidth - mainSidebarWidth - effectiveTemplateSidebarWidth;
-
-    const availableHeight = window.innerHeight - headerHeight - footerHeight;
-
-    const templateWidth = 794;
-    const templateHeight = 1123;
-
-    if (wasOpen) {
-      this.canvasControlService.restoreCanvasTransform();
-    } else {
-      this.canvasControlService.shiftCanvasIntoViewport(
-        templateWidth,
-        templateHeight,
-        availableWidth,
-        availableHeight
-      );
-      this.canvasControlService.updateToolbarOffset();
-    }
-
-
-    if (wasOpen) {
-      console.log('Sidebar was closed → expanding canvas');
-    } else {
-      console.log('Sidebar was opened → reducing canvas space');
+  @HostListener('touchmove', ['$event'])
+  onTouchMove(event: TouchEvent) {
+    const deltaY = event.touches[0].clientY - this.touchStartY;
+    if (deltaY > 100) {
+      this.close();
     }
   }
+
+  close() {
+    this.sidebarState.close(null); // Whatever your close logic is
+  }
+
+  
+
 }

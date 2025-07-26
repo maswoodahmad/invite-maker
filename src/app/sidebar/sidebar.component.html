@@ -1,42 +1,17 @@
-<!-- sidebar.component.html -->
-<div class="fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-20 bg-gray-100 flex flex-col items-center py-4 shadow">
-  <div class="flex flex-col gap-6 items-center">
+<div [ngClass]="{
 
-    <button (click)="toggle('design')" [class.text-black]="active === 'design'"
-      class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
-      <img src="assets/icons/web-design.svg" class="w-6 h-6" />
-      <span class="text-xs mt-1">Design</span>
-    </button>
+    'fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-20 flex-col py-4': position === 'left',
 
-    <button (click)="toggle('elements')" [class.text-black]="active === 'elements'"
-      class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
-      <img src="assets/icons/elements.svg" class="w-6 h-6" />
-      <span class="text-xs mt-1">Elements</span>
-    </button>
-
-    <button (click)="toggle('text')" [class.text-black]="active === 'text'"
-      class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
-      <img src="assets/icons/text.svg" class="w-6 h-6" />
-      <span class="text-xs mt-1">Text</span>
-    </button>
-
-    <button (click)="toggle('uploads')" [class.text-black]="active === 'uploads'"
-      class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
-      <img src="assets/icons/upload.svg" class="w-6 h-6" />
-      <span class="text-xs mt-1">Uploads</span>
-    </button>
-
-    <button (click)="toggle('projects')" [class.text-black]="active === 'projects'"
-      class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
-      <img src="assets/icons/folder.svg" class="w-6 h-6" />
-      <span class="text-xs mt-1">Projects</span>
-    </button>
-
-    <button (click)="toggle('tools')" [class.text-black]="active === 'tools'"
-      class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
-      <img src="assets/icons/tools.svg" class="w-6 h-6" />
-      <span class="text-xs mt-1">Tools</span>
-    </button>
-
+    'fixed bottom-0 left-0 right-0 w-full h-16 flex-row px-4 py-2 z-100 justify-around': position === 'bottom'
+  }" class="bg-gray-100 flex items-center shadow z-40">
+  <div
+    [ngClass]="position === 'left' ? 'flex flex-col gap-6 items-center' : 'flex flex-row gap-4 justify-around w-full'">
+    <ng-container *ngFor="let item of sidebarItems">
+      <button (click)="toggle(item.key)" [class.text-black]="active === item.key"
+        class="flex flex-col items-center text-sm text-gray-700 hover:text-black">
+        <img [src]="item.icon" class="w-6 h-6" />
+        <span *ngIf="position === 'left'" class="text-xs mt-1">{{ item.label }}</span>
+      </button>
+    </ng-container>
   </div>
 </div>
