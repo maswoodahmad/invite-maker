@@ -260,7 +260,7 @@ export class FabricEditorComponent implements AfterViewInit, OnDestroy {
       if (!dataUrl) return;
 
       // 🔐 Save to recent uploads (you likely have this service already)
-      this.uploads.save(dataUrl); // save to localStorage
+      //this.uploads.save(dataUrl); // save to localStorage
 
       const img = new Image();
       img.onload = () => {

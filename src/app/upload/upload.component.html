@@ -1,0 +1,58 @@
+<!-- Sidebar Wrapper -->
+<div class="w-full h-full p-4 overflow-y-auto bg-white shadow-inner text-gray-800">
+
+  <!-- Upload + Search Section -->
+  <div class="flex flex-col gap-3 mb-6">
+
+    <!-- Search Field -->
+    <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search uploaded images..."
+      class="border border-gray-300 rounded px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+
+
+    <!-- Upload Button -->
+  <label
+    class="inline-flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-700 text-sm transition text-center">
+
+    <img src="assets/icons/folder-upload.svg" alt="Upload images" class="w-4 h-4" />
+
+    <span>Upload files</span>
+
+    <input type="file" (change)="onUpload($event)" accept="image/*" class="hidden" />
+  </label>
+
+
+  </div>
+
+  <div class="w-full h-[80vh] overflow-y-auto p-2">
+    <div *ngFor="let row of rows" class="flex flex-row gap-2 mb-2">
+      <div *ngFor="let img of row"
+        class="group relative border border-gray-200 bg-white rounded overflow-hidden hover:shadow-md transition duration-200"
+        [style.width.px]="img.displayWidth" [style.height.px]="img.displayHeight">
+
+        <!-- Checkbox -->
+        <input type="checkbox"
+          class="absolute top-2 left-2 z-10 w-4 h-4 opacity-0 group-hover:opacity-100 transition duration-200"
+          [(ngModel)]="img.selected" title="Select image" />
+
+        <!-- Context Menu -->
+        <button
+          class="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow opacity-0 group-hover:opacity-100 transition duration-200"
+          (click)="openContextMenu(img)">
+          <svg class="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12h.01M12 12h.01M18 12h.01" />
+          </svg>
+        </button>
+
+        <!-- Image -->
+        <img [src]="img.dataUrl" (click)="addImageToCanvas(img.dataUrl)"
+          class="w-full h-full object-cover cursor-pointer transition-transform hover:scale-[1.02]" />
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+
+

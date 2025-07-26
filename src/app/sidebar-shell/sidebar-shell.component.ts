@@ -9,6 +9,7 @@ import { SidebarView } from '../interface/interface';
 import { SidebarStateService } from '../services/sidebar-state.service';
 import { PageNumberSettingsComponent } from '../page-number-settings/page-number-settings.component';
 import { FontSelectorComponent } from '../font-selector/font-selector.component';
+import { UploadComponent } from '../upload/upload.component';
 
 
 @Component({
@@ -19,7 +20,8 @@ import { FontSelectorComponent } from '../font-selector/font-selector.component'
      CommonModule,
     TextSidebarComponent,
     PageNumberSettingsComponent,
-     FontSelectorComponent
+    FontSelectorComponent,
+     UploadComponent
 
   ],
   templateUrl: './sidebar-shell.component.html',
@@ -75,6 +77,6 @@ export class SidebarShellComponent {
     this.sidebarState.close(null); // Whatever your close logic is
   }
 
-  
+
 
 }

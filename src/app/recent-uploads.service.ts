@@ -1,10 +1,8 @@
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { UploadedImage } from './interface/interface';
 
-export interface RecentImage {
-  dataUrl: string;
-  addedAt: number;
-}
+
 
 @Injectable({
   providedIn: 'root',
@@ -14,19 +12,20 @@ export class RecentUploadsService {
   private maxImages = 10;
   private ttlMs = 2 * 24 * 60 * 60 * 1000;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
 
   private isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
   }
 
-  save(dataUrl: string): void {
+  save(dataUrl: string, naturalHeight: number, naturalWidth: number, name?: string, tags?: string[]): void {
     if (!this.isBrowser()) return;
 
     const now = Date.now();
-    const image: RecentImage = { dataUrl, addedAt: now };
+    const aspect = naturalWidth / naturalHeight;
+    const image: UploadedImage = { dataUrl, selected: false, name, tags, addedAt: now, naturalWidth, naturalHeight, aspect };
 
-    const existing: RecentImage[] = this.loadRaw().filter(
+    const existing: UploadedImage[] = this.loadRaw().filter(
       img => now - img.addedAt < this.ttlMs
     );
 
@@ -34,7 +33,7 @@ export class RecentUploadsService {
     localStorage.setItem(this.key, JSON.stringify(updated));
   }
 
-  get(): RecentImage[] {
+  get(): UploadedImage[] {
     if (!this.isBrowser()) return [];
     const now = Date.now();
     return this.loadRaw().filter(img => now - img.addedAt < this.ttlMs);
@@ -46,7 +45,7 @@ export class RecentUploadsService {
     }
   }
 
-  private loadRaw(): RecentImage[] {
+  private loadRaw(): UploadedImage[] {
     if (!this.isBrowser()) return [];
     const json = localStorage.getItem(this.key);
     try {

@@ -153,3 +153,16 @@ export interface CanvasPage {
   isVisible?: boolean;                  //to check if needed to export or download
   isLocked?: boolean;                   // to check if object is modifiable
 }
+
+
+export interface UploadedImage {
+  dataUrl: string;
+  selected: boolean;
+  name?: string;
+  tags?: string[];
+  addedAt: number;
+  naturalWidth: number;
+  naturalHeight: number;
+  aspect: number; 
+
+}
