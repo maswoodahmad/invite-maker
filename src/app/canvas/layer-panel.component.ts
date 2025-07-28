@@ -10,9 +10,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './layer-panel.component.html',
 })
 export class LayerPanelComponent {
-  private canvasService = inject(CanvasService);
+  public canvasService = inject(CanvasService);
   layersSignal = this.canvasService.layersSignal;
-
+  activeLayers: CanvasLayer[] = [];
   isLocked = false;
   isVisible = true;
 

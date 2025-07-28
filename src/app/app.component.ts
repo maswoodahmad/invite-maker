@@ -81,7 +81,7 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     // Wait for sidebar to render
     //setTimeout(() => this.updateSidebarWidth(), 50);
-    
+
   }
 
   isMobile = false;
@@ -126,5 +126,10 @@ export class AppComponent implements AfterViewInit {
   }
 
 
+  onMenuOpen(isOpen :boolean) {
+    
+
+
+  }
 
 }

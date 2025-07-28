@@ -1,37 +1,75 @@
-<div
-  class="sticky top-0 z-50 w-full bg-white   px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between shadow-sm gap-2">
+<!-- Sticky Header -->
+<div class="sticky top-0 z-50 w-full bg-white px-4 py-2 shadow-sm">
+  <div class="flex items-center justify-between sm:justify-between">
 
-  <!-- Top Row: Project Info -->
-  <div class="flex flex-wrap items-center gap-2 sm:gap-4">
-    <input [(ngModel)]="projectName"
-      class="text-base sm:text-lg font-semibold border-none focus:outline-none focus:ring-0 bg-transparent"
-      placeholder="Untitled Project" />
+    <!-- Left Section (mobile: menu + mode + undo/redo/share) -->
+    <div class="flex items-center gap-2 sm:gap-4">
+      <!-- Mobile: Burger Menu -->
+      <button class="p-2" (click)="toggleMenu()">
+        <img src="assets/icons/menu-burger.svg" alt="Menu" class="w-4 h-4" />
+      </button>
 
-    <button (click)="renameProject()" class="text-xs sm:text-sm text-blue-600 hover:underline">Rename</button>
+      <!-- Mode Dropdown (visible always) -->
+      <select [(ngModel)]="mode" class="border px-2 py-1 rounded text-sm focus:outline-none">
+        <option value="viewing">Viewing</option>
+        <option value="editing">Editing</option>
+      </select>
 
-    <span class="hidden sm:inline text-gray-400 text-sm">|</span>
-
-    <span class="hidden sm:inline text-sm text-gray-500">Last saved: {{ lastSaved | date:'short' }}</span>
-  </div>
-
-  <!-- Bottom Row: Action buttons -->
-  <div class="flex flex-wrap items-center gap-2 sm:gap-3 justify-end text-sm">
-    <button class="hover:underline hidden sm:inline" (click)="undo()">Undo</button>
-    <button class="hover:underline hidden sm:inline" (click)="redo()">Redo</button>
-
-    <button class="hover:underline hidden sm:inline" (click)="duplicateProject()">Duplicate</button>
-    <button class="hover:underline hidden sm:inline text-red-500" (click)="deleteProject()">Delete</button>
-
-    <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded" (click)="saveProject()">Save</button>
-
-    <div class="relative">
-      <button class="hover:underline" (click)="toggleShareMenu()">Share</button>
+      <!-- Undo/Redo/Share (mobile only) -->
+      <button class="sm:hidden text-sm text-blue-600" (click)="undo()">Undo</button>
+      <button class="sm:hidden text-sm text-blue-600" (click)="redo()">Redo</button>
+      <button class="sm:hidden text-sm text-blue-600" (click)="toggleShareMenu()">Share</button>
     </div>
 
-    <!-- User Info (avatar + name) -->
-    <div class="hidden sm:flex items-center gap-2">
-      <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" class="w-6 h-6 rounded-full" />
-      <span class="text-gray-600">User Name</span>
+    <!-- Right Section (desktop only) -->
+    <div class="hidden sm:flex items-center flex-wrap gap-2 text-sm">
+      <!-- Project Name + Rename -->
+      <input [(ngModel)]="projectName"
+        class="text-base sm:text-lg font-semibold border-none focus:outline-none focus:ring-0 bg-transparent"
+        placeholder="Untitled Project" />
+      <button (click)="renameProject()" class="text-blue-600 hover:underline">Rename</button>
+
+      <span class="text-gray-300">|</span>
+
+      <!-- Save Button -->
+      <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded" (click)="saveProject()">Save</button>
+
+      <!-- Extra Options -->
+      <button class="hover:underline" (click)="duplicateProject()">Duplicate</button>
+      <button class="hover:underline text-red-500" (click)="deleteProject()">Delete</button>
+      <button class="hover:underline" (click)="toggleShareMenu()">Share</button>
+
+      <!-- Last Saved -->
+      <span class="text-sm text-gray-500">Last saved: {{ lastSaved | date: 'short' }}</span>
+
+      <!-- User Info -->
+      <div class="flex items-center gap-2">
+        <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" class="w-6 h-6 rounded-full" />
+        <span class="text-gray-600">User Name</span>
+      </div>
+    </div>
+
+    <!-- Mobile: Bottom Sheet Trigger -->
+    <button class="sm:hidden" (click)="mobileMenuOpen = !mobileMenuOpen">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5 5h10v2H5V5zm0 4h10v2H5V9zm0 4h10v2H5v-2z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile Slide-Up Bottom Menu -->
+  <div *ngIf="mobileMenuOpen"
+    class="fixed bottom-0 left-0 w-full bg-white border-t shadow-xl p-4 z-50 sm:hidden animate-slide-up">
+    <div class="flex flex-col gap-3 text-sm">
+      <input [(ngModel)]="projectName" class="text-base font-semibold border rounded px-2 py-1 focus:outline-none" />
+      <button (click)="renameProject()" class="text-left text-blue-600">Rename</button>
+      <button (click)="saveProject()" class="text-left text-green-600">Save</button>
+      <button (click)="duplicateProject()" class="text-left">Duplicate</button>
+      <button (click)="deleteProject()" class="text-left text-red-500">Delete</button>
+      <button (click)="toggleShareMenu()" class="text-left">Share</button>
+      <button (click)="mobileMenuOpen = false" class="text-left text-gray-500">Close</button>
+      <button class="hover:underline" (click)="toggleShareMenu()">Share</button>
+
     </div>
   </div>
 </div>

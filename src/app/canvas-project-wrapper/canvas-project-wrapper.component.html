@@ -1,15 +1,17 @@
-<div class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-4 right-6 top-20"
+<div
+  class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-2 sm:gap-4 right-2 sm:right-6 top-24 sm:top-20 max-w-full"
   [ngStyle]="transformStyleForToolbar">
   <app-layer-panel></app-layer-panel>
-
-  <app-app-toolbar *ngIf="canvasService.activeObjectSignal()" [mode]="activeObjectType()"></app-app-toolbar>
+  <app-app-toolbar #toolbar *ngIf="isToolbarVisible" [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
 </div>
 
+
+
 <!-- Scrollable Canvas Area -->
-<div class="w-full h-full bg-gray-200 overflow-auto" style="height: calc(100vh - 56px - 40px)"
+<div #canvasWrapeprEl class="w-full h-full bg-gray-200 overflow-auto" style="height: calc(100vh - 56px - 40px)"
   >
   <div class="flex items-center justify-center min-h-full py-12 px-4" style="min-height: calc(100vh - 56px - 40px);">
-    <div id="canvas-wrapper" class="canvas-project-container relative" style="touch-action: none; width: auto; max-width: 100%;">
+    <div id="canvas-wrapper" class="canvas-project-container  relative" style="touch-action: none; width: auto; max-width: 100%;">
 
       <!-- Pages Toolbar -->
       <ng-container *ngFor="let page of pages; let i = index  ">
@@ -19,8 +21,9 @@
           </app-pages-toolbar>
 
 
+
         <!-- Canvas View -->
-        <app-canvas-view  [data]="page">
+        <app-canvas-view #canvasElement [data]="page">
         </app-canvas-view>
       </ng-container>
 

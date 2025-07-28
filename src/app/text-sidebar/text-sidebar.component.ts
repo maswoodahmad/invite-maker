@@ -76,11 +76,13 @@ export class TextSidebarComponent {
 
     (textbox as any).id = uuidv4();
 
-    setTimeout(() => {
-      canvas.add(textbox);
-      canvas.setActiveObject(textbox);
-      canvas.requestRenderAll();
-    }, 100);
+    canvas.add(textbox);
+    canvas.setActiveObject(textbox);
+    canvas.requestRenderAll();
+
+    requestAnimationFrame(() => {
+      this.canvasService.syncActiveObject(); // inside it, it gets canvas.getActiveObject()
+    });
 
     console.log('Object:', textbox);
     console.log('Selectable:', textbox.selectable, 'Has controls:', textbox.hasControls);

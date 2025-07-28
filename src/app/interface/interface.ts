@@ -88,7 +88,8 @@ export type SidebarView =
   | 'projects'
   | 'tools'
   | 'pages'
-  |'fonts'
+  | 'fonts'
+  | 'menu'
   | null;
 
 export interface CustomCanvasObject extends fabric.Canvas {
@@ -121,7 +122,7 @@ export interface CanvasLayer {
 }
 
 
-export type ToolbarMode = 'text' | 'image' | 'shape' | 'page' | null;
+
 
 
 export interface SidebarItem {
@@ -151,7 +152,8 @@ export interface CanvasPage {
   createdAt?: Date;                     // Timestamp
   updatedAt?: Date;                     // Last modified
   isVisible?: boolean;                  //to check if needed to export or download
-  isLocked?: boolean;                   // to check if object is modifiable
+  isLocked?: boolean;
+  background? :string// to check if object is modifiable
 }
 
 
@@ -163,6 +165,6 @@ export interface UploadedImage {
   addedAt: number;
   naturalWidth: number;
   naturalHeight: number;
-  aspect: number; 
+  aspect: number;
 
 }

@@ -1,5 +1,5 @@
 import { CommonModule, NgSwitch } from '@angular/common';
-import { Component, effect, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { Component, effect, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { TemplateLoaderService } from '../services/template-loader.service';
 import { TemplateSidebarComponent } from '../template-sidebar/template-sidebar.component';
 import { ElementSidebarComponent } from '../element-sidebar/element-sidebar.component';
@@ -34,6 +34,7 @@ import { UploadComponent } from '../upload/upload.component';
 export class SidebarShellComponent {
 
   @Input() isMobile = false;
+  @ViewChild('sidebarShell', { static: true }) sidebarRef!: ElementRef<HTMLCanvasElement>;
 
   constructor(private canvasControlService: CanvasControlService, public sidebarState: SidebarStateService){}
 
@@ -41,6 +42,7 @@ export class SidebarShellComponent {
 
   drawerState: 'full' | 'half' | 'closed' = 'full';
 
+  sidebarWidth!: number;
 
   ngOnInit() {
 
@@ -56,6 +58,9 @@ export class SidebarShellComponent {
 
 
     })
+
+  this.sidebarWidth = this.sidebarRef.nativeElement.offsetWidth + 80;
+
   }
 
   private touchStartY = 0;

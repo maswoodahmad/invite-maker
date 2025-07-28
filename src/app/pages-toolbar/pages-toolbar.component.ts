@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { CanvasPage } from '../interface/interface';
 import { v4 as uuidv4 } from 'uuid';
 import { CanvasService } from '../services/canvas.service';
+import { TooltipDirective } from '../shared/tooltip.directive';
 
 
 @Component({
   selector: 'app-pages-toolbar',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, TooltipDirective],
   templateUrl: './pages-toolbar.component.html',
   styleUrl: './pages-toolbar.component.scss'
 })

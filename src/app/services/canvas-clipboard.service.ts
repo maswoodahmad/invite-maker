@@ -1,12 +1,18 @@
+import { CanvasManagerService } from './canvas-manager.service';
 import { Injectable } from '@angular/core';
 import * as fabric from 'fabric';
+import { CanvasService } from './canvas.service';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasClipboardService {
   private clipboard: fabric.Object | null = null;
 
-  copy(canvas: fabric.Canvas) {
-    const activeObject = canvas.getActiveObject();
+  constructor(private canvasManagerService : CanvasManagerService) {}
+
+  copy() {
+
+    const activeCanvas = this.canvasManagerService.getActiveCanvas();
+    const activeObject = activeCanvas?.getActiveObject();
     if (!activeObject) return;
 
     activeObject.clone().then((cloned: fabric.Object) => {
@@ -14,8 +20,10 @@ export class CanvasClipboardService {
     });
   }
 
-  cut(canvas : fabric.Canvas) {
+  cut() {
 
+
+    const canvas =  this.canvasManagerService.getActiveCanvas();
     if (!canvas) return;
 
     const active = canvas.getActiveObject();
@@ -36,7 +44,7 @@ export class CanvasClipboardService {
       });
 
       // Remove from canvas
-      group.forEachObject(obj => canvas.remove(obj));
+      group.forEachObject(obj => canvas?.remove(obj));
       canvas.discardActiveObject();
       canvas.renderAll();
 
@@ -92,7 +100,9 @@ export class CanvasClipboardService {
     });
   }
 
-  paste(canvas : fabric.Canvas) {
+  paste() {
+    const canvas = this.canvasManagerService.getActiveCanvas();
+    if (!canvas) return;
 
     this.clipboard?.clone().then((cloned: fabric.Object | fabric.Group) => {
       const offset = 20;
@@ -132,7 +142,9 @@ export class CanvasClipboardService {
   }
 
 
-  deleteSelected(canvas  : fabric.Canvas) {
+  deleteSelected() {
+
+    const canvas = this.canvasManagerService.getActiveCanvas();
 
     const active = canvas?.getActiveObject();
     if (!canvas || !active) return;

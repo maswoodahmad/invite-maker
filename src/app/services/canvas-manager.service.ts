@@ -1,28 +1,33 @@
 import { Injectable } from '@angular/core';
 import * as fabric  from 'fabric';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CanvasManagerService {
   private canvasMap = new Map<string, fabric.Canvas>();
-  private activeCanvasId: string | null = null;
+  private activeCanvasId$ = new BehaviorSubject<string | null>(null);
   private focusState: 'object' | 'full' = 'object';
+
+ 
 
   /**
    * Registers a canvas instance under a unique page ID.
    */
-  registerCanvas(pageId: string, canvas: fabric.Canvas): void {
-    this.canvasMap.set(pageId, canvas);
+  registerCanvas(id: string, canvas: fabric.Canvas): void {
+    this.canvasMap.set(id, canvas);
+    if (!this.activeCanvasId$.value) {
+      this.activeCanvasId$.next(id); // auto-activate first one
+    }
   }
-
   /**
    * Removes canvas when no longer needed.
    */
   unregisterCanvas(pageId: string): void {
     this.canvasMap.delete(pageId);
-    if (this.activeCanvasId === pageId) {
-      this.activeCanvasId = null;
+    if (this.activeCanvasId$.value === pageId) {
+      this.activeCanvasId$.next(null);
     }
   }
 
@@ -45,7 +50,7 @@ export class CanvasManagerService {
    */
   setActiveCanvasById(pageId: string): void {
     if (this.canvasMap.has(pageId)) {
-      this.activeCanvasId = pageId;
+      this.activeCanvasId$.next(pageId);
     }
   }
 
@@ -53,7 +58,11 @@ export class CanvasManagerService {
    * Get the currently active canvas
    */
   getActiveCanvas(): fabric.Canvas | null {
-    return this.activeCanvasId ? this.canvasMap.get(this.activeCanvasId) || null : null;
+    return this.activeCanvasId$.value ? this.canvasMap.get(this.activeCanvasId$.value) || null : null;
+  }
+
+  getActiveCanvasId$() {
+    return this.activeCanvasId$.asObservable();
   }
 
   /**
@@ -84,3 +93,7 @@ export class CanvasManagerService {
     }
   }
 }
+function toSignal(arg0: Observable<string | null>, arg1: { initialValue: null; }) {
+  throw new Error('Function not implemented.');
+}
+

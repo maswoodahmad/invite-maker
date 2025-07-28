@@ -1,6 +1,9 @@
 
-  <canvas #canvasEl id="canvas" class="block  border shadow rounded-md" ></canvas>
+<div (click)="focusCanvas(data.id, $event)" [ngClass]="{
+    'border-3 border-blue-500 p-1': isFocused(data.id)
 
-
+  }" class="transition-all duration-300 rounded-sm">
+  <canvas #canvasEl [attr.id]="data.id" class="block"></canvas>
+</div>
 
 

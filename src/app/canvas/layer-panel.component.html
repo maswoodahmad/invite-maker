@@ -6,7 +6,7 @@
     </button>
   </h2>
 <div *ngIf="isLayerPanelVisible">
-  <div *ngFor="let layer of layers"
+  <div *ngFor="let layer of canvasService.layersSignal()"
     class="bg-white w-24 h-24 flex justify-center rounded hover:bg-neutral-100 cursor-pointer border border-gray-200"
     (click)="selectLayer(layer)" cdkDrag>
 

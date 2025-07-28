@@ -5,17 +5,25 @@
         <option *ngFor="let font of tool.options">{{ font }}</option>
       </select> -->
 
-      <div *ngSwitchCase="'font-size'" class="flex items-center border rounded px-2 py-1">
-        <button class="px-1">-</button>
-        <span class="px-2">154</span>
-        <button class="px-1">+</button>
+      <div *ngSwitchCase="'font-size'" class="flex items-center border rounded px-2 py-1 gap-1">
+        <button (click)="reducefontSizeChange()"  class="px-1 text-sm">-</button>
+
+        <input type="number" [(ngModel)]="fontSize" (blur)="onStyleChange()"
+          class="w-12 text-center text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          style="-moz-appearance: textfield;" />
+
+        <button (click)="increaseFontSize()" class="px-1 text-sm">+</button>
       </div>
 
+
       <button *ngSwitchDefault class="rounded px-2 py-1 hover:bg-gray-100">
-        {{ tool.icon || tool.label }}
+
+        <img *ngIf="tool.icon" [src]="tool.icon" alt="tool.label" class="w-4 h-4">
+        <span *ngIf="!tool.icon"> {{tool.label}}</span>
+
       </button>
     </ng-container>
   </ng-container>
 
-  
+
 </div>
