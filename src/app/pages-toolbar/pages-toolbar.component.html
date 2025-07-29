@@ -1,6 +1,12 @@
-<div class="header flex flex-row-reverse justify-between items-center mb-4 gap-4">
+<div
+[ngClass]="{
+      'flex-row-reverse': !isViewOnly,
+      'flex-row': isViewOnly
+    }"
+
+class="header flex flex-row-reverse justify-between items-center mb-4 gap-4">
   <!-- Right Side: Action Buttons -->
-  <div class="flex items-center gap-2 w-auto flex-shrink-0">
+  <div *ngIf="!isViewOnly" class="flex items-center gap-2 w-auto flex-shrink-0">
     <ng-container *ngIf="totalPages > 1">
       <div class="relative group">
         <button
@@ -112,6 +118,7 @@
         >Page-{{ pageNumber }}</span
       >
       <textarea
+      [disabled] = "isViewOnly"
         [(ngModel)]="value"
         (focus)="onFocus()"
         (blur)="onBlur()"

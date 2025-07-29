@@ -1,37 +1,74 @@
-<div
-  class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-2 sm:gap-4 right-2 sm:right-6 top-24 sm:top-20 max-w-full"
-  [ngStyle]="transformStyleForToolbar">
-  <app-layer-panel></app-layer-panel>
-  <app-app-toolbar #toolbar *ngIf="isToolbarVisible" [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
-</div>
+<!-- Main Layout Wrapper -->
 
+<div  class="flex flex-col align-center min-h-screen"> <!-- Adjust padding as per your fixed header/footer -->
 
+  <!-- Fixed floating toolbar (unchanged) -->
+  <div
+    class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-2 sm:gap-4 right-2 sm:right-6 top-24 sm:top-20 max-w-full"
+    [ngStyle]="transformStyleForToolbar">
+    <app-layer-panel *ngIf="!isViewOnly"></app-layer-panel>
+    <app-app-toolbar
+      #toolbar
+      *ngIf="isToolbarVisible && !isViewOnly"
+      [mode]="canvasService.activeObjectSignal()">
+    </app-app-toolbar>
+  </div>
 
-<!-- Scrollable Canvas Area -->
-<div #canvasWrapeprEl class="w-full h-full bg-gray-200 overflow-auto" style="height: calc(100vh - 56px - 40px)"
+  <!-- Scrollable Canvas Area -->
+  <div #canvasWrapeprEl
+       id="canvas-wrapper-parent"
+       class="overflow-auto bg-gray-200"
+      style="height: calc(100vh - 96px); scroll-padding-top: 6rem; touch-action: none;">
+
+  <div  id="canvas-zoomable"
+  class="inline-block"
+  [ngStyle]="{
+    'transform': 'scale(' + zoomLevel + ')',
+    'transform-origin': 'top center',
+
+  }"
+  
   >
-  <div class="flex items-center justify-center min-h-full py-12 px-4" style="min-height: calc(100vh - 56px - 40px);">
-    <div id="canvas-wrapper" class="canvas-project-container  relative" style="touch-action: none; width: auto; max-width: 100%;">
 
-      <!-- Pages Toolbar -->
-      <ng-container *ngFor="let page of pages; let i = index  ">
+      <!-- Content Wrapper -->
+      <div class="flex items-center justify-center  min-h-screen">
+        <div id="canvas-wrapper"
+             class="canvas-project-container relative"
+             style="touch-action: pan-x pan-y; width: auto; max-width: 100%;">
 
-          <app-pages-toolbar [pageInfo] ="page" [totalPages] = "pages.length" [pageNumber]="i + 1 " (addPage)="addPage()" (deletePage)="onDeletePage()" (duplicate)="onDuplicatePage($event)"
-           (titleChange)="onTitleUpdated($event)" (hide)="onHidePage($event)" (moveDown)="onPageDown(i)" (moveUp)="onPageUp(i)" (lock)="onLockToggle($event)">
-          </app-pages-toolbar>
+          <!-- Pages Toolbar + Canvas -->
+          <ng-container *ngFor="let page of pages; let i = index">
+            <app-pages-toolbar
+              [pageInfo]="page"
+              [totalPages]="pages.length"
+              [pageNumber]="i + 1"
+              (addPage)="addPage()"
+              (deletePage)="onDeletePage()"
+              (duplicate)="onDuplicatePage($event)"
+              (titleChange)="onTitleUpdated($event)"
+              (hide)="onHidePage($event)"
+              (moveDown)="onPageDown(i)"
+              (moveUp)="onPageUp(i)"
+              (lock)="onLockToggle($event)">
+            </app-pages-toolbar>
 
+            <div (click)="focusCanvas(page.id, $event)"
+            
+                 [ngClass]="
+                   'touch-action: pan-x pan-y pinch-zoom transition-all duration-300 rounded-sm border-3 ' +
+                   (isFocused(page.id) ? 'border-blue-500 p-1' : 'border-transparent')">
+              <app-canvas-view #canvasElement [data]="page"></app-canvas-view>
+            </div>
+          </ng-container>
 
+          <!-- Add Page Button -->
+          <div *ngIf="!isViewOnly" class="flex justify-center mt-6">
+            <button (click)="addPage()" class="add-btn w-full bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
+              ➕ Add Page
+            </button>
+          </div>
 
-        <!-- Canvas View -->
-        <app-canvas-view #canvasElement [data]="page">
-        </app-canvas-view>
-      </ng-container>
-
-      <!-- Add Page Button -->
-      <div class="flex justify-center mt-6">
-        <button (click)="addPage()" class="bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
-          ➕ Add Page
-        </button>
+        </div>
       </div>
 
     </div>

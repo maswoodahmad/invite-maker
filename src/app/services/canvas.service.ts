@@ -360,8 +360,11 @@ export class CanvasService {
     label: string;
     viewportWidth: number;
     viewportHeight: number;
+    canvas : fabric.Canvas
   }) {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    const canvas = config.canvas;
 
     const wrapper = document.getElementById('canvas-wrapper');
     if (!wrapper) return;
@@ -380,6 +383,13 @@ export class CanvasService {
     wrapper.style.transform = `scale(${scale})`;
     wrapper.style.transformOrigin = 'top center';
     wrapper.style.marginTop = `${(vh - config.height * scale) / 2}px`;
+
+    setTimeout(() => {
+      canvas.setWidth(canvas.getWidth() * scale);
+      canvas.setHeight(canvas.getHeight() * scale);
+      canvas.renderAll();
+    })
+
   }
 
   showToolbarFor(obj: any) {
@@ -408,7 +418,7 @@ export class CanvasService {
       this.setTextBoxSignal(obj);
       this.isActiveToolbarSignal.set(true);
     } else {
-      this.activeObjectSignal.set('null');
+      this.activeObjectSignal.set(null);
       this.isActiveToolbarSignal.set(false);
     }
   }

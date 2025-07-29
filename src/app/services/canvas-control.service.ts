@@ -8,8 +8,8 @@ import { SidebarStateService } from "./sidebar-state.service";
 export class CanvasControlService {
   private editorInstance: CanvasProjectWrapperComponent | null = null;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object,
-    private sidebarService: SidebarStateService
+  constructor(@Inject(PLATFORM_ID) private platformId: Object
+
   ) { }
 
 

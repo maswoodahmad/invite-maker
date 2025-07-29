@@ -13,26 +13,47 @@ export interface ToolbarItem {
   label: string;
   icon: string;
   key: string;
+  action?: () => void;
 }
 
 export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
   text: [
     { type: 'dropdown', label: 'Font', icon: '', key: 'fontFamily' },
     { type: 'font-size', label: 'Size', icon: '', key: 'fontSize' },
-    { type: 'color', label: 'Color', icon: './assets/icons/text-color.svg', key: 'fill' },
-    { type: 'toggle', label: 'Bold', icon: './assets/icons/bold.svg', key: 'bold' },
-    { type: 'toggle', label: 'Italic', icon: './assets/icons/italic.svg', key: 'italic' },
+    {
+      type: 'color',
+      label: 'Color',
+      icon: './assets/icons/text-color.svg',
+      key: 'fill',
+    },
+    {
+      type: 'toggle',
+      label: 'Bold',
+      icon: './assets/icons/bold.svg',
+      key: 'bold',
+      action: undefined,
+    },
+    {
+      type: 'toggle',
+      label: 'Italic',
+      icon: './assets/icons/italic.svg',
+      key: 'italic',
+      action: undefined,
+    },
+
     {
       type: 'toggle',
       label: 'Underline',
-      icon: 'underline.svg',
+      icon: './assets/icons/underline.svg',
       key: 'underline',
+      action: undefined,
     },
     {
       type: 'toggle',
       label: 'Strikethrough',
-      icon: 'strike.svg',
+      icon: './assets/icons/strike.svg',
       key: 'linethrough',
+      action: undefined,
     },
     { type: 'align', label: 'Alignment', icon: 'align.svg', key: 'textAlign' },
     { type: 'button', label: 'Effects', icon: '', key: 'effects' },
@@ -68,3 +89,6 @@ export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
     },
   ],
 };
+
+
+

@@ -1,0 +1,52 @@
+#canvas-zoomable {
+  touch-action: pinch-zoom;
+  overflow: auto;
+  display: block;
+}
+
+.inline-block {
+  display:block;
+}
+
+// :root {
+//   --scale: 0.15;
+// }
+
+// .scaled-container {
+//   width: calc(1080px * var(--scale));
+//   height: calc(1920px * var(--scale));
+//   font-size: calc(16px * var(--scale));
+//   padding: calc(20px * var(--scale));
+//   background-color: white;
+//   overflow: hidden; /* prevent accidental overflow */
+//   box-sizing: border-box;
+//   border: 1px solid #ccc;
+// }
+
+
+// :root {
+//   --scale: 0.28;
+// }
+
+// #canvas-zoomable {
+//   transform: scale(var(--scale));
+//   transform-origin: top left;
+//   width: calc(1080px * var(--scale));
+//   height: calc(1920px * var(--scale));
+//   overflow: hidden;
+//   position: relative;
+//   border: 1px solid #ccc;
+// }
+
+// // #canvas-zoomable #canvas-id {
+// //   display: block;
+// //   width: 1080px; /* base size */
+// //   height: 1920px;
+// // }
+
+// #canvas-zoomable .controls {
+//   position: absolute;
+//   bottom: 10px;
+//   left: 10px;
+//   font-size: calc(16px * var(--scale));
+// }

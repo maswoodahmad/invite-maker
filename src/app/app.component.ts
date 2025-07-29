@@ -1,3 +1,4 @@
+import { ModeService } from './services/mode.service';
 import { CanvasService } from './services/canvas.service';
 import {
   Component,
@@ -5,6 +6,7 @@ import {
   ElementRef,
   AfterViewInit,
   ChangeDetectorRef,
+  HostListener,
 } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -36,7 +38,7 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
     ProjectToolbarComponent,
     BottomBarComponent,
 
-    SidebarShellComponent
+    SidebarShellComponent,
 
     // Add other sidebar modules when needed
   ],
@@ -46,51 +48,53 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
       state('hidden', style({ transform: 'translateX(-100%)', opacity: 0 })),
       transition('hidden => visible', [
         style({ transform: 'translateX(-100%)', opacity: 0 }),
-        animate('200ms ease-out')
+        animate('200ms ease-out'),
       ]),
       transition('visible => hidden', [
-        animate('150ms ease-in', style({ transform: 'translateX(-100%)', opacity: 0 }))
-      ])
-    ])
+        animate(
+          '150ms ease-in',
+          style({ transform: 'translateX(-100%)', opacity: 0 })
+        ),
+      ]),
+    ]),
   ],
   templateUrl: './app.component.html',
 })
 export class AppComponent implements AfterViewInit {
-  activeSidebar:SidebarView = null;
+  activeSidebar: SidebarView = null;
   sidebarWidth = 80; // initial icon sidebar width
   @ViewChild(FabricEditorComponent) canvasComponent!: FabricEditorComponent;
 
   readonly A4_WIDTH = 794;
   readonly A4_HEIGHT = 1123;
 
-
-
-
   @ViewChild('dynamicSidebar') dynamicSidebarRef!: ElementRef<HTMLElement>;
 
   templateSidebarWidth: number = 400;
 
-  constructor(private cdr: ChangeDetectorRef, private zoomService: CanvasZoomService, private canvasControlService: CanvasControlService,
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private zoomService: CanvasZoomService,
+    private canvasControlService: CanvasControlService,
     public sidebarService: SidebarStateService,
     private breakpointObserver: BreakpointObserver,
-    private canvasService : CanvasService
-  ) { }
-
-
+    private canvasService: CanvasService,
+    private modeService: ModeService
+  ) {}
 
   ngAfterViewInit(): void {
     // Wait for sidebar to render
     //setTimeout(() => this.updateSidebarWidth(), 50);
-
   }
 
   isMobile = false;
+  isViewOnly = false;
 
   private previousSidebarVisible = false;
   private sub = Subscription.EMPTY;
 
-  @ViewChild(TemplateSidebarComponent) templateSidebarRef!: TemplateSidebarComponent;
-
+  @ViewChild(TemplateSidebarComponent)
+  templateSidebarRef!: TemplateSidebarComponent;
 
   ngOnInit() {
     // this.sidebarService.activeSidebar$.subscribe((type) => {
@@ -98,38 +102,34 @@ export class AppComponent implements AfterViewInit {
     //   this.canvasControlService.adjustCanvasPosition(isOpen);
     // });
 
-
-
-
-    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+    this.breakpointObserver
+    .observe([Breakpoints.Handset])
+    .subscribe((result) => {
       this.isMobile = result.matches;
     });
 
-
+    this.modeService.mode$.subscribe((mode) => {
+      this.isViewOnly = mode === 'viewing';
+    });
   }
-
-
-
-
-
-
-
 
   updateSidebarWidth() {
     const dynamicEl = this.dynamicSidebarRef?.nativeElement;
 
-    this.sidebarWidth = this.activeSidebar && dynamicEl
-      ? 80 + (dynamicEl.offsetWidth || 340)
-      : 80;
+    this.sidebarWidth =
+      this.activeSidebar && dynamicEl
+        ? 80 + (dynamicEl.offsetWidth || 340)
+        : 80;
 
     this.cdr.markForCheck(); // ensures Angular reflects new layout
   }
 
+  onMenuOpen(isOpen: boolean) {}
 
-  onMenuOpen(isOpen :boolean) {
-    
-
-
+  @HostListener('wheel', ['$event'])
+  onWheel(event: WheelEvent) {
+    if (event.ctrlKey) {
+      event.preventDefault(); // always block browser zoom
+    }
   }
-
 }

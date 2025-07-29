@@ -1,7 +1,8 @@
+import { ModeService } from './../services/mode.service';
 
 import { CanvasControlService } from './../services/canvas-control.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, computed, ElementRef, HostListener, Inject, Input, PLATFORM_ID, Signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, HostListener, Inject, Input, PLATFORM_ID, signal, Signal, ViewChild } from '@angular/core';
 import { FabricEditorComponent } from '../fabric-editor/fabric-editor.component';
 import { CanvasViewComponent } from '../canvas-view/canvas-view.component';
 import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
@@ -34,16 +35,21 @@ export class CanvasProjectWrapperComponent {
   showFloatingToolbar!: boolean;
   editorMode!: ToolbarMode;
 
+  focusedCanvasId = signal<string | null>(null);
+  isTouchScrolling!: boolean;
+
   constructor(
     private canvasControlService: CanvasControlService,
     private templateService: TemplateService,
     public canvasService: CanvasService,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private canvasManagerService: CanvasManagerService
+    private canvasManagerService: CanvasManagerService,
+    private modeService: ModeService
   ) {}
 
   isSidebarOpen = false;
 
+  isViewOnly = false;
   toolbarConfig = TOOLBAR_CONFIG;
   toolbarPresets!: ToolbarMode;
 
@@ -68,6 +74,10 @@ export class CanvasProjectWrapperComponent {
     setTimeout(() => {
       this.calculateAndShiftCanvas();
     });
+
+    this.modeService.mode$.subscribe(
+      (mode) => (this.isViewOnly = 'viewing' == mode)
+    );
   }
 
   showToolbar = true;
@@ -104,11 +114,14 @@ export class CanvasProjectWrapperComponent {
   activePageIndex = 0;
 
   addPage(canvasPage?: CanvasPage) {
+    if (this.isViewOnly) return;
     if (canvasPage) {
       this.pages.push(canvasPage);
+      this.focusedCanvasId.set(canvasPage.id);
     } else {
+      const id = uuidv4();
       this.pages.push({
-        id: uuidv4(),
+        id: id,
         title: this.title,
         template: 'A4',
         width: 794,
@@ -118,9 +131,10 @@ export class CanvasProjectWrapperComponent {
         createdAt: new Date(),
         updatedAt: new Date(),
         isVisible: true,
-        background:'white'
+        background: 'white',
       });
       this.activePageIndex = this.pages.length - 1;
+      this.focusedCanvasId.set(id);
     }
   }
 
@@ -247,17 +261,20 @@ export class CanvasProjectWrapperComponent {
   }
 
   onDeletePage(): void {
+    if (this.isViewOnly) return;
     if (this.pages.length <= 1) return;
     this.pages.splice(this.activePageIndex, 1);
     this.activePageIndex = Math.max(0, this.activePageIndex - 1);
   }
 
   onDuplicatePage(updatedPage: CanvasPage) {
+    if (this.isViewOnly) return;
     console.log('📥 Received duplicated page in parent:', updatedPage);
     this.addPage(updatedPage);
   }
 
   onRenamePage(): void {
+    if (this.isViewOnly) return;
     this.pageNames[this.activePageIndex] = 'newName';
   }
 
@@ -267,6 +284,7 @@ export class CanvasProjectWrapperComponent {
   }
 
   onPageUp(index: number) {
+    if (this.isViewOnly) return;
     if (index > 0) {
       [this.pages[index - 1], this.pages[index]] = [
         this.pages[index],
@@ -276,6 +294,7 @@ export class CanvasProjectWrapperComponent {
   }
 
   onPageDown(index: number) {
+    if (this.isViewOnly) return;
     if (index < this.pages.length - 1) {
       [this.pages[index + 1], this.pages[index]] = [
         this.pages[index],
@@ -285,6 +304,7 @@ export class CanvasProjectWrapperComponent {
   }
 
   onLockToggle(updatedCanvas: CanvasPage) {
+    if (this.isViewOnly) return;
     const shouldLock = !!updatedCanvas.isLocked;
     this.genericUpdate(updatedCanvas);
 
@@ -348,16 +368,16 @@ export class CanvasProjectWrapperComponent {
   }
 
   handleDocumentClick = (event: MouseEvent) => {
-    const canvasEl = this.canvasContainerRef.nativeElement;
-    const toolbarEl = this.toolbarContainerRef.nativeElement;
-    const canvasWrapperEl = this.canvasWrapperRef.nativeElement;
+    const canvasEl = this.canvasContainerRef?.nativeElement;
+    const toolbarEl = this.toolbarContainerRef?.nativeElement;
+    const canvasWrapperEl = this.canvasWrapperRef?.nativeElement;
 
     const target = event.target as Node;
 
     if (
-      canvasWrapperEl.contains(target) && // clicked inside wrapper
-      !canvasEl.contains(target) && // not on canvas
-      !toolbarEl.contains(target) // not on toolbar
+      canvasWrapperEl?.contains(target) && // clicked inside wrapper
+      !canvasEl?.contains(target) && // not on canvas
+      !toolbarEl?.contains(target) // not on toolbar
     ) {
       console.log('📌 Clicked outside the canvas but inside wrapper!');
       if (this.canvasService.activeObjectSignal() !== 'null') {
@@ -374,4 +394,64 @@ export class CanvasProjectWrapperComponent {
   get isToolbarVisible() {
     return this.canvasService.isToolbarActive;
   }
+
+  focusCanvas(id: string, event: MouseEvent) {
+    event.stopPropagation();
+    if (this.isViewOnly || this.focusedCanvasId() === id) return;
+    this.focusedCanvasId.set(id);
+  }
+
+  isFocused(id: string): boolean {
+    console.log(id, ' focused', this.focusedCanvasId());
+    console.log('is focused or not ', this.focusedCanvasId() === id);
+    return this.focusedCanvasId() === id;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onGlobalClick(event: MouseEvent) {
+    const clickedInsideCanvas = this.canvasContainerRef?.nativeElement.contains(
+      event.target as Node
+    );
+    const clickedAddBtn = (event.target as HTMLElement).closest('.add-btn');
+    console.log('Clicked outside any canvas or .add-btn');
+
+    if (!clickedInsideCanvas && !clickedAddBtn) {
+      this.focusedCanvasId.set(null); // only remove border
+    }
+  }
+
+  // onTouchStart = () => {
+  //   this.isTouchScrolling = true;
+  //    const canvas = this.canvasManagerService.getActiveCanvas();
+  //   if (canvas) {
+  //     canvas.selection = false;
+  //     canvas.skipTargetFind = true;
+  //   }
+  // };
+
+  // onTouchEnd = () => {
+  //   this.isTouchScrolling = false;
+  //  const  canvas = this.canvasManagerService.getActiveCanvas();
+  //   if (canvas) {
+  //     canvas.selection = true;
+  //     canvas.skipTargetFind = false;
+  //   }
+  // };
+
+  zoomLevel = 1;
+
+  @HostListener('wheel', ['$event'])
+  onZoomCanvas(event: WheelEvent) {
+    const zoomable = (event.target as HTMLElement).closest(
+      '#canvas-wrapper-parent'
+    );
+    if (event.ctrlKey && zoomable) {
+      event.preventDefault();
+
+      const delta = event.deltaY > 0 ? -0.1 : 0.1;
+      this.zoomLevel = Math.min(Math.max(this.zoomLevel + delta, 0.2), 3); // Clamp zoom
+      
+    }
+  }
+  
 }

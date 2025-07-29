@@ -13,6 +13,7 @@ import {
   signal,
   Output,
   EventEmitter,
+  Renderer2,
 } from '@angular/core';
 import * as fabric from 'fabric';
 import { CanvasManagerService } from '../services/canvas-manager.service';
@@ -21,7 +22,7 @@ import { CanvasPage } from '../interface/interface';
 import { Subscription } from 'rxjs';
 import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
 import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
-
+import { ModeService } from '../services/mode.service';
 
 @Component({
   selector: 'app-canvas-view',
@@ -34,27 +35,31 @@ export class CanvasViewComponent implements AfterViewInit {
   @ViewChild('canvasEl', { static: true })
   canvasRef!: ElementRef<HTMLCanvasElement>;
 
+  @ViewChild('canvasPorject', { static: true })
+  canvasWrapperRef!: ElementRef<HTMLCanvasElement>;
+
   // @Input() width = 400;   // Default A4
   // @Input() height = 400;
   @Input() data: CanvasPage | any;
 
-  focusedCanvasId = signal<string | null>(null);
-
   canvas!: fabric.Canvas;
   //@Input() isActive = false;
 
-  readonly A4_WIDTH = 794;
-  readonly A4_HEIGHT = 1123;
+  readonly A4_WIDTH = 1080;
+  readonly A4_HEIGHT = 1920;
+
+  zoomLevel = 0.28;
 
   toolbarConfig = TOOLBAR_CONFIG;
   toolbarPresets!: ToolbarMode;
 
-
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private canvasService: CanvasService,
+    protected canvasService: CanvasService,
     protected canvasManagerService: CanvasManagerService,
-    private canvasClipboardService: CanvasClipboardService
+    private canvasClipboardService: CanvasClipboardService,
+    private modeService: ModeService,
+    private renderer: Renderer2
   ) {}
 
   tempData = {
@@ -66,30 +71,65 @@ export class CanvasViewComponent implements AfterViewInit {
   viewportWidth = 1400;
   viewportHeight = 700;
 
+  CANVAS_WIDTH = 1080;
+  CANVAS_HEIGHT = 1920;
+
   private sub!: Subscription;
+
+  isTouchScrolling = false;
 
   showToolbar = false;
 
   isActive!: boolean;
+  isViewOnly = false;
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    console.log('height', window.innerHeight);
+
     this.sub = this.canvasManagerService
     .getActiveCanvasId$()
     .subscribe((activeId) => {
       if (activeId) this.canvasService.activeCanvasId.set(activeId);
       this.isActive = activeId === this.data.id;
     });
+
+    this.modeService.mode$.subscribe((mode) => {
+      this.isViewOnly = mode === 'viewing';
+      if (this.canvas) {
+        this.canvas.selection = !this.isViewOnly;
+
+        this.canvas.forEachObject((obj) => {
+          obj.selectable = !this.isViewOnly;
+          obj.evented = !this.isViewOnly;
+        });
+
+        this.canvas.renderAll();
+      }
+    });
+
+    this.renderer.listen(this.canvasRef.nativeElement, 'touchstart', () => {
+      this.isTouchScrolling = true;
+      this.canvas.selection = false;
+      this.canvas.skipTargetFind = true;
+    });
+
+    this.renderer.listen(this.canvasRef.nativeElement, 'touchend', () => {
+      this.isTouchScrolling = false;
+      this.canvas.selection = true;
+      this.canvas.skipTargetFind = false;
+    });
   }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    console.log('height', window.innerHeight);
 
     const el = this.canvasRef.nativeElement;
 
     // Set desired canvas size
-    el.width = this.A4_WIDTH;
-    el.height = this.A4_HEIGHT;
+    el.width = this.CANVAS_WIDTH ;
+    el.height = this.CANVAS_HEIGHT ;
 
     // Clean up any old fabric.Canvas instance if exists
     const existingCanvas = this.canvasManagerService.getCanvasById(
@@ -102,39 +142,27 @@ export class CanvasViewComponent implements AfterViewInit {
     // Create fresh canvas instance
     this.canvas = new fabric.Canvas(el, {
       preserveObjectStacking: true,
-      selection: true,
       backgroundColor: 'white',
+      selection: !this.isViewOnly,
+
     });
+//56 + 52 +
 
     // Register and set canvas
     this.canvasManagerService.registerCanvas(this.data.id, this.canvas);
-    this.canvas.on('mouse:down', () => {
-      console.log('[Canvas] Mouse down on canvas with ID:', this.data.id);
-      this.canvasManagerService.setActiveCanvasById('null'); // clear
-      this.canvasManagerService.setActiveCanvasById(this.data.id);
-      this.canvasService.activeCanvasId.set('');
-      this.canvasService.activeCanvasId.set(this.data.id);
-    });
+    this.registerMouseClickOnCanvas();
 
     // Load design JSON (if present)
-   if (this.data.data) {
-     this.canvas.loadFromJSON(this.data.data).then(() => {
-       // Set background color if it's not saved in JSON
-       this.canvas.backgroundColor = this.data.background ?? 'white';
-       this.canvas.renderAll.bind(this.canvas);
+    if (this.data.data) {
+      this.loadCanvasFromExistingData();
+    } else {
+      this.canvas.backgroundColor = 'white';
+      this.canvas.renderAll.bind(this.canvas);
+      this.canvas.selection = !this.isViewOnly;
+      this.canvas.renderAll();
+    }
 
-       if (this.data.isLocked) {
-         this.onLockToggle(this.data);
-       }
-
-       this.canvas.renderAll();
-     });
-   } else {
-     this.canvas.backgroundColor = 'white';
-       this.canvas.renderAll.bind(this.canvas);
-     this.canvas.renderAll();
-   }
-
+    console.log('canavs with id created', this.data?.id);
     // Init and center
     // this.canvasService.initCanvas(this.canvas);
     this.viewportWidth = window.innerWidth;
@@ -143,6 +171,7 @@ export class CanvasViewComponent implements AfterViewInit {
       ...this.tempData,
       viewportWidth: this.viewportWidth,
       viewportHeight: this.viewportHeight,
+      canvas : this.canvas
     });
 
     this.canvas.on('selection:created', (e: any) => {
@@ -257,7 +286,7 @@ export class CanvasViewComponent implements AfterViewInit {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyDown(event: KeyboardEvent) {
-    if (event.ctrlKey || event.metaKey) {
+    if (!this.isViewOnly && (event.ctrlKey || event.metaKey)) {
       switch (event.key.toLowerCase()) {
         case 'c':
           event.preventDefault();
@@ -295,6 +324,7 @@ export class CanvasViewComponent implements AfterViewInit {
         ...this.tempData,
         viewportWidth: this.viewportWidth,
         viewportHeight: this.viewportHeight,
+        canvas : this.canvas
       });
     }
   }
@@ -332,25 +362,6 @@ export class CanvasViewComponent implements AfterViewInit {
     canvas.renderAll();
   }
 
-  @HostListener('document:click', ['$event'])
-  onGlobalClick(event: MouseEvent) {
-    const clickedInsideCanvas = this.canvasRef?.nativeElement.contains(
-      event.target as Node
-    );
-    if (!clickedInsideCanvas) {
-      this.focusedCanvasId.set(null); // only remove border
-    }
-  }
-
-  focusCanvas(id: string, event: MouseEvent) {
-    event.stopPropagation();
-    this.focusedCanvasId.set(id);
-  }
-
-  isFocused(id: string): boolean {
-    return this.focusedCanvasId() === id;
-  }
-
   showToolbarFor(obj: any) {
     let mode!: ToolbarMode;
     if (obj == null) {
@@ -365,6 +376,40 @@ export class CanvasViewComponent implements AfterViewInit {
     return mode;
   }
 
+  loadCanvasFromExistingData() {
+    this.canvas.loadFromJSON(this.data.data).then(() => {
+      // Set background color if it's not saved in JSON
+      this.canvas.backgroundColor = this.data.background ?? 'white';
+      (this.canvas.selection = !this.isViewOnly),
+        this.canvas.renderAll.bind(this.canvas);
 
+      if (this.data.isLocked) {
+        this.onLockToggle(this.data);
+      }
 
+      this.canvas.renderAll();
+    });
+  }
+
+  registerMouseClickOnCanvas() {
+    this.canvas.on('mouse:down', () => {
+      console.log('[Canvas] Mouse down on canvas with ID:', this.data.id);
+      this.canvasManagerService.setActiveCanvasById('null'); // clear
+      this.canvasManagerService.setActiveCanvasById(this.data.id);
+      this.canvasService.activeCanvasId.set('');
+      this.canvasService.activeCanvasId.set(this.data.id);
+    });
+  }
+
+  @HostListener('touchstart', ['$event'])
+  onTouchStart() {
+    this.canvas.selection = false;
+    this.canvas.skipTargetFind = true;
+  }
+
+  @HostListener('touchend', ['$event'])
+  onTouchEnd() {
+    this.canvas.selection = true;
+    this.canvas.skipTargetFind = false;
+  }
 }

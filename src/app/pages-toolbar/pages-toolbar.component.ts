@@ -5,29 +5,30 @@ import { CanvasPage } from '../interface/interface';
 import { v4 as uuidv4 } from 'uuid';
 import { CanvasService } from '../services/canvas.service';
 import { TooltipDirective } from '../shared/tooltip.directive';
+import { ModeService } from '../services/mode.service';
 
 
 @Component({
   selector: 'app-pages-toolbar',
   imports: [FormsModule, CommonModule, TooltipDirective],
   templateUrl: './pages-toolbar.component.html',
-  styleUrl: './pages-toolbar.component.scss'
+  styleUrl: './pages-toolbar.component.scss',
 })
 export class PagesToolbarComponent {
   placeHolderText: string = 'Add page title';
-  constructor(private canvasService: CanvasService) { }
+  isViewOnly: boolean = false;
+  constructor(private canvasService: CanvasService, private modeService: ModeService) {}
 
   // page-toolbar.component.ts
   @Output() addPage = new EventEmitter<void>();
   @Output() deletePage = new EventEmitter<void>();
   @Output() duplicate = new EventEmitter<CanvasPage>();
   @Output() hide = new EventEmitter<CanvasPage>();
-  @Output() moveUp = new EventEmitter<void>;
-  @Output() moveDown = new EventEmitter<void>;
+  @Output() moveUp = new EventEmitter<void>();
+  @Output() moveDown = new EventEmitter<void>();
   @Input() pageNumber!: number | string;
   @Input() pageInfo!: CanvasPage;
-  @Output() lock = new EventEmitter<CanvasPage>;
-
+  @Output() lock = new EventEmitter<CanvasPage>();
 
   @Output() titleChange = new EventEmitter<CanvasPage>();
 
@@ -36,35 +37,35 @@ export class PagesToolbarComponent {
   isHidden = false;
   isLocked = false;
 
-  value = ''
+  value = '';
 
   onBlur() {
-
-
+    if (this.isViewOnly) return;
     if (this.value.trim().length === 0) {
       this.typed = false;
     }
 
     this.titleChange.emit({
       ...this.pageInfo,
-      title: this.value
+      title: this.value,
     });
   }
 
   canvasObjects: any;
 
   ngOnInit() {
-    this.getObjects()
+    this.getObjects();
+    this.modeService.mode$.subscribe(
+      (mode) => (this.isViewOnly = mode == 'viewing')
+    );
   }
-
 
   duplicatePage() {
     const currentCanvas = this.canvasService.getCanvas();
     const objectCount = currentCanvas?.getObjects().length;
-    console.log(currentCanvas?.getObjects())
+    console.log(currentCanvas?.getObjects());
 
     if (currentCanvas) {
-
       const canvasJSON = JSON.parse(JSON.stringify(currentCanvas.toJSON()));
       this.duplicate.emit({
         ...this.pageInfo,
@@ -72,30 +73,21 @@ export class PagesToolbarComponent {
         createdAt: new Date(),
         updatedAt: new Date(),
 
-        data: canvasJSON
+        data: canvasJSON,
       });
-
-
     }
-
   }
 
   onFocus() {
     this.typed = true;
   }
 
-
   onHideClick() {
-
     this.hide.emit({
       ...this.pageInfo,
-      isVisible: !this.pageInfo.isVisible
+      isVisible: !this.pageInfo.isVisible,
     });
   }
-
-
-
-
 
   typed = false;
 
@@ -109,8 +101,6 @@ export class PagesToolbarComponent {
     this.isLocked = !this.pageInfo.isLocked;
     this.placeHolderText = !this.typed ? this.placeHolderText : '';
     this.getObjects();
-
-
   }
 
   getObjects() {
@@ -122,19 +112,14 @@ export class PagesToolbarComponent {
     this.isLocked = !this.isLocked;
 
     const currentCanvas = this.canvasService.getCanvas();
-    console.log(currentCanvas?.getObjects())
+    console.log(currentCanvas?.getObjects());
     if (currentCanvas) {
-
       const canvasJSON = JSON.parse(JSON.stringify(currentCanvas.toJSON()));
-      this.lock.emit({ ...this.pageInfo, data: canvasJSON, isLocked: !this.pageInfo.isLocked });
+      this.lock.emit({
+        ...this.pageInfo,
+        data: canvasJSON,
+        isLocked: !this.pageInfo.isLocked,
+      });
     }
-
-
-
   }
-
-
-
-
-
 }
