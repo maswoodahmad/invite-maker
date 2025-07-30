@@ -10,6 +10,7 @@ import { SidebarStateService } from '../services/sidebar-state.service';
 
 import { TextPreset, TextPresets } from '../../assets/textPresets';
 import { v4 as uuidv4 } from 'uuid';
+import { assignMetadata } from '../utils/fabric-object-utils';
 
 @Component({
   selector: 'app-text-sidebar',
@@ -74,7 +75,8 @@ export class TextSidebarComponent {
       evented: true
     });
 
-    (textbox as any).id = uuidv4();
+
+    assignMetadata(textbox, { name: 'my-text' });
 
     canvas.add(textbox);
     canvas.setActiveObject(textbox);

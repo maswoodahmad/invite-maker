@@ -1,5 +1,5 @@
 import * as fabric from 'fabric';
-import { v4 as uuidv4 } from 'uuid'; // Install uuid package for unique IDs
+import { v4 as uuidv4 } from 'uuid';
 
 export function assignMetadata<T extends fabric.Object>(
   object: T,
@@ -12,15 +12,6 @@ export function assignMetadata<T extends fabric.Object>(
     (object as any)[key] = metadata[key];
   }
 
-  // Patch toObject to include custom props
-  const originalToObject = object.toObject;
-  object.toObject = function (propertiesToInclude?: string[]) {
-    return {
-      ...originalToObject.call(this, propertiesToInclude),
-      id: (this as any).id,
-      ...metadata
-    };
-  };
-
+  // No need to override toObject if global patch handles 'id' and 'name'
   return object;
 }

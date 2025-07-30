@@ -1,0 +1,14 @@
+.drag-over {
+    border: 2px dashed #3498db;
+  }
+.draggable {
+  padding: 15px;
+  margin: 10px 0;
+  background-color: #3498db;
+  color: white;
+  border-radius: 5px;
+  cursor: grab;
+}
+.drag-over {
+  border: 2px dashed #2ecc71;
+}

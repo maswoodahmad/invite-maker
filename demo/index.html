@@ -1,37 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <title>Fabric.js Vanilla Test</title>
+  <meta charset="UTF-8">
+  <title>Custom Zoom Scaling</title>
   <style>
-    canvas {
+    body {
+      margin: 0;
+      background: #f0f0f0;
+    }
+
+    #zoomableCanvas {
       border: 1px solid #ccc;
+      background: white;
+      overflow: hidden;
+    }
+
+    .controls {
+      margin-top: 10px;
     }
   </style>
 </head>
+
 <body>
-  <h2>Fabric.js Image Load Test</h2>
-  <canvas id="canvas" width="800" height="600"></canvas>
 
+  <div id="zoomableCanvas">
+    <canvas id="canvas" width="1080" height="1920"></canvas>
+    <div class="controls">
+      <button onclick="applyScale(zoomLevel + 0.1)">Zoom In</button>
+      <button onclick="applyScale(zoomLevel - 0.1)">Zoom Out</button>
+    </div>
+  </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+  <script>
+    const canvasEl = document.getElementById('canvas');
+    const zoomableCanvas = document.getElementById('zoomableCanvas');
+    const controls = zoomableCanvas.querySelector('.controls');
+    const fabricCanvas = new fabric.Canvas(canvasEl, {backgroundColor: 'black'});
 
+    // Base sizes
+    const baseWidth = 1080;
+    const baseHeight = 1920;
+    const baseFont = 16;
+    const basePadding = 10;
 
-  <!-- ✅ Include the correct version of fabric.js BEFORE using it -->
+    let zoomLevel = 0.28;
 
+    function applyScale(scale) {
+      zoomLevel = Math.max(0.1, Math.min(scale, 3));
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-<script>
-  const canvas = new fabric.Canvas('canvas');
+      // Resize the wrapper
+      zoomableCanvas.style.width = `${baseWidth * zoomLevel}px`;
+      zoomableCanvas.style.height = `${baseHeight * zoomLevel}px`;
 
-var imgElement = document.getElementById('my-image');
-const testUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/PNG_transparency_demonstration_1.png/640px-PNG_transparency_demonstration_1.png'
-    fabric.Image.fromURL(testUrl, function(oImg) {
-  canvas.add(oImg);
-});
+      // Resize the canvas HTML element
+      canvasEl.style.width = `${baseWidth * zoomLevel}px`;
+      canvasEl.style.height = `${baseHeight * zoomLevel}px`;
 
-</script>
+      // Let fabric know about the resize
+      fabricCanvas.setDimensions({
+        width: baseWidth * zoomLevel,
+        height: baseHeight * zoomLevel
+      });
+
+      // Resize the controls
+      controls.style.fontSize = `${baseFont * zoomLevel}px`;
+      controls.style.padding = `${basePadding * zoomLevel}px`;
+    }
+
+    // Wheel zoom
+    document.addEventListener('wheel', function (event) {
+      const inside = event.target.closest('#zoomableCanvas');
+      if (event.ctrlKey && inside) {
+        event.preventDefault();
+        const delta = event.deltaY > 0 ? -0.1 : 0.1;
+        applyScale(zoomLevel + delta);
+      }
+    }, { passive: false });
+
+    // Initial scale
+    applyScale(zoomLevel);
+  </script>
 </body>
+
 </html>
-
-
-

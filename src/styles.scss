@@ -14,3 +14,16 @@
 .animate-fadeIn {
   animation: fadeIn 0.15s ease-out;
 }
+
+
+html, body {
+  overscroll-behavior: none;
+  overflow: hidden;
+  height: 100%;
+}
+
+.canvas-wrapper-parent{
+  overflow: auto;
+  overscroll-behavior: contain; /* allows scroll only here, not globally */
+  touch-action: pan-x pan-y;
+}

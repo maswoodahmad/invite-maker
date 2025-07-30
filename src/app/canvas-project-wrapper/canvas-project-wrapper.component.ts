@@ -2,7 +2,18 @@ import { ModeService } from './../services/mode.service';
 
 import { CanvasControlService } from './../services/canvas-control.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, computed, ElementRef, HostListener, Inject, Input, PLATFORM_ID, signal, Signal, ViewChild } from '@angular/core';
+import {
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  Inject,
+  Input,
+  PLATFORM_ID,
+  signal,
+  Signal,
+  ViewChild,
+} from '@angular/core';
 import { FabricEditorComponent } from '../fabric-editor/fabric-editor.component';
 import { CanvasViewComponent } from '../canvas-view/canvas-view.component';
 import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
@@ -10,11 +21,12 @@ import { PagesToolbarComponent } from '../pages-toolbar/pages-toolbar.component'
 import { TemplateService } from '../services/template.service';
 import { LayerPanelComponent } from '../canvas/layer-panel.component';
 import { CanvasService } from '../services/canvas.service';
-import * as fabric from 'fabric'
+import * as fabric from 'fabric';
 import { CanvasPage, CustomFabricObject } from '../interface/interface';
 import { v4 as uuidv4 } from 'uuid';
 import { CanvasManagerService } from '../services/canvas-manager.service';
 import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
+import { ExperimentalCanvasComponent } from '../../experimental-canvas/experimental-canvas.component';
 
 @Component({
   selector: 'app-canvas-project-wrapper',
@@ -24,6 +36,7 @@ import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
     AppToolbarComponent,
     PagesToolbarComponent,
     LayerPanelComponent,
+    ExperimentalCanvasComponent,
   ],
   templateUrl: './canvas-project-wrapper.component.html',
   styleUrl: './canvas-project-wrapper.component.scss',
@@ -62,6 +75,8 @@ export class CanvasProjectWrapperComponent {
   @ViewChild('canvasWrapeprEl')
   canvasWrapperRef!: ElementRef;
 
+  canvasPage = new fabric.Canvas('canvas-id') as CanvasPage;
+
   ngOnInit() {
     if (!isPlatformBrowser(this.platformId)) return;
 
@@ -78,6 +93,7 @@ export class CanvasProjectWrapperComponent {
     this.modeService.mode$.subscribe(
       (mode) => (this.isViewOnly = 'viewing' == mode)
     );
+    this.setCanvas(this.canvasPage);
   }
 
   showToolbar = true;
@@ -94,20 +110,7 @@ export class CanvasProjectWrapperComponent {
 
   pageNames: string[] = [];
 
-  pages: CanvasPage[] = [
-    {
-      id: uuidv4(),
-      title: 'Cover Page',
-      template: 'A4',
-      width: 794,
-      height: 1123,
-      createdBy: 'Touheed',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isVisible: true,
-      isLocked: false,
-    },
-  ];
+  pages: CanvasPage[] = [this.canvasPage];
 
   sidebarOffset = 0;
 
@@ -120,19 +123,11 @@ export class CanvasProjectWrapperComponent {
       this.focusedCanvasId.set(canvasPage.id);
     } else {
       const id = uuidv4();
-      this.pages.push({
-        id: id,
-        title: this.title,
-        template: 'A4',
-        width: 794,
-        height: 1123,
-        data: {}, // serialized fabric JSON
-        createdBy: 'Touheed',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isVisible: true,
-        background: 'white',
-      });
+      canvasPage = new fabric.Canvas('canvas-id') as CanvasPage;
+
+      this.setCanvas(canvasPage);
+
+      this.pages.push(canvasPage);
       this.activePageIndex = this.pages.length - 1;
       this.focusedCanvasId.set(id);
     }
@@ -402,8 +397,6 @@ export class CanvasProjectWrapperComponent {
   }
 
   isFocused(id: string): boolean {
-    console.log(id, ' focused', this.focusedCanvasId());
-    console.log('is focused or not ', this.focusedCanvasId() === id);
     return this.focusedCanvasId() === id;
   }
 
@@ -450,8 +443,42 @@ export class CanvasProjectWrapperComponent {
 
       const delta = event.deltaY > 0 ? -0.1 : 0.1;
       this.zoomLevel = Math.min(Math.max(this.zoomLevel + delta, 0.2), 3); // Clamp zoom
-      
     }
   }
-  
+
+  private disposeAllCanvases(): void {
+    this.pages.forEach((canvas, canvasId) => {
+      // 1. Remove all objects from the canvas
+      canvas.clear();
+
+      // 2. Dispose any Fabric event handlers (like mouse, touch)
+      canvas.dispose();
+
+      // 3. Remove canvas from DOM manually if needed
+      const canvasEl = document.getElementById('canvasId');
+      if (canvasEl) {
+        canvasEl.remove();
+      }
+
+      // 4. Remove from map to free memory
+      this.canvasManagerService.disposeAll();
+    });
+  }
+
+  setCanvas(
+    canvasPage: CanvasPage,
+    height: number = 1920,
+    width: number = 1080
+  ) {
+    canvasPage.id = 'page-1';
+    canvasPage.title = 'Welcome Page';
+    canvasPage.template = 'A4';
+    canvasPage.createdBy = 'Touheed';
+    canvasPage.createdAt = new Date();
+    canvasPage.updatedAt = new Date();
+    canvasPage.isVisible = true;
+    canvasPage.isLocked = false;
+    canvasPage.canvasHeight = height;
+    canvasPage.canvasWidth = width;
+  }
 }

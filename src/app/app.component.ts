@@ -129,7 +129,7 @@ export class AppComponent implements AfterViewInit {
   @HostListener('wheel', ['$event'])
   onWheel(event: WheelEvent) {
     if (event.ctrlKey) {
-      event.preventDefault(); // always block browser zoom
+    //  event.preventDefault(); // always block browser zoom
     }
   }
 }

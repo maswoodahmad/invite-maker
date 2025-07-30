@@ -140,13 +140,13 @@ export const SIDEBAR_ITEMS = [
   { key: 'tools', label: 'Tools', icon: 'assets/icons/tools.svg' }
 ] as const satisfies SidebarItem[];
 
-export interface CanvasPage {
+export interface CanvasPage extends fabric.Canvas {
   id:   string;                  // Can use UUID if needed
   title?: string;                       // Page title
   template?: string;                    // e.g., 'A4', 'Poster'
-  width?: number;                       // Optional custom size
-  height?: number;
-  layers?: CanvasLayer[];              // Optional if you track layers separately
+  layers?: CanvasLayer[];
+  canvasWidth?: number,
+  canvasHeight?: number,
   data?: any;                           // fabric.Canvas JSON or state
   createdBy?: string;                   // Optional: user ID or name
   createdAt?: Date;                     // Timestamp
@@ -166,5 +166,15 @@ export interface UploadedImage {
   naturalWidth: number;
   naturalHeight: number;
   aspect: number;
+
+}
+
+
+export interface CustomTextBox extends fabric.Textbox{
+  id: string;
+  name: string;
+  locked?: boolean;
+
+
 
 }

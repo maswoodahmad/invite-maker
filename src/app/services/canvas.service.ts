@@ -21,6 +21,7 @@ export class CanvasService {
   private pageNumberPosition: PageNumberPosition = 'bottom-right';
 
   private layersStore = signal<Map<string, CanvasLayer[]>>(new Map());
+  private objectToLayerIdsMap = new Map<string, Set<string>>();
   activeCanvasId = signal<string | null>(null);
 
   lastPosition = { x: 100, y: 100 };
@@ -30,6 +31,7 @@ export class CanvasService {
   layersSignal = computed(() => {
     console.log('this ran', this.activeCanvasId());
     const id = this.activeCanvasId();
+   // console.log("active layers", this.layersStore().get(id));
     if (id) return this.layersStore().get(id);
     else return [];
   });
@@ -158,8 +160,8 @@ export class CanvasService {
   }
 
   async getLayers(): Promise<CanvasLayer[]> {
-    const canvas = this.getCanvas();
-    console.log('activce canvas', canvas);
+    const canvas = this.canvasManager.getActiveCanvas();
+    console.log('activce canvas id', this.activeCanvasId());
     if (!canvas) return [];
 
     const customObjects = canvas.getObjects() as CustomFabricObject[];
@@ -360,11 +362,9 @@ export class CanvasService {
     label: string;
     viewportWidth: number;
     viewportHeight: number;
-    canvas : fabric.Canvas
+    canvas: fabric.Canvas;
   }) {
     if (!isPlatformBrowser(this.platformId)) return;
-
-    const canvas = config.canvas;
 
     const wrapper = document.getElementById('canvas-wrapper');
     if (!wrapper) return;
@@ -384,12 +384,32 @@ export class CanvasService {
     wrapper.style.transformOrigin = 'top center';
     wrapper.style.marginTop = `${(vh - config.height * scale) / 2}px`;
 
-    setTimeout(() => {
-      canvas.setWidth(canvas.getWidth() * scale);
-      canvas.setHeight(canvas.getHeight() * scale);
-      canvas.renderAll();
-    })
+    return scale;
+  }
 
+  resizeAndCenterCanvas2(config: {
+    viewportWidth: number;
+    viewportHeight: number;
+    canvasWidth: number;
+    canvasHeight: number;
+    zoomLevel: number;
+  }) {
+    const wrapper = document.getElementById('canvas-wrapper-parent');
+    const zoomable = document.getElementById('canvas-zoomable');
+
+    if (!wrapper || !zoomable) return;
+
+    const scaledWidth = config.canvasWidth * config.zoomLevel;
+    const scaledHeight = config.canvasHeight * config.zoomLevel;
+
+    const scrollLeft = (scaledWidth - wrapper.clientWidth) / 2;
+    const scrollTop = (scaledHeight - wrapper.clientHeight) / 2;
+
+    // wrapper.scrollTo({
+    //   top: scrollTop,
+    //   left: scrollLeft,
+    //   behavior: 'smooth',
+    // });
   }
 
   showToolbarFor(obj: any) {
@@ -427,7 +447,7 @@ export class CanvasService {
     if (target?.type === 'textbox') {
       const textbox = target as fabric.Textbox;
       this.textStyleSignal.set({
-        fontSize: textbox.fontSize *  (textbox.scaleY ?? 1),
+        fontSize: textbox.fontSize * (textbox.scaleY ?? 1),
         fontFamily: textbox.fontFamily || 'Arial',
         fontWeight: (textbox.fontWeight as any) || 'normal',
         fontStyle: (textbox.fontStyle as any) || 'normal',
@@ -456,7 +476,7 @@ export class CanvasService {
       // Update signal after applying changes
       const textbox = obj as fabric.Textbox;
       this.textStyleSignal.set({
-        fontSize: textbox.fontSize! *  (textbox.scaleY ?? 1),
+        fontSize: textbox.fontSize! * (textbox.scaleY ?? 1),
         fontFamily: textbox.fontFamily!,
         fontWeight: textbox.fontWeight as any,
         fontStyle: textbox.fontStyle as any,
@@ -466,11 +486,11 @@ export class CanvasService {
         fill: textbox.fill as string,
         textAlign: textbox.textAlign,
         scaleX: textbox.scaleX,
-        scaleY : textbox.scaleY
+        scaleY: textbox.scaleY,
       });
     }
 
-    console.log("signal value after change", this.textStyleBox?.fontSize);
+    console.log('signal value after change', this.textStyleBox?.fontSize);
   }
 
   updateActiveObjectProperties() {
@@ -481,7 +501,6 @@ export class CanvasService {
 
     switch (obj.type) {
       case 'textbox':
-
         const textbox = obj as fabric.Textbox;
         this.textStyleSignal.set({
           fontSize: textbox.fontSize * (textbox.scaleY ?? 1),
@@ -541,6 +560,5 @@ export class CanvasService {
     this.activeObjectSignal.set(this.showToolbarFor(obj.type));
     this.setTextBoxSignal(obj); // updates text styles
     this.updateActiveObjectProperties();
-
   }
 }

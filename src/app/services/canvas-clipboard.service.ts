@@ -2,6 +2,7 @@ import { CanvasManagerService } from './canvas-manager.service';
 import { Injectable } from '@angular/core';
 import * as fabric from 'fabric';
 import { CanvasService } from './canvas.service';
+import { CustomCanvasObject, CustomFabricObject } from '../interface/interface';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasClipboardService {
@@ -12,12 +13,14 @@ export class CanvasClipboardService {
   copy() {
 
     const activeCanvas = this.canvasManagerService.getActiveCanvas();
-    const activeObject = activeCanvas?.getActiveObject();
+    const activeObject = activeCanvas?.getActiveObject() as CustomFabricObject;
     if (!activeObject) return;
 
     activeObject.clone().then((cloned: fabric.Object) => {
       this.clipboard = cloned;
     });
+
+    console.log(this.clipboard);
   }
 
   cut() {

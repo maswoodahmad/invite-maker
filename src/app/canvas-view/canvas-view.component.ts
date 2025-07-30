@@ -1,4 +1,3 @@
-import { CanvasService } from './../services/canvas.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
@@ -10,57 +9,54 @@ import {
   Inject,
   PLATFORM_ID,
   HostListener,
-  signal,
-  Output,
-  EventEmitter,
   Renderer2,
+  OnDestroy,
+  OnInit,
 } from '@angular/core';
 import * as fabric from 'fabric';
+import { Subscription } from 'rxjs';
+
+import { CanvasService } from '../services/canvas.service';
 import { CanvasManagerService } from '../services/canvas-manager.service';
 import { CanvasClipboardService } from '../services/canvas-clipboard.service';
-import { CanvasPage } from '../interface/interface';
-import { Subscription } from 'rxjs';
-import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
-import { AppToolbarComponent } from '../app-toolbar/app-toolbar.component';
 import { ModeService } from '../services/mode.service';
+import { CanvasPage } from '../interface/interface';
+import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
 
 @Component({
   selector: 'app-canvas-view',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './canvas-view.component.html',
   styleUrls: ['./canvas-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CanvasViewComponent implements AfterViewInit {
+export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild('canvasEl', { static: true })
   canvasRef!: ElementRef<HTMLCanvasElement>;
-
   @ViewChild('canvasPorject', { static: true })
   canvasWrapperRef!: ElementRef<HTMLCanvasElement>;
 
-  // @Input() width = 400;   // Default A4
-  // @Input() height = 400;
-  @Input() data: CanvasPage | any;
+  @Input() data!: CanvasPage;
 
+  readonly A4_WIDTH = 540;
+  readonly A4_HEIGHT = 960;
+
+  readonly toolbarConfig = TOOLBAR_CONFIG;
   canvas!: fabric.Canvas;
-  //@Input() isActive = false;
 
-  readonly A4_WIDTH = 1080;
-  readonly A4_HEIGHT = 1920;
+  private sub!: Subscription;
 
+  // UI / Canvas States
+  isActive = false;
+  isViewOnly = false;
+  showToolbar = false;
+  isTouchScrolling = false;
+
+  // Default Canvas Config
+  CANVAS_WIDTH = this.A4_WIDTH;
+  CANVAS_HEIGHT = this.A4_HEIGHT;
   zoomLevel = 0.28;
-
-  toolbarConfig = TOOLBAR_CONFIG;
-  toolbarPresets!: ToolbarMode;
-
-  constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
-    protected canvasService: CanvasService,
-    protected canvasManagerService: CanvasManagerService,
-    private canvasClipboardService: CanvasClipboardService,
-    private modeService: ModeService,
-    private renderer: Renderer2
-  ) {}
 
   tempData = {
     width: this.A4_WIDTH,
@@ -68,24 +64,21 @@ export class CanvasViewComponent implements AfterViewInit {
     name: 'canvas',
     label: 'canvas',
   };
+
   viewportWidth = 1400;
   viewportHeight = 700;
 
-  CANVAS_WIDTH = 1080;
-  CANVAS_HEIGHT = 1920;
-
-  private sub!: Subscription;
-
-  isTouchScrolling = false;
-
-  showToolbar = false;
-
-  isActive!: boolean;
-  isViewOnly = false;
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private canvasService: CanvasService,
+    private canvasManagerService: CanvasManagerService,
+    private canvasClipboardService: CanvasClipboardService,
+    private modeService: ModeService,
+    private renderer: Renderer2
+  ) {}
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    console.log('height', window.innerHeight);
 
     this.sub = this.canvasManagerService
     .getActiveCanvasId$()
@@ -98,12 +91,10 @@ export class CanvasViewComponent implements AfterViewInit {
       this.isViewOnly = mode === 'viewing';
       if (this.canvas) {
         this.canvas.selection = !this.isViewOnly;
-
         this.canvas.forEachObject((obj) => {
           obj.selectable = !this.isViewOnly;
           obj.evented = !this.isViewOnly;
         });
-
         this.canvas.renderAll();
       }
     });
@@ -123,124 +114,75 @@ export class CanvasViewComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    console.log('height', window.innerHeight);
 
     const el = this.canvasRef.nativeElement;
+    el.width = this.CANVAS_WIDTH;
+    el.height = this.CANVAS_HEIGHT;
+    el.style.width = `${this.CANVAS_WIDTH}px`;
+    el.style.height = `${this.CANVAS_HEIGHT}px`;
 
-    // Set desired canvas size
-    el.width = this.CANVAS_WIDTH ;
-    el.height = this.CANVAS_HEIGHT ;
-
-    // Clean up any old fabric.Canvas instance if exists
     const existingCanvas = this.canvasManagerService.getCanvasById(
       this.data.id
     );
-    if (existingCanvas) {
-      existingCanvas.dispose(); // This clears event listeners and removes bindings
-    }
+    if (existingCanvas) existingCanvas.dispose();
 
-    // Create fresh canvas instance
     this.canvas = new fabric.Canvas(el, {
       preserveObjectStacking: true,
       backgroundColor: 'white',
       selection: !this.isViewOnly,
-
     });
-//56 + 52 +
 
-    // Register and set canvas
     this.canvasManagerService.registerCanvas(this.data.id, this.canvas);
     this.registerMouseClickOnCanvas();
 
-    // Load design JSON (if present)
+    this.viewportWidth = window.innerWidth;
+    this.viewportHeight = window.innerHeight;
+
+    const scale = this.canvasService.resizeAndCenterCanvas({
+      ...this.tempData,
+      viewportWidth: this.viewportWidth,
+      viewportHeight: this.viewportHeight,
+      canvas: this.canvas,
+    });
+
+    // this.canvas.setDimensions({
+    //   width: this.canvas.getWidth() * (scale || 1),
+    //   height: this.canvas.getHeight() * (scale || 1),
+    // });
+
     if (this.data.data) {
       this.loadCanvasFromExistingData();
     } else {
       this.canvas.backgroundColor = 'white';
-      this.canvas.renderAll.bind(this.canvas);
       this.canvas.selection = !this.isViewOnly;
       this.canvas.renderAll();
     }
 
-    console.log('canavs with id created', this.data?.id);
-    // Init and center
-    // this.canvasService.initCanvas(this.canvas);
-    this.viewportWidth = window.innerWidth;
-    this.viewportHeight = window.innerHeight;
-    this.canvasService.resizeAndCenterCanvas({
-      ...this.tempData,
-      viewportWidth: this.viewportWidth,
-      viewportHeight: this.viewportHeight,
-      canvas : this.canvas
-    });
-
-    this.canvas.on('selection:created', (e: any) => {
-      const selected = e.selected;
-      if (selected && selected.length > 0) {
-        const target = selected[0];
-        target.set({
-          borderColor: '#7f00ff',
-          cornerColor: '#ffffff',
-          cornerStrokeColor: '#7f00ff',
-          cornerSize: 12,
-          transparentCorners: false,
-        });
-        this.canvas.requestRenderAll();
-      }
-    });
-
-    this.canvas.on('selection:updated', (e: any) => {
-      const selected = e.selected;
-      if (selected && selected.length > 0) {
-        const target = selected[0];
-        target.set({
-          borderColor: '#7f00ff',
-          cornerColor: '#ffffff',
-          cornerStrokeColor: '#7f00ff',
-          cornerSize: 12,
-          transparentCorners: false,
-        });
-        this.canvas.requestRenderAll();
-      }
-    });
+    this.canvas.on('selection:created', this.applySelectionStyle.bind(this));
+    this.canvas.on('selection:updated', this.applySelectionStyle.bind(this));
 
     fabric.InteractiveFabricObject.ownDefaults = {
       ...fabric.InteractiveFabricObject.ownDefaults,
-
-      // Corners
       cornerStyle: 'circle',
-      cornerColor: '#00CFFF', // Aqua/sky blue corner fill
-      cornerStrokeColor: '#0078FF', // Darker blue outline
+      cornerColor: '#00CFFF',
+      cornerStrokeColor: '#0078FF',
       cornerSize: 10,
       touchCornerSize: 14,
-      cornerDashArray: null, // solid corners for better visibility
-
-      // Borders
-      borderColor: '#FFB300', // Bright amber border for selected object
+      borderColor: '#FFB300',
       borderDashArray: [5, 3],
       borderScaleFactor: 2.5,
       hasBorders: true,
       borderOpacityWhenMoving: 0.4,
-
-      // Selection
-      selectionBackgroundColor: 'rgba(0, 0, 0, 0.03)', // subtle background to highlight selection
-
-      // Padding and Controls
+      selectionBackgroundColor: 'rgba(0, 0, 0, 0.03)',
       padding: 10,
       transparentCorners: false,
       hasControls: true,
-
-      // Interactivity
       selectable: true,
       evented: true,
       perPixelTargetFind: false,
       activeOn: 'down',
-
-      // Cursor customization
       hoverCursor: 'pointer',
       moveCursor: 'move',
-
-      // Locks are left flexible for UI controls to toggle
       lockMovementX: false,
       lockMovementY: false,
       lockRotation: false,
@@ -251,41 +193,33 @@ export class CanvasViewComponent implements AfterViewInit {
       lockScalingFlip: false,
     };
 
-    // this.canvas.on('mouse:down', (e) => {
-    //   this.showToolbar = true;
-    //   if (!e.target) {
-    //     console.log('🟦 Empty canvas clicked');
-    //     this.showToolbarFor('background');
-    //   } else {
-    //     this.showToolbarFor(e.target.type); // your method to update selection
-    //   }
-
-    // });
-
     this.canvasService.initCanvasEvents(
       this.canvas,
       (visible) => (this.showToolbar = visible)
     );
   }
 
-  getCanvasInstance(): fabric.Canvas {
-    return this.canvas;
+  ngOnDestroy(): void {
+    this.canvas?.dispose();
+    this.sub?.unsubscribe();
   }
-  transformStyle = {
-    transform: 'translateX(0px)',
-    transition: 'transform 0.3s ease',
-  };
 
-  shiftCanvasToRight(shiftAmount: number): void {
-    this.transformStyle = {
-      transform: `translateX(${shiftAmount}px)`,
-      transition: 'transform 0.3s ease',
-    };
-    console.log('Shifted canvas by:', shiftAmount);
+  applySelectionStyle(e: any): void {
+    const selected = e.selected;
+    if (selected?.length) {
+      selected[0].set({
+        borderColor: '#7f00ff',
+        cornerColor: '#ffffff',
+        cornerStrokeColor: '#7f00ff',
+        cornerSize: 12,
+        transparentCorners: false,
+      });
+      this.canvas.requestRenderAll();
+    }
   }
 
   @HostListener('window:keydown', ['$event'])
-  handleKeyDown(event: KeyboardEvent) {
+  handleKeyDown(event: KeyboardEvent): void {
     if (!this.isViewOnly && (event.ctrlKey || event.metaKey)) {
       switch (event.key.toLowerCase()) {
         case 'c':
@@ -308,34 +242,40 @@ export class CanvasViewComponent implements AfterViewInit {
     }
   }
 
-  ngOnDestroy() {
-    const canvas = this.canvasService.getCanvas();
-    if (canvas) {
-      canvas.dispose(); // Properly destroy canvas and remove listeners
-      //this.canvasManagerService.registerCanvas(null); // Clear signal to avoid stale state
-    }
-    this.sub?.unsubscribe();
+  @HostListener('touchstart', ['$event'])
+  onTouchStart(): void {
+    this.canvas.selection = false;
+    this.canvas.skipTargetFind = true;
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.canvasService.resizeAndCenterCanvas({
-        ...this.tempData,
-        viewportWidth: this.viewportWidth,
-        viewportHeight: this.viewportHeight,
-        canvas : this.canvas
-      });
-    }
+  @HostListener('touchend', ['$event'])
+  onTouchEnd(): void {
+    this.canvas.selection = true;
+    this.canvas.skipTargetFind = false;
   }
 
-  onLockToggle(updatedCanvas: CanvasPage) {
+  getCanvasInstance(): fabric.Canvas {
+    return this.canvas;
+  }
+
+  shiftCanvasToRight(shiftAmount: number): void {
+    this.transformStyle = {
+      transform: `translateX(${shiftAmount}px)`,
+      transition: 'transform 0.3s ease',
+    };
+    console.log('Shifted canvas by:', shiftAmount);
+  }
+
+  transformStyle = {
+    transform: 'translateX(0px)',
+    transition: 'transform 0.3s ease',
+  };
+
+  onLockToggle(updatedCanvas: CanvasPage): void {
     const shouldLock = !!updatedCanvas.isLocked;
-
     const canvas = this.canvasManagerService.getCanvasById(updatedCanvas.id);
     if (!canvas) return;
 
-    // Lock/unlock movement
     canvas.getObjects().forEach((obj) => {
       obj.lockMovementX = shouldLock;
       obj.lockMovementY = shouldLock;
@@ -343,73 +283,39 @@ export class CanvasViewComponent implements AfterViewInit {
       obj.evented = !shouldLock;
     });
 
-    console.log('islocked', shouldLock);
-    canvas.getObjects().forEach((obj) => {
-      console.log('Object:', obj, {
-        selectable: obj.selectable,
-        evented: obj.evented,
-        lockMovementX: obj.lockMovementX,
-        lockMovementY: obj.lockMovementY,
-      });
-    });
-
-    // Disable selection and interaction if locked
     canvas.selection = !shouldLock;
     canvas.skipTargetFind = shouldLock;
-
-    // Clear active object
     canvas.discardActiveObject();
     canvas.renderAll();
   }
 
-  showToolbarFor(obj: any) {
-    let mode!: ToolbarMode;
-    if (obj == null) {
-      mode = 'page';
-    } else if (obj === 'textbox') {
-      mode = 'text';
-    } else if (obj === 'image') {
-      mode = 'image';
-    } else if (obj === 'rect' || obj === 'circle' || obj === 'triangle') {
-      mode = 'shape';
-    }
-    return mode;
+  showToolbarFor(obj: any): ToolbarMode {
+    if (!obj) return 'page';
+    if (obj === 'textbox') return 'text';
+    if (obj === 'image') return 'image';
+    if (['rect', 'circle', 'triangle'].includes(obj)) return 'shape';
+    return 'page';
   }
 
-  loadCanvasFromExistingData() {
+  loadCanvasFromExistingData(): void {
     this.canvas.loadFromJSON(this.data.data).then(() => {
-      // Set background color if it's not saved in JSON
       this.canvas.backgroundColor = this.data.background ?? 'white';
-      (this.canvas.selection = !this.isViewOnly),
-        this.canvas.renderAll.bind(this.canvas);
-
       if (this.data.isLocked) {
         this.onLockToggle(this.data);
       }
-
       this.canvas.renderAll();
     });
   }
 
-  registerMouseClickOnCanvas() {
+  registerMouseClickOnCanvas(): void {
     this.canvas.on('mouse:down', () => {
-      console.log('[Canvas] Mouse down on canvas with ID:', this.data.id);
-      this.canvasManagerService.setActiveCanvasById('null'); // clear
+      this.canvasManagerService.setActiveCanvasById('null');
       this.canvasManagerService.setActiveCanvasById(this.data.id);
       this.canvasService.activeCanvasId.set('');
       this.canvasService.activeCanvasId.set(this.data.id);
     });
   }
 
-  @HostListener('touchstart', ['$event'])
-  onTouchStart() {
-    this.canvas.selection = false;
-    this.canvas.skipTargetFind = true;
-  }
+  
 
-  @HostListener('touchend', ['$event'])
-  onTouchEnd() {
-    this.canvas.selection = true;
-    this.canvas.skipTargetFind = false;
-  }
 }

@@ -28,3 +28,7 @@ export const routes: Routes = [
     redirectTo: 'editor'
   }
 ];
+
+//  import('./../experimental-canvas/experimental-canvas.component').then(
+//         (m) => m.ExperimentalCanvasComponent
+//       ),

@@ -27,17 +27,19 @@
     'transform-origin': 'top center',
 
   }"
-  
+
   >
 
       <!-- Content Wrapper -->
-      <div class="flex items-center justify-center  min-h-screen">
+      <div class="flex items-center justify-center  min-h-screen mt-16 mb-16">
         <div id="canvas-wrapper"
-             class="canvas-project-container relative"
-             style="touch-action: pan-x pan-y; width: auto; max-width: 100%;">
+             class="canvas-project-container relative mb-12"
+             style="touch-action: pan-x pan-y ; width: auto; max-width: 100%;">
+
 
           <!-- Pages Toolbar + Canvas -->
           <ng-container *ngFor="let page of pages; let i = index">
+            <div class="flex flex-col flex-1 mb-6">
             <app-pages-toolbar
               [pageInfo]="page"
               [totalPages]="pages.length"
@@ -52,12 +54,13 @@
               (lock)="onLockToggle($event)">
             </app-pages-toolbar>
 
-            <div (click)="focusCanvas(page.id, $event)"
-            
+            <div (click)="focusCanvas(page.id, $event)" class="flex justify-center"
+
                  [ngClass]="
-                   'touch-action: pan-x pan-y pinch-zoom transition-all duration-300 rounded-sm border-3 ' +
+                   'touch-action: pan-x pan-y pinch-zoom, transition-all duration-300 rounded-sm border-3 ' +
                    (isFocused(page.id) ? 'border-blue-500 p-1' : 'border-transparent')">
               <app-canvas-view #canvasElement [data]="page"></app-canvas-view>
+            </div>
             </div>
           </ng-container>
 

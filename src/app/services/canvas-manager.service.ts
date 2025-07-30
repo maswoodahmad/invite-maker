@@ -3,14 +3,30 @@ import * as fabric  from 'fabric';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CanvasManagerService {
   private canvasMap = new Map<string, fabric.Canvas>();
   private activeCanvasId$ = new BehaviorSubject<string | null>(null);
   private focusState: 'object' | 'full' = 'object';
 
- 
+  constructor() {
+    this.patchFabricToObject();
+  }
+
+  private patchFabricToObject() {
+    const originalToObject = fabric.FabricObject.prototype.toObject;
+
+    fabric.FabricObject.prototype.toObject = function (
+      propertiesToInclude: string[] = []
+    ) {
+      return originalToObject.call(this, [
+        'id',
+        'name',
+        ...propertiesToInclude,
+      ]);
+    };
+  }
 
   /**
    * Registers a canvas instance under a unique page ID.
@@ -58,7 +74,9 @@ export class CanvasManagerService {
    * Get the currently active canvas
    */
   getActiveCanvas(): fabric.Canvas | null {
-    return this.activeCanvasId$.value ? this.canvasMap.get(this.activeCanvasId$.value) || null : null;
+    return this.activeCanvasId$.value
+      ? this.canvasMap.get(this.activeCanvasId$.value) || null
+      : null;
   }
 
   getActiveCanvasId$() {
@@ -92,6 +110,15 @@ export class CanvasManagerService {
       }
     }
   }
+
+  disposeAll(): void {
+    this.canvasMap.forEach((canvas) => {
+      canvas.clear();
+      canvas.dispose();
+    });
+    this.canvasMap.clear();
+  }
+
 }
 function toSignal(arg0: Observable<string | null>, arg1: { initialValue: null; }) {
   throw new Error('Function not implemented.');
