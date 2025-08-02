@@ -65,14 +65,14 @@ export class CanvasControlService {
       // Opened
       this.shiftCanvasIntoViewport(templateWidth, templateHeight, availableWidth, availableHeight, true);
       this.updateToolbarOffset();
-      console.log('Sidebar opened → shrinking canvas');
+   //   console.log('Sidebar opened → shrinking canvas');
     } else if (!isOpen ) {
       // Closed
      // this.restoreCanvasTransform();
-      console.log('Sidebar closed → restoring canvas');
+     // console.log('Sidebar closed → restoring canvas');
     } else {
       // Sidebar switched or unchanged → Do nothing or minimal action
-      console.log('Sidebar unchanged or switched → skipping adjustment');
+     // console.log('Sidebar unchanged or switched → skipping adjustment');
     }
   }
 

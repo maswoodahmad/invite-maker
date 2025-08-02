@@ -20,7 +20,7 @@ export class LayerPanelComponent {
   constructor() {
     effect(() => {
       this.layerItems = this.canvasService.layersSignal();
-      console.log("lassyrs items", this.layerItems);
+    //  console.log("lassyrs items", this.layerItems);
     })
   }
   layerText = '';

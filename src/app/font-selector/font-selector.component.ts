@@ -89,3 +89,5 @@ export class FontSelectorComponent implements OnInit {
   showPro = false;
   showFree = true;
 }
+
+

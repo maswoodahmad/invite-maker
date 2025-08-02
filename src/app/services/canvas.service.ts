@@ -15,10 +15,27 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { CanvasManagerService } from './canvas-manager.service';
 import { ToolbarItem, ToolbarMode } from '../../assets/toolbar-config';
+import { ColorPaletteService } from './color-palette.service';
+import { debounce } from 'lodash';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasService {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: any,
+    private canvasManager: CanvasManagerService,
+    private colorService: ColorPaletteService
+  ) {
+    this.canvasManager.getActiveCanvasId$().subscribe((id) => {
+      if (id) this.activeCanvasId.set(id);
+    });
+  }
   private pageNumberPosition: PageNumberPosition = 'bottom-right';
+
+
+
+private debouncedUpdate = debounce((canvas:fabric.Canvas) => {
+  this.debouncedUpdate(canvas);
+}, 100);
 
   private layersStore = signal<Map<string, CanvasLayer[]>>(new Map());
   private objectToLayerIdsMap = new Map<string, Set<string>>();
@@ -29,9 +46,9 @@ export class CanvasService {
 
   // Computed layer signal for currently active canvas
   layersSignal = computed(() => {
-    console.log('this ran', this.activeCanvasId());
+    // console.log('this ran', this.activeCanvasId());
     const id = this.activeCanvasId();
-   // console.log("active layers", this.layersStore().get(id));
+    // console.log("active layers", this.layersStore().get(id));
     if (id) return this.layersStore().get(id);
     else return [];
   });
@@ -60,15 +77,6 @@ export class CanvasService {
 
   get textStyleBox() {
     return this.textStyleSignal();
-  }
-
-  constructor(
-    @Inject(PLATFORM_ID) private platformId: any,
-    private canvasManager: CanvasManagerService
-  ) {
-    this.canvasManager.getActiveCanvasId$().subscribe((id) => {
-      if (id) this.activeCanvasId.set(id);
-    });
   }
 
   getCanvas(): fabric.Canvas | null {
@@ -161,20 +169,22 @@ export class CanvasService {
 
   async getLayers(): Promise<CanvasLayer[]> {
     const canvas = this.canvasManager.getActiveCanvas();
-    console.log('activce canvas id', this.activeCanvasId());
+    // console.log('activce canvas id', this.activeCanvasId());
     if (!canvas) return [];
 
     const customObjects = canvas.getObjects() as CustomFabricObject[];
-
     const layers = await Promise.all(
-      customObjects.map(async (obj, index) => ({
-        id: obj.id || String(index),
-        name: obj.name,
-        object: obj,
-        hidden: !obj.visible,
-        locked: obj.lockMovementX && obj.lockMovementY,
-        preview: await this.generatePreview(obj),
-      }))
+      customObjects.map(async (obj, index) => {
+        const preview = await this.generatePreview(obj); // Use clone for preview
+        return {
+          id: obj.id || String(index),
+          name: obj.name,
+          object: obj, // ✅ keep actual canvas object
+          hidden: !obj.visible,
+          locked: obj.lockMovementX && obj.lockMovementY,
+          preview: preview,
+        };
+      })
     );
 
     return layers;
@@ -250,6 +260,24 @@ export class CanvasService {
       setToolbarVisible(true);
       this.syncToolbarWithActiveObject(e.target);
     });
+
+    canvas.on('object:added', () => this.debouncedUpdate(canvas));
+    canvas.on('object:modified', () =>
+      this.debouncedUpdate(canvas)
+    );
+    canvas.on('object:removed', () =>
+      this.debouncedUpdate(canvas)
+    );
+    canvas.on('object:scaling', () =>
+      this.debouncedUpdate(canvas)
+    );
+    canvas.on('object:moving', () =>
+      this.debouncedUpdate(canvas)
+    );
+
+
+    // Optional: update when fill/stroke is changed programmatically
+    canvas.on('after:render', () => this.debouncedUpdate(canvas));
   }
 
   // initCanvas(canvasInstance: fabric.Canvas) {
@@ -332,12 +360,30 @@ export class CanvasService {
     return true;
   }
 
-  selectObject(obj: CustomFabricObject) {
+  selectObject(layer: CustomFabricObject) {
     const canvas = this.getCanvas();
     if (!canvas) return;
-    canvas.setActiveObject(obj);
-    this.unlockObject(obj);
-    canvas.renderAll();
+
+    const canvasObject = canvas
+    .getObjects()
+    .find((obj: any) => obj.id === layer.id);
+
+    if (canvasObject) {
+      canvasObject.selectable = true;
+      canvasObject.evented = true;
+      canvasObject.visible = true;
+      canvasObject.set({
+        stroke: 'red',
+        strokeWidth: 3,
+        opacity: 0.5,
+      });
+
+      canvas.setActiveObject(canvasObject);
+      // canvas.bringToFront(canvasObject); // optional
+      canvas.renderAll();
+    } else {
+      console.warn('Object not found on canvas for id:', layer.id);
+    }
   }
 
   getAndUpdateObjectPosition(canvas: fabric.Canvas): { x: number; y: number } {
@@ -462,7 +508,7 @@ export class CanvasService {
     } else {
       this.textStyleSignal.set(null); // hide toolbar if needed
     }
-    console.log('signal value after change', this.textStyleBox?.fontSize);
+    // console.log('signal value after change', this.textStyleBox?.fontSize);
   }
 
   updateTextProperties(props: Partial<fabric.Textbox>) {

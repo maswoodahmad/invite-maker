@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CanvasService } from '../services/canvas.service';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { ModeService } from '../services/mode.service';
+import { title } from 'process';
 
 
 @Component({
@@ -17,7 +18,10 @@ import { ModeService } from '../services/mode.service';
 export class PagesToolbarComponent {
   placeHolderText: string = 'Add page title';
   isViewOnly: boolean = false;
-  constructor(private canvasService: CanvasService, private modeService: ModeService) {}
+  constructor(
+    private canvasService: CanvasService,
+    private modeService: ModeService
+  ) {}
 
   // page-toolbar.component.ts
   @Output() addPage = new EventEmitter<void>();
@@ -45,10 +49,8 @@ export class PagesToolbarComponent {
       this.typed = false;
     }
 
-    this.titleChange.emit({
-      ...this.pageInfo,
-      title: this.value,
-    });
+    const toEmitInfo = this.constructPageInfo({ title: this.value });
+    this.titleChange.emit(toEmitInfo);
   }
 
   canvasObjects: any;
@@ -67,14 +69,12 @@ export class PagesToolbarComponent {
 
     if (currentCanvas) {
       const canvasJSON = JSON.parse(JSON.stringify(currentCanvas.toJSON()));
-      this.duplicate.emit({
-        ...this.pageInfo,
+      const toEmitInfo = this.constructPageInfo({
         id: uuidv4(),
         createdAt: new Date(),
-        updatedAt: new Date(),
-
         data: canvasJSON,
       });
+      this.duplicate.emit(toEmitInfo);
     }
   }
 
@@ -83,10 +83,10 @@ export class PagesToolbarComponent {
   }
 
   onHideClick() {
-    this.hide.emit({
-      ...this.pageInfo,
-      isVisible: !this.pageInfo.isVisible,
-    });
+     const toEmitInfo = this.constructPageInfo({
+       isVisible: !this.pageInfo.isVisible,
+     });
+    this.hide.emit(toEmitInfo);
   }
 
   typed = false;
@@ -115,11 +115,30 @@ export class PagesToolbarComponent {
     console.log(currentCanvas?.getObjects());
     if (currentCanvas) {
       const canvasJSON = JSON.parse(JSON.stringify(currentCanvas.toJSON()));
-      this.lock.emit({
-        ...this.pageInfo,
-        data: canvasJSON,
-        isLocked: !this.pageInfo.isLocked,
-      });
+        const toEmitInfo = this.constructPageInfo({
+          id: uuidv4(),
+          isLocked: !this.pageInfo.isLocked,
+          data: canvasJSON,
+        });
+      this.lock.emit(toEmitInfo);
     }
+  }
+
+
+
+  constructPageInfo(overrides: Partial<CanvasPage> = {}): CanvasPage {
+    const baseCanvas = this.pageInfo;
+
+    const updated = Object.assign(
+      Object.create(Object.getPrototypeOf(baseCanvas)), // preserve Canvas prototype
+      baseCanvas, // copy base canvas data
+      {
+        ...overrides,
+        title: overrides.title ?? this.value,
+        updatedAt: overrides.updatedAt ?? new Date(),
+      }
+    );
+
+    return updated;
   }
 }

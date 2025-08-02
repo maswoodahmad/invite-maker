@@ -12,6 +12,8 @@ import {
   Renderer2,
   OnDestroy,
   OnInit,
+  EventEmitter,
+  Output,
 } from '@angular/core';
 import * as fabric from 'fabric';
 import { Subscription } from 'rxjs';
@@ -36,6 +38,8 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
   canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('canvasPorject', { static: true })
   canvasWrapperRef!: ElementRef<HTMLCanvasElement>;
+
+
 
   @Input() data!: CanvasPage;
 
@@ -116,6 +120,7 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
 
     const el = this.canvasRef.nativeElement;
+
     el.width = this.CANVAS_WIDTH;
     el.height = this.CANVAS_HEIGHT;
     el.style.width = `${this.CANVAS_WIDTH}px`;
@@ -157,6 +162,30 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       this.canvas.selection = !this.isViewOnly;
       this.canvas.renderAll();
     }
+
+    // In your Angular component or JS setup
+    this.canvas.on('mouse:down', (event) => {
+      if (!event.target) {
+        this.canvas.discardActiveObject();
+        this.canvas.requestRenderAll();
+      }
+    });
+
+       this.canvas.on('mouse:down',  (e) => {
+         const activeObj = this.canvas.getActiveObject();
+
+         if (!e.target) {
+           // Clicked on empty space, clear selection
+           this.canvas.discardActiveObject();
+           this.canvas.requestRenderAll();
+         } else if (activeObj && activeObj !== e.target) {
+           // Clicked on a different object — manually switch selection
+           this.canvas.setActiveObject(e.target);
+           this.canvas.requestRenderAll();
+         }
+       });
+
+
 
     this.canvas.on('selection:created', this.applySelectionStyle.bind(this));
     this.canvas.on('selection:updated', this.applySelectionStyle.bind(this));
@@ -315,7 +344,4 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       this.canvasService.activeCanvasId.set(this.data.id);
     });
   }
-
-  
-
 }

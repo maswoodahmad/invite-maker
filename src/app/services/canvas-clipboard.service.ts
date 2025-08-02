@@ -3,30 +3,35 @@ import { Injectable } from '@angular/core';
 import * as fabric from 'fabric';
 import { CanvasService } from './canvas.service';
 import { CustomCanvasObject, CustomFabricObject } from '../interface/interface';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasClipboardService {
   private clipboard: fabric.Object | null = null;
 
-  constructor(private canvasManagerService : CanvasManagerService) {}
+  constructor(private canvasManagerService: CanvasManagerService) {}
 
   copy() {
-
     const activeCanvas = this.canvasManagerService.getActiveCanvas();
     const activeObject = activeCanvas?.getActiveObject() as CustomFabricObject;
     if (!activeObject) return;
 
     activeObject.clone().then((cloned: fabric.Object) => {
-      this.clipboard = cloned;
-    });
+      const clonedObj = cloned as CustomFabricObject;
 
-    console.log(this.clipboard);
+      // Manually assign a new ID and optional parentId
+      clonedObj.id = uuidv4(); // New unique ID
+      clonedObj.parentId = activeObject.id; // Optional: set parent ID
+
+      this.clipboard = clonedObj;
+
+      console.log('Copied object:', this.clipboard);
+    });
   }
+  
 
   cut() {
-
-
-    const canvas =  this.canvasManagerService.getActiveCanvas();
+    const canvas = this.canvasManagerService.getActiveCanvas();
     if (!canvas) return;
 
     const active = canvas.getActiveObject();
@@ -47,7 +52,7 @@ export class CanvasClipboardService {
       });
 
       // Remove from canvas
-      group.forEachObject(obj => canvas?.remove(obj));
+      group.forEachObject((obj) => canvas?.remove(obj));
       canvas.discardActiveObject();
       canvas.renderAll();
 
@@ -74,7 +79,7 @@ export class CanvasClipboardService {
         clonedObj = clonedObj as fabric.ActiveSelection;
         clonedObj.canvas = canvas;
 
-        (this.clipboard as fabric.ActiveSelection).forEachObject(obj => {
+        (this.clipboard as fabric.ActiveSelection).forEachObject((obj) => {
           obj.set({
             left: (obj.left || 0) + 20,
             top: (obj.top || 0) + 20,
@@ -111,7 +116,7 @@ export class CanvasClipboardService {
       const offset = 20;
 
       if (cloned instanceof fabric.Group) {
-        const items = cloned.getObjects().map(obj => {
+        const items = cloned.getObjects().map((obj) => {
           obj.set({
             left: (obj.left ?? 0) + offset,
             top: (obj.top ?? 0) + offset,
@@ -144,9 +149,7 @@ export class CanvasClipboardService {
     });
   }
 
-
   deleteSelected() {
-
     const canvas = this.canvasManagerService.getActiveCanvas();
 
     const active = canvas?.getActiveObject();

@@ -1,0 +1,52 @@
+
+<div class="p-4 max-w-md mx-auto">
+  <h2 class="text-lg font-semibold mb-2">Text color</h2>
+
+  <!-- Document Colors -->
+  <div class="mb-4">
+    <h3 class="font-medium mb-1">Document colors</h3>
+    <div class="flex gap-2 flex-wrap">
+      <ng-container *ngFor="let color of documentColors">
+        <div class="w-8 h-8 rounded-full border-2"
+          [ngStyle]="{ 'background-color': color, 'border-color': selectedColor === color ? '#673ab7' : 'transparent' }"
+          (click)="selectColor(color)"></div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Brand Colors -->
+  <div class="mb-4">
+    <h3 class="font-medium mb-1">Brand colours</h3>
+    <div class="flex gap-2 flex-wrap">
+      <ng-container *ngFor="let color of brandColors">
+        <div class="w-8 h-8 rounded-full border-2"
+          [ngStyle]="{ 'background-color': color, 'border-color': selectedColor === color ? '#673ab7' : 'transparent' }"
+          (click)="selectColor(color)"></div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Photo Colors -->
+  <div class="mb-4">
+    <h3 class="font-medium mb-1">Photo colors</h3>
+    <div class="flex gap-2 flex-wrap">
+      <ng-container *ngFor="let color of photoColors">
+        <div class="w-8 h-8 rounded-full border-2"
+          [ngStyle]="{ 'background-color': color, 'border-color': selectedColor === color ? '#673ab7' : 'transparent' }"
+          (click)="selectColor(color)"></div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Default Solid Colors -->
+  <div class="mb-4">
+    <h3 class="font-medium mb-1">Default solid colors</h3>
+    <div *ngFor="let row of defaultSolidColors" class="flex gap-2 mb-1">
+      <ng-container *ngFor="let color of row">
+        <div class="w-8 h-8 rounded-full border-2"
+          [ngStyle]="{ 'background-color': color, 'border-color': selectedColor === color ? '#673ab7' : 'transparent' }"
+          (click)="selectColor(color)"></div>
+      </ng-container>
+    </div>
+  </div>
+</div>

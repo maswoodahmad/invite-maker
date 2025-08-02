@@ -77,6 +77,7 @@ export interface CustomFabricObject extends fabric.Object {
   data?: any;
   pageNumber?: number;
   tyep?: string;
+  parentId?: string;
 
 }
 
@@ -140,13 +141,13 @@ export const SIDEBAR_ITEMS = [
   { key: 'tools', label: 'Tools', icon: 'assets/icons/tools.svg' }
 ] as const satisfies SidebarItem[];
 
-export interface CanvasPage extends fabric.Canvas {
+export interface CanvasPage  {
   id:   string;                  // Can use UUID if needed
   title?: string;                       // Page title
   template?: string;                    // e.g., 'A4', 'Poster'
-  layers?: CanvasLayer[];
-  canvasWidth?: number,
-  canvasHeight?: number,
+  width?: number;                       // Optional custom size
+  height?: number;
+  layers?: CanvasLayer[];              // Optional if you track layers separately
   data?: any;                           // fabric.Canvas JSON or state
   createdBy?: string;                   // Optional: user ID or name
   createdAt?: Date;                     // Timestamp

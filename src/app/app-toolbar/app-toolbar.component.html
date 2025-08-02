@@ -5,6 +5,7 @@
         <option *ngFor="let font of tool.options">{{ font }}</option>
       </select> -->
 
+      <input type="color" id="colorPicker" />
       <div *ngSwitchCase="'font-size'" class="flex items-center border rounded px-2 py-1 gap-1">
         <button (click)="reducefontSizeChange()"  class="px-1 text-sm">-</button>
 

@@ -17,7 +17,7 @@ import { assignMetadata } from '../utils/fabric-object-utils';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './text-sidebar.component.html',
-  styleUrl: './text-sidebar.component.scss'
+  styleUrl: './text-sidebar.component.scss',
 })
 export class TextSidebarComponent {
   searchQuery: string = '';
@@ -35,7 +35,7 @@ export class TextSidebarComponent {
     private canvasService: CanvasService,
     private canvasManagerService: CanvasManagerService,
     private sidebarState: SidebarStateService
-  ) { }
+  ) {}
 
   onSearch() {
     this.activeFilter = this.searchQuery.trim() || null;
@@ -53,7 +53,7 @@ export class TextSidebarComponent {
   }
 
   getFilteredTextItems() {
-    return this.textItems.filter(item =>
+    return this.textItems.filter((item) =>
       item.name.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
   }
@@ -63,36 +63,46 @@ export class TextSidebarComponent {
     if (!canvas) return;
 
     const lastPosition = this.canvasService.getAndUpdateObjectPosition(canvas);
-    const textbox = new fabric.Textbox("Birthday", {
+    const textbox = new fabric.Textbox('Birthday', {
       left: lastPosition.x,
       top: lastPosition.y,
-      fontFamily: 'PlayList Script',
-      fontWeight: '900',
-      fontSize: 50,
+      fontFamily:this.fontSettings?.fontFamily || 'PlayList Script',
+      fontWeight: this.fontSettings.fontWeight || '900',
+      fontSize: this.fontSettings.fontSize|| 50,
       textTransform: 'uppercase',
       editable: true,
       selectable: true,
-      evented: true
+      evented: true,
     });
 
-
     assignMetadata(textbox, { name: 'my-text' });
-
+    textbox.set({
+      objectCaching: false,
+    });
     canvas.add(textbox);
     canvas.setActiveObject(textbox);
+
     canvas.requestRenderAll();
+
+    canvas.getObjects().forEach((obj) => {
+      obj.on('mousedown', () => {
+        console.log('Object clicked:', obj.type, obj, obj.left, obj.top);
+      });
+    });
 
     requestAnimationFrame(() => {
       this.canvasService.syncActiveObject(); // inside it, it gets canvas.getActiveObject()
     });
 
-    console.log('Object:', textbox);
-    console.log('Selectable:', textbox.selectable, 'Has controls:', textbox.hasControls);
+    // console.log('Object:', textbox);
+    // console.log('Selectable:', textbox.selectable, 'Has controls:', textbox.hasControls);
   }
 
   chooseFontWeight(event: MouseEvent) {
     const label = (event.target as HTMLElement).innerText.trim().toLowerCase();
     const preset = TextPresets[label];
+
+    this.fontSettings = preset;
 
     const canvas = this.canvasService.getCanvas();
     const active = canvas?.getActiveObject() as fabric.Textbox;

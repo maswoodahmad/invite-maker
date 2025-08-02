@@ -59,10 +59,11 @@
                  [ngClass]="
                    'touch-action: pan-x pan-y pinch-zoom, transition-all duration-300 rounded-sm border-3 ' +
                    (isFocused(page.id) ? 'border-blue-500 p-1' : 'border-transparent')">
-              <app-canvas-view #canvasElement [data]="page"></app-canvas-view>
+              <app-canvas-view #canvasElement  [data]="page"></app-canvas-view>
             </div>
             </div>
           </ng-container>
+
 
           <!-- Add Page Button -->
           <div *ngIf="!isViewOnly" class="flex justify-center mt-6">

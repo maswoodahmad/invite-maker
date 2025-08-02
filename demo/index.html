@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -81,6 +81,119 @@
 
     // Initial scale
     applyScale(zoomLevel);
+  </script>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Go on a Date with Me?</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      font-family: 'Comic Sans MS', cursive;
+      background: linear-gradient(to bottom right, #ffe0e0, #ffd1d1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #b30000;
+      margin-bottom: 40px;
+      text-shadow: 1px 1px 2px #fff;
+    }
+
+    .button-container {
+      position: relative;
+      width: 500px;
+      height: 700px;
+
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .yes {
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    .no {
+      position: absolute;
+      padding: 12px 24px;
+      font-size: 1.2rem;
+      background: url('https://cdn-useast1.kapwing.com/static/templates/crying-cat-meme-template-regular-096fc808.webp');
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: top 0.2s, left 0.2s;
+      background-size: contain;
+  background-repeat: no-repeat;
+  width: 200px;
+  color:white;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Please talk to me, my mentally disordered pricess.</h1>
+
+  <div class="button-container" id="container">
+    <button class="yes" onclick="showConfetti()"><a href="instagram://user?username=mswd_ahmd"
+      onclick="setTimeout(() => { window.location.href = 'https://instagram.com/mswd_ahmd'; }, 100);">
+      Yes 💖
+    </a></button>
+    <button class="no" id="noBtn">No &nbsp;</button>
+  </div>
+
+
+
+  <script>
+    const noBtn = document.getElementById('noBtn');
+    const container = document.getElementById('container');
+
+    function moveButtonInsideContainer() {
+      const containerRect = container.getBoundingClientRect();
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
+
+      const maxX = container.clientWidth - btnWidth;
+      const maxY = container.clientHeight - btnHeight;
+
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+    }
+
+    noBtn.addEventListener('mouseenter', moveButtonInsideContainer);
+
+    // Initial random placement
+    moveButtonInsideContainer();
+    function showConfetti() {
+        confetti(); // 🎉 basic burst
+      }
   </script>
 </body>
 
