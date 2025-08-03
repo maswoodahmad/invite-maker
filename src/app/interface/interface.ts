@@ -91,6 +91,7 @@ export type SidebarView =
   | 'pages'
   | 'fonts'
   | 'menu'
+  | 'color'
   | null;
 
 export interface CustomCanvasObject extends fabric.Canvas {
@@ -178,4 +179,12 @@ export interface CustomTextBox extends fabric.Textbox{
 
 
 
+}
+
+
+export interface ColorResponse {
+  defaultSolidColors: string[];
+  photoColors: string[];
+  brandColors: string[];
+  documentColors: string[];
 }

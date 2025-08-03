@@ -13,7 +13,7 @@ export interface ToolbarItem {
   label: string;
   icon: string;
   key: string;
-  action?: () => void;
+  action?: (key:string) => void;
 }
 
 export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
@@ -23,8 +23,14 @@ export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
     {
       type: 'color',
       label: 'Color',
-      icon: './assets/icons/text-color.svg',
+      icon: './assets/icons/a.svg',
       key: 'fill',
+    },
+    {
+      type: 'color',
+      label: 'Text Background Color',
+      icon: './assets/icons/square-a.svg',
+      key: 'text_bg',
     },
     {
       type: 'toggle',

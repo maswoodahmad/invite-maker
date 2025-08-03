@@ -23,19 +23,18 @@ export class CanvasService {
   constructor(
     @Inject(PLATFORM_ID) private platformId: any,
     private canvasManager: CanvasManagerService,
-    private colorService: ColorPaletteService
-  ) {
+  private colorService: ColorPaletteService)
+
+  {
     this.canvasManager.getActiveCanvasId$().subscribe((id) => {
       if (id) this.activeCanvasId.set(id);
     });
   }
   private pageNumberPosition: PageNumberPosition = 'bottom-right';
 
-
-
-private debouncedUpdate = debounce((canvas:fabric.Canvas) => {
-  this.debouncedUpdate(canvas);
-}, 100);
+  private debouncedUpdate = debounce((canvas: fabric.Canvas) => {
+    this.colorService.updateFromCanvas(canvas); // ✅ safe access
+  }, 100);
 
   private layersStore = signal<Map<string, CanvasLayer[]>>(new Map());
   private objectToLayerIdsMap = new Map<string, Set<string>>();
@@ -262,19 +261,10 @@ private debouncedUpdate = debounce((canvas:fabric.Canvas) => {
     });
 
     canvas.on('object:added', () => this.debouncedUpdate(canvas));
-    canvas.on('object:modified', () =>
-      this.debouncedUpdate(canvas)
-    );
-    canvas.on('object:removed', () =>
-      this.debouncedUpdate(canvas)
-    );
-    canvas.on('object:scaling', () =>
-      this.debouncedUpdate(canvas)
-    );
-    canvas.on('object:moving', () =>
-      this.debouncedUpdate(canvas)
-    );
-
+    canvas.on('object:modified', () => this.debouncedUpdate(canvas));
+    canvas.on('object:removed', () => this.debouncedUpdate(canvas));
+    canvas.on('object:scaling', () => this.debouncedUpdate(canvas));
+    canvas.on('object:moving', () => this.debouncedUpdate(canvas));
 
     // Optional: update when fill/stroke is changed programmatically
     canvas.on('after:render', () => this.debouncedUpdate(canvas));

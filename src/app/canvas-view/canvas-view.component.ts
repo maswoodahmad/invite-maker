@@ -143,7 +143,7 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
     this.viewportWidth = window.innerWidth;
     this.viewportHeight = window.innerHeight;
 
-    const scale = this.canvasService.resizeAndCenterCanvas({
+    this.canvasService.resizeAndCenterCanvas({
       ...this.tempData,
       viewportWidth: this.viewportWidth,
       viewportHeight: this.viewportHeight,

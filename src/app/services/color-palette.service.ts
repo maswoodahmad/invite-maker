@@ -1,11 +1,19 @@
 // color-palette.service.ts
 import { Injectable, signal } from '@angular/core';
 import * as fabric from 'fabric';
+import { Observable } from 'rxjs';
+import { ColorResponse } from '../interface/interface';
+
+//import { HttpClient } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class ColorPaletteService {
+ 
+
   private readonly _palette = signal<string[]>([]);
   readonly palette = this._palette.asReadonly();
+
+
 
   updateFromCanvas(canvas: fabric.Canvas) {
     const objects = canvas.getObjects();
@@ -38,4 +46,6 @@ export class ColorPaletteService {
     }
     return null;
   }
+
+
 }

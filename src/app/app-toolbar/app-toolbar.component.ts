@@ -3,16 +3,23 @@ import { TOOLBAR_CONFIG, ToolbarItem, ToolbarMode } from '../../assets/toolbar-c
 import { CommonModule } from '@angular/common';
 import { CanvasService } from '../services/canvas.service';
 import { FormsModule } from '@angular/forms';
+import { SidebarStateService } from '../services/sidebar-state.service';
+import { TooltipDirective } from '../shared/tooltip.directive';
 
 
 @Component({
   selector: 'app-app-toolbar',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TooltipDirective],
   templateUrl: './app-toolbar.component.html',
   styleUrl: './app-toolbar.component.scss',
 })
 export class AppToolbarComponent {
   @Input() mode!: string;
+  currentColor: any;
+  elementType: any;
+  toolbarConfig: any;
+  isFillOpen = false;
+  isTextBgOpen = false;
 
   get tools(): ToolbarItem[] {
     if (this.mode) {
@@ -23,9 +30,10 @@ export class AppToolbarComponent {
   fontSize: number = 5;
   scaleY: number = 1;
 
-
-
-  constructor(private canvasService: CanvasService) {
+  constructor(
+    private canvasService: CanvasService,
+    private sidebarState: SidebarStateService
+  ) {
     effect(() => {
       const style = this.canvasService.textStyleSignal();
       this.fontSize = style?.fontSize || 16;
@@ -37,15 +45,22 @@ export class AppToolbarComponent {
   }
 
   ngOnInit(): void {
-    // this.lastFontSize = this.fontSize;
-
-    // const text = this.
-    // canvasService?.textStyleSignal();
-    // this.fontSize = text ? text.fontSize * text.scaleY : 16;
-    // this.scaleY = text?.scaleY ?? 1;
-    // console.log("font sizes and scale", this.fontSize, this.scaleY);
+    //this.lastFontSize = this.fontSize;
+    const text = this.canvasService?.textStyleSignal();
+    this.fontSize = text ? text.fontSize * text.scaleY : 16;
+    this.scaleY = text?.scaleY ?? 1;
+    console.log('font sizes and scale', this.fontSize, this.scaleY);
   }
 
+  ngAfterViewInit(): void {
+    this.toolbarConfig = this.tools;
+    this.toolbarConfig.forEach((item: ToolbarItem) => {
+      if (item.key === 'fill' || item.key === 'text_bg') {
+        this.elementType = item.key;
+        item.action = (key: string) => this.openColorPanel(key);
+      }
+    });
+  }
   increaseFontSize() {
     this.fontSize = this.fontSize + 1;
     this.canvasService.updateTextProperties({
@@ -61,11 +76,8 @@ export class AppToolbarComponent {
   }
 
   onStyleChange() {
-    // Only apply if value actually changed
-
-      this.canvasService.updateTextProperties({ fontSize: this.fontSize });
-      //this.lastFontSize = this.fontSize;
-
+    this.canvasService.updateTextProperties({ fontSize: this.fontSize });
+    //this.lastFontSize = this.fontSize;
   }
 
   roundOff(value: number, decimals: number = 0): number {
@@ -74,6 +86,34 @@ export class AppToolbarComponent {
   }
 
   ngOnDestroy() {
-    this.onStyleChange(); // Final update if not already done
+    this.onStyleChange();
+  }
+
+  openColorPanel(key: string): void {
+    const isSameKey =
+      this.sidebarState.current === 'color' &&
+      this.sidebarState.config?.text === key;
+
+    // If same button clicked again -> toggle (close)
+    if (isSameKey) {
+      this.sidebarState.close('color');
+      return;
+    }
+
+    // If switching from one color-related option to another (e.g., fill → text_bg)
+    const config: any = {
+      color: this.currentColor,
+      text: key,
+      ...(key === 'text_bg' ? { backgroundMode: true } : {}), // Add custom config for text_bg
+    };
+
+    this.sidebarState.open('color', config);
+  }
+
+  // toolbar.component.ts
+  onToolbarItemClick(item: ToolbarItem): void {
+    if (item.action) {
+      item.action(item.key);
+    }
   }
 }

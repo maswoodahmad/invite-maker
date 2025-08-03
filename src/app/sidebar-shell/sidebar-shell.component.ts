@@ -10,6 +10,7 @@ import { SidebarStateService } from '../services/sidebar-state.service';
 import { PageNumberSettingsComponent } from '../page-number-settings/page-number-settings.component';
 import { FontSelectorComponent } from '../font-selector/font-selector.component';
 import { UploadComponent } from '../upload/upload.component';
+import { ColorComponent } from '../color/color.component';
 
 
 @Component({
@@ -21,7 +22,8 @@ import { UploadComponent } from '../upload/upload.component';
     TextSidebarComponent,
     PageNumberSettingsComponent,
     FontSelectorComponent,
-     UploadComponent
+    UploadComponent,
+     ColorComponent
 
   ],
   templateUrl: './sidebar-shell.component.html',
@@ -35,6 +37,7 @@ export class SidebarShellComponent {
 
   @Input() isMobile = false;
   @ViewChild('sidebarShell', { static: true }) sidebarRef!: ElementRef<HTMLCanvasElement>;
+  config: any;
 
   constructor(private canvasControlService: CanvasControlService, public sidebarState: SidebarStateService){}
 
@@ -47,7 +50,11 @@ export class SidebarShellComponent {
   ngOnInit() {
 
     this.sidebarState.activeSidebar$.subscribe(type => {
-      this.activeSidebar = type;
+      if (type?.view) {
+        this.activeSidebar = type.view;
+      }
+      this.config = type?.config
+
 
       const isOpen = type != null;
 
@@ -59,7 +66,7 @@ export class SidebarShellComponent {
 
     })
 
-  this.sidebarWidth = this.sidebarRef.nativeElement.offsetWidth + 80;
+  this.sidebarWidth = this.sidebarRef?.nativeElement?.offsetWidth + 80;
 
   }
 

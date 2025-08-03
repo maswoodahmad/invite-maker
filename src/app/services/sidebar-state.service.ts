@@ -2,33 +2,55 @@ import { SidebarView } from './../interface/interface';
 import { BehaviorSubject } from "rxjs";
 import { Injectable } from "@angular/core";
 
+interface SidebarState {
+  view: SidebarView;
+  config?: any;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SidebarStateService {
-  private activeSidebarSubject = new BehaviorSubject<SidebarView>(null);
-  activeSidebar$ = this.activeSidebarSubject.asObservable();
 
-  get current(): SidebarView {
-    return this.activeSidebarSubject.getValue();
+
+  private activeSidebarSubject = new BehaviorSubject<SidebarState | null>(null);
+  readonly activeSidebar$ = this.activeSidebarSubject.asObservable();
+
+  // ✅ Get current sidebar view (or null)
+  get current(): SidebarView | null {
+    return this.activeSidebarSubject.getValue()?.view ?? null;
   }
 
-  close(view: SidebarView) {
-    this.activeSidebarSubject.next(view);
+  // ✅ Open with view + optional config
+  open(view: SidebarView, config?: any): void {
+    this.activeSidebarSubject.next({ view, config });
   }
 
-  open(view: SidebarView) {
-    this.activeSidebarSubject.next(view);
+  // ✅ Close only if the passed view matches the active one
+  close(view: SidebarView): void {
+    const current = this.activeSidebarSubject.getValue();
+    if (current?.view === view) {
+      this.activeSidebarSubject.next(null);
+    }
   }
 
-  toggleSidebar(view: SidebarView) {
-    const current = this.current;
-    this.activeSidebarSubject.next(current === view ? null : view);
+  // ✅ Toggle sidebar open/close
+  toggleSidebar(view: SidebarView, config?: any): void {
+    const current = this.activeSidebarSubject.getValue();
+    if (current?.view === view) {
+      this.activeSidebarSubject.next(null);
+    } else {
+      this.activeSidebarSubject.next({ view, config });
+    }
   }
 
-  get isOpen() {
+  // ✅ Boolean flag for open state
+  get isOpen(): boolean {
+    return this.activeSidebarSubject.getValue() !== null;
+  }
 
-     return this.current === null ? false : true;
-
+  // ✅ Optional getter to get full config
+  get config(): any {
+    return this.activeSidebarSubject.getValue()?.config;
   }
 }

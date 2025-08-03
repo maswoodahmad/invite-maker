@@ -1,6 +1,6 @@
 
 import { CanvasManagerService } from './../services/canvas-manager.service';
-import { Component, Inject, PLATFORM_ID, NgModule, ViewChild } from '@angular/core';
+import { Component, Inject, PLATFORM_ID,  ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import * as fabric from 'fabric'
 import { UploadedImage } from '../interface/interface';
@@ -120,7 +120,7 @@ export class UploadComponent {
         this.rows = this.calculateRows(this.images); // 👈 update rows
         this.onSearch();
       };
-      
+
 
       img.src = dataUrl;
       (input as HTMLInputElement).value = '';
