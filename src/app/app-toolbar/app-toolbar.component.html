@@ -1,33 +1,95 @@
+<!-- Toolbar container -->
 <div class="flex items-center gap-2 px-4 py-2 shadow rounded-lg bg-white">
-  <ng-container *ngFor="let tool of tools">
+  <!-- Existing loop for tools -->
+  <ng-container *ngFor="let tool of toolbarConfig">
     <ng-container [ngSwitch]="tool.type">
-      <!-- <select *ngSwitchCase="'font-family'" class="rounded border px-2 py-1">
-        <option *ngFor="let font of tool.options">{{ font }}</option>
-      </select> -->
+      <!-- Font Size Stepper -->
+      <div
+        *ngSwitchCase="'font-size'"
+        class="flex items-center border rounded px-2 py-1 gap-1"
+      >
+        <button class="min-w-[36px] min-h-[36px] px-2 py-1" (click)="reducefontSizeChange()" class="px-1 text-sm">-</button>
 
-
-      <div *ngSwitchCase="'font-size'" class="flex items-center border rounded px-2 py-1 gap-1">
-        <button (click)="reducefontSizeChange()"  class="px-1 text-sm">-</button>
-
-        <input type="number" [(ngModel)]="fontSize" (blur)="onStyleChange()"
+        <input
+          type="number"
+          [(ngModel)]="fontSize"
+          (blur)="onStyleChange()"
           class="w-12 text-center text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          style="-moz-appearance: textfield;" />
+          style="-moz-appearance: textfield"
+        />
 
-        <button (click)="increaseFontSize()" class="px-1 text-sm">+</button>
+        <button (click)="increaseFontSize()" class="min-w-[36px] min-h-[36px] px-2 py-1"  class="px-1 text-sm">+</button>
       </div>
 
+      <!-- Alignment Button -->
+      <ng-container *ngIf="tool.type === 'align'">
+        <button
+          [appTooltip]="
+            tool.label + ' - ' + (alignmentArray[index] | titlecase)
+          "
+          (click)="applyTextAlign()"
+          class="min-w-[36px] min-h-[36px] px-2 py-1"
+        >
+          <img
+            class="w-5 h-5 sm:w-4 sm:h-4"
+            [src]="'/assets/icons/align-' + alignmentArray[index] + '.svg'"
+          />
+        </button>
+      </ng-container>
 
-      <button [appTooltip] = "tool.label" *ngSwitchDefault  (click)="onToolbarItemClick(tool)" class="rounded px-2 py-1 hover:bg-gray-100">
-
-
-        <img *ngIf="tool.icon" [src]="tool.icon" alt="tool.label" class="w-4 h-4">
-        <span *ngIf="!tool.icon"> {{tool.label}}</span>
-
-
-
+      <!-- Default buttons -->
+      <button
+        [class.active]="tool.active"
+        [appTooltip]="tool.label"
+        *ngSwitchDefault
+        (click)="onToolbarItemClick(tool)"
+        class="rounded px-2 py-1 hover:bg-gray-100 cursor-pointer"
+        class="min-w-[36px] min-h-[36px] px-2 py-1"
+      >
+        <img
+          *ngIf="tool.icon"
+          [src]="tool.icon"
+          alt="{{ tool.label }}"
+          class="w-5 h-5 sm:w-4 sm:h-4"
+        />
+        <span *ngIf="!tool.icon">{{ tool.label }}</span>
       </button>
+      <!-- <div *ngSwitchCase="'stepper'" class="flex items-center gap-2 px-2 py-1 border rounded">
+    <label class="text-sm text-gray-700">Transparency</label>
+
+    <input type="range" min="0" max="100" step="1" [value]="currentTransparency" (input)="onTransparencyInput($event)"
+      class="w-28 accent-purple-600" />
+
+    <input type="number" min="0" max="100" step="1" [(ngModel)]="currentTransparency"
+      (ngModelChange)="onTransparencyChange($event)" class="w-12 text-center border rounded text-sm" />
+  </div> -->
+      <div
+        *ngIf="showSeekbarForOpacity"
+        class="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-2 bg-white rounded shadow z-50 w-65"
+      >
+        <label class="text-sm text-gray-700">Transparency</label>
+
+        <input
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          [value]="currentTransparency"
+          (input)="onTransparencyInput($event)"
+          class="w-40 accent-purple-600"
+        />
+
+        <input
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+          [(ngModel)]="currentTransparency"
+          (ngModelChange)="onTransparencyChange($event)"
+          class="w-12 ml-2 text-center border rounded text-sm"
+        />
+      </div>
     </ng-container>
+    <!-- Transparency Control -->
   </ng-container>
-
-
 </div>

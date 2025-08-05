@@ -2,17 +2,18 @@
 
 <div  class="flex flex-col align-center min-h-screen"> <!-- Adjust padding as per your fixed header/footer -->
 
-  <!-- Fixed floating toolbar (unchanged) -->
-  <div
-    class="fixed z-20 transition-all duration-300 flex flex-row-reverse items-start gap-2 sm:gap-4 right-2 sm:right-6 top-24 sm:top-20 max-w-full"
-    [ngStyle]="transformStyleForToolbar">
-    <app-layer-panel *ngIf="!isViewOnly"></app-layer-panel>
-    <app-app-toolbar
-      #toolbar
-      *ngIf="isToolbarVisible && !isViewOnly"
-      [mode]="canvasService.activeObjectSignal()">
-    </app-app-toolbar>
-  </div>
+<!-- Desktop Toolbar -->
+<div *ngIf="!isViewOnly && isToolbarVisible"
+  class="hidden sm:flex fixed z-30 transition-all duration-300 flex-row items-center justify-center gap-2 sm:gap-4 left-1/2 -translate-x-1/2 top-24 sm:top-20 max-w-full"
+  [ngStyle]="transformStyleForToolbar">
+  <app-app-toolbar #toolbar [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
+</div>
+
+<!-- Mobile Bottom Toolbar -->
+<div *ngIf="!isViewOnly && isToolbarVisible"
+  class="sm:hidden fixed bottom-0 left-0 right-0 w-full z-100 p-2 bg-white border-t shadow-md flex justify-around overflow-x-auto">
+  <app-app-toolbar #toolbar [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
+</div>
 
   <!-- Scrollable Canvas Area -->
   <div #canvasWrapeprEl

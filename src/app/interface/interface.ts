@@ -92,6 +92,7 @@ export type SidebarView =
   | 'fonts'
   | 'menu'
   | 'color'
+  | 'position'
   | null;
 
 export interface CustomCanvasObject extends fabric.Canvas {
@@ -124,7 +125,8 @@ export interface CanvasLayer {
 }
 
 
-
+export type HorizontalAlign = 'left' | 'center' | 'right';
+export type VerticalPosition = 'top' | 'middle' | 'bottom';
 
 
 export interface SidebarItem {

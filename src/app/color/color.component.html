@@ -1,5 +1,9 @@
-<div class="p-4 max-w-md mx-auto pb-24">
-  <h2 class="text-lg font-semibold mb-2">{{ headerText }}</h2>
+<div class="p-4 max-w-md mx-auto pb-24 relative">
+  <button (click)="closeSidebar()" class="absolute top-2 right-2 text-2xl font-bold text-gray-600 hover:text-black">
+    &times;
+  </button>
+
+  <h2 class="text-lg font-semibold mb-4 mt-2 pr-8">{{ headerText }}</h2>
 
   <!-- Document Colors -->
   <div class="mb-4">

@@ -1,3 +1,4 @@
+import { title } from 'process';
 import {
   computed,
   Injectable,
@@ -10,7 +11,9 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   CanvasLayer,
   CustomFabricObject,
+  HorizontalAlign,
   PageNumberPosition,
+  VerticalPosition,
 } from '../interface/interface';
 import { isPlatformBrowser } from '@angular/common';
 import { CanvasManagerService } from './canvas-manager.service';
@@ -23,9 +26,8 @@ export class CanvasService {
   constructor(
     @Inject(PLATFORM_ID) private platformId: any,
     private canvasManager: CanvasManagerService,
-  private colorService: ColorPaletteService)
-
-  {
+    private colorService: ColorPaletteService
+  ) {
     this.canvasManager.getActiveCanvasId$().subscribe((id) => {
       if (id) this.activeCanvasId.set(id);
     });
@@ -72,7 +74,58 @@ export class CanvasService {
     textAlign: string;
     scaleX: number;
     scaleY: number;
+    opacity: number;
   } | null>(null);
+
+  imageStyleSignal = signal<{
+    scaleX: number;
+    scaleY: number;
+    angle: number;
+    opacity: number;
+    flipX: boolean;
+    flipY: boolean;
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    cropX: number;
+    cropY: number;
+    stroke: string | fabric.TFiller | null;
+    strokeWidth: number;
+    strokeUniform: boolean;
+    shadow: string | null;
+    skewX: number;
+    skewY: number;
+    clipPath: any;
+    visible: boolean;
+    selectable: boolean;
+    evented: boolean;
+    src: string;
+  }>({
+    scaleX: 1,
+    scaleY: 1,
+    angle: 0,
+    opacity: 1,
+    flipX: false,
+    flipY: false,
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    cropX: 0,
+    cropY: 0,
+    stroke: null,
+    strokeWidth: 0,
+    strokeUniform: false,
+    shadow: null,
+    skewX: 0,
+    skewY: 0,
+    clipPath: null,
+    visible: true,
+    selectable: true,
+    evented: true,
+    src: '',
+  });
 
   get textStyleBox() {
     return this.textStyleSignal();
@@ -168,12 +221,12 @@ export class CanvasService {
 
   async getLayers(): Promise<CanvasLayer[]> {
     const canvas = this.canvasManager.getActiveCanvas();
-    // console.log('activce canvas id', this.activeCanvasId());
     if (!canvas) return [];
 
     const customObjects = canvas.getObjects() as CustomFabricObject[];
+
     const layers = await Promise.all(
-      customObjects.map(async (obj, index) => {
+      [...customObjects].reverse().map(async (obj, index) => {
         const preview = await this.generatePreview(obj); // Use clone for preview
         return {
           id: obj.id || String(index),
@@ -494,9 +547,37 @@ export class CanvasService {
         textAlign: textbox.textAlign || 'left',
         scaleX: textbox.scaleX || 1,
         scaleY: textbox.scaleY || 1,
+        opacity: textbox.opacity || 1,
+      });
+    } else if (target?.type === 'image') {
+      const image = target as fabric.Image;
+      this.imageStyleSignal.set({
+        scaleX: image.scaleX ?? 1,
+        scaleY: image.scaleY ?? 1,
+        angle: image.angle ?? 0,
+        opacity: image.opacity ?? 1,
+        flipX: image.flipX ?? false,
+        flipY: image.flipY ?? false,
+        left: image.left ?? 0,
+        top: image.top ?? 0,
+        width: image.width ?? 0,
+        height: image.height ?? 0,
+        cropX: image.cropX ?? 0,
+        cropY: image.cropY ?? 0,
+        stroke: image.stroke ?? null,
+        strokeWidth: image.strokeWidth ?? 0,
+        strokeUniform: image.strokeUniform ?? false,
+        shadow: image.shadow?.toString?.() ?? null,
+        skewX: image.skewX ?? 0,
+        skewY: image.skewY ?? 0,
+        clipPath: image.clipPath ?? null,
+        visible: image.visible ?? true,
+        selectable: image.selectable ?? true,
+        evented: image.evented ?? true,
+        src: image.getSrc?.() ?? '',
       });
     } else {
-      this.textStyleSignal.set(null); // hide toolbar if needed
+      this.textStyleSignal.set(null);
     }
     // console.log('signal value after change', this.textStyleBox?.fontSize);
   }
@@ -523,15 +604,19 @@ export class CanvasService {
         textAlign: textbox.textAlign,
         scaleX: textbox.scaleX,
         scaleY: textbox.scaleY,
+        opacity: textbox.opacity || 0,
       });
     }
 
     console.log('signal value after change', this.textStyleBox?.fontSize);
   }
 
-  updateActiveObjectProperties() {
+  updateActiveObjectProperties(object?: fabric.FabricObject) {
     const canvas = this.canvasManager.getActiveCanvas();
-    const obj = canvas?.getActiveObject();
+    let obj = object;
+    if (!obj) {
+      obj = canvas?.getActiveObject();
+    }
 
     if (!obj) return;
 
@@ -550,6 +635,7 @@ export class CanvasService {
           textAlign: textbox.textAlign,
           scaleX: textbox.scaleX,
           scaleY: textbox.scaleY,
+          opacity: textbox.opacity || 1,
         });
         break;
 
@@ -569,16 +655,34 @@ export class CanvasService {
       //   });
       //   break;
 
-      // case 'image':
-      //   const image = obj as fabric.Image;
-      //   this.imageStyleSignal.set({
-      //     scaleX: image.scaleX ?? 1,
-      //     scaleY: image.scaleY ?? 1,
-      //     angle: image.angle ?? 0,
-      //     opacity: image.opacity ?? 1,
-      //     // any other image-specific props
-      //   });
-      //   break;
+      case 'image':
+        const image = obj as fabric.Image;
+        this.imageStyleSignal.set({
+          scaleX: image.scaleX ?? 1,
+          scaleY: image.scaleY ?? 1,
+          angle: image.angle ?? 0,
+          opacity: image.opacity ?? 1,
+          flipX: image.flipX ?? false,
+          flipY: image.flipY ?? false,
+          left: image.left ?? 0,
+          top: image.top ?? 0,
+          width: image.width ?? 0,
+          height: image.height ?? 0,
+          cropX: image.cropX ?? 0,
+          cropY: image.cropY ?? 0,
+          stroke: image.stroke ?? null,
+          strokeWidth: image.strokeWidth ?? 0,
+          strokeUniform: image.strokeUniform ?? false,
+          shadow: image.shadow?.toString?.() ?? null,
+          skewX: image.skewX ?? 0,
+          skewY: image.skewY ?? 0,
+          clipPath: image.clipPath ?? null,
+          visible: image.visible ?? true,
+          selectable: image.selectable ?? true,
+          evented: image.evented ?? true,
+          src: image.getSrc?.() ?? '',
+        });
+        break;
 
       default:
         console.warn(`Unhandled object type: ${obj.type}`);
@@ -596,5 +700,277 @@ export class CanvasService {
     this.activeObjectSignal.set(this.showToolbarFor(obj.type));
     this.setTextBoxSignal(obj); // updates text styles
     this.updateActiveObjectProperties();
+  }
+
+  toggleActions(key: string): void {
+    const canvas = this.canvasManager.getActiveCanvas();
+    const obj = canvas?.getActiveObject() as fabric.Textbox;
+
+    if (!obj || obj.type !== 'textbox') return;
+
+    const current = this.textStyleSignal();
+
+    if (!current) return;
+
+    let updatedProps: Partial<fabric.Textbox> = {};
+
+    switch (key) {
+      case 'bold':
+        updatedProps.fontWeight =
+          current.fontWeight === 'bold' ? 'normal' : 'bold';
+        break;
+      case 'italic':
+        updatedProps.fontStyle =
+          current.fontStyle === 'italic' ? 'normal' : 'italic';
+        break;
+      case 'underline':
+        updatedProps.underline = !current.underline;
+        break;
+      case 'linethrough':
+        updatedProps.linethrough = !current.linethrough;
+        break;
+      case 'overline':
+        updatedProps.overline = !current.overline;
+        break;
+      default:
+        return;
+    }
+
+    this.updateTextProperties(updatedProps);
+  }
+  applySubOrSuperScript(mode: 'sub' | 'super') {
+    const canvas = this.canvasManager.getActiveCanvas();
+    const obj = canvas?.getActiveObject();
+
+    if (obj && obj.type === 'textbox') {
+      const textObj = obj as fabric.IText;
+      const selectionStart = textObj.selectionStart ?? 0;
+      const selectionEnd = textObj.selectionEnd ?? 0;
+
+      if (selectionStart === selectionEnd) return; // Nothing selected
+
+      const baseFontSize = textObj.fontSize ?? 40;
+      const isSub = mode === 'sub';
+      const offset = isSub ? baseFontSize * 0.2 : -baseFontSize * 0.3;
+      const newFontSize = baseFontSize * 0.7;
+
+      let toggleOff = true;
+
+      // Check if already applied to entire selection
+      for (let i = selectionStart; i < selectionEnd; i++) {
+        const style = textObj.getSelectionStyles(i, i + 1)[0] ?? {};
+        const isAlreadyApplied =
+          Math.abs((style.deltaY ?? 0) - offset) < 1 &&
+          Math.abs((style.fontSize ?? baseFontSize) - newFontSize) < 1;
+        if (!isAlreadyApplied) {
+          toggleOff = false;
+          break;
+        }
+      }
+
+      // Apply or Remove the styles
+      for (let i = selectionStart; i < selectionEnd; i++) {
+        if (toggleOff) {
+          // Reset to default style
+          textObj.setSelectionStyles(
+            {
+              fontSize: baseFontSize,
+              deltaY: 0,
+            },
+            i,
+            i + 1
+          );
+        } else {
+          // Apply sub/super
+          textObj.setSelectionStyles(
+            {
+              fontSize: newFontSize,
+              deltaY: offset,
+            },
+            i,
+            i + 1
+          );
+        }
+      }
+
+      textObj.canvas?.renderAll();
+    }
+  }
+
+  alignTextbox(
+    textbox: fabric.Textbox,
+    canvas: fabric.Canvas,
+    vertical: 'top' | 'middle' | 'bottom'
+  ) {
+    textbox.set({
+      originX: 'center',
+      left: canvas.getWidth() / 2,
+    });
+
+    if (vertical === 'top') {
+      textbox.set({
+        originY: 'top',
+        top: 40, // or any top padding
+      });
+    } else if (vertical === 'middle') {
+      textbox.set({
+        originY: 'center',
+        top: canvas.getHeight() / 2,
+      });
+    } else if (vertical === 'bottom') {
+      textbox.set({
+        originY: 'bottom',
+        top: canvas.getHeight() - 40, // bottom padding
+      });
+    }
+
+    textbox.setCoords();
+    canvas.requestRenderAll();
+  }
+
+  setHorizontalAlignment(
+    textbox: fabric.Textbox,
+    canvas: fabric.Canvas,
+    align: HorizontalAlign
+  ) {
+    // Align text inside the textbox
+    textbox.textAlign = align;
+
+    // Set origin for accurate placement
+    if (align === 'left') {
+      textbox.set({ originX: 'left', left: 0 });
+    } else if (align === 'center') {
+      textbox.set({
+        originX: 'center',
+        left: canvas.getWidth() / 2,
+      });
+    } else if (align === 'right') {
+      textbox.set({
+        originX: 'right',
+        left: canvas.getWidth(),
+      });
+    }
+
+    textbox.setCoords();
+    canvas.requestRenderAll();
+  }
+
+  /**
+   * Aligns a textbox horizontally and vertically on a resizable canvas.
+   */
+  setTextAlignment(
+    textbox: fabric.Textbox,
+    canvas: fabric.Canvas,
+    hAlign: HorizontalAlign,
+    vPosition: VerticalPosition
+  ) {
+    const canvasWidth = canvas.getWidth();
+    const canvasHeight = canvas.getHeight();
+
+    // Horizontal alignment (text alignment and position)
+    switch (hAlign) {
+      case 'left':
+        textbox.set({
+          left: 0,
+          textAlign: 'left',
+          originX: 'left',
+        });
+        break;
+      case 'center':
+        textbox.set({
+          left: canvasWidth / 2,
+          textAlign: 'center',
+          originX: 'center',
+        });
+        break;
+      case 'right':
+        textbox.set({
+          left: canvasWidth,
+          textAlign: 'right',
+          originX: 'right',
+        });
+        break;
+    }
+
+    // Vertical positioning (based on top Y position)
+    const padding = 10;
+    switch (vPosition) {
+      case 'top':
+        textbox.set({ top: padding, originY: 'top' });
+        break;
+      case 'middle':
+        textbox.set({ top: canvasHeight / 2, originY: 'center' });
+        break;
+      case 'bottom':
+        textbox.set({ top: canvasHeight - padding, originY: 'bottom' });
+        break;
+    }
+
+    textbox.setCoords(); // Update object bounds
+    canvas.requestRenderAll(); // Re-render canvas
+  }
+
+  updateImageProperties(props: Partial<fabric.Image>) {
+    const canvas = this.canvasManager.getActiveCanvas();
+    const obj = canvas?.getActiveObject();
+
+    if (obj && obj.type === 'image') {
+      obj.set(props);
+      canvas?.requestRenderAll();
+
+      // Update signal after applying changes
+      const image = obj as fabric.Image;
+      this.imageStyleSignal.set({
+        scaleX: image.scaleX ?? 1,
+        scaleY: image.scaleY ?? 1,
+        angle: image.angle ?? 0,
+        opacity: image.opacity ?? 1,
+        flipX: image.flipX ?? false,
+        flipY: image.flipY ?? false,
+        left: image.left ?? 0,
+        top: image.top ?? 0,
+        width: image.width ?? 0,
+        height: image.height ?? 0,
+        cropX: image.cropX ?? 0,
+        cropY: image.cropY ?? 0,
+        stroke: image.stroke ?? null,
+        strokeWidth: image.strokeWidth ?? 0,
+        strokeUniform: image.strokeUniform ?? false,
+        shadow: image.shadow?.toString?.() ?? null,
+        skewX: image.skewX ?? 0,
+        skewY: image.skewY ?? 0,
+        clipPath: image.clipPath ?? null,
+        visible: image.visible ?? true,
+        selectable: image.selectable ?? true,
+        evented: image.evented ?? true,
+        src: image.getSrc?.() ?? '',
+      });
+    }
+
+    console.log('signal value after change', this.imageStyleSignal);
+  }
+  updateObjects(options: {
+    props?: Partial<fabric.Textbox>;
+    imageProps?: Partial<fabric.Image>;
+  }) {
+    const canvas = this.canvasManager.getActiveCanvas();
+    const obj = canvas?.getActiveObject();
+
+    if (!obj) return;
+
+    switch (obj.type) {
+      case 'textbox':
+        if (options.props) {
+          this.updateTextProperties(options.props);
+        }
+        break;
+      case 'image':
+        if (options.imageProps) {
+          this.updateImageProperties(options.imageProps);
+        }
+        break;
+      default:
+        return;
+    }
   }
 }

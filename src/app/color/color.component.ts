@@ -70,7 +70,6 @@ export class ColorComponent {
       console.log(this.defaultSolidColors);
     }
 
-
     // this.colorService.getColors().subscribe((colors: ColorResponse) => {
     //   console.log('Fetched colors:', colors);
     //   this.defaultSolidColors = colors.defaultSolidColors;
@@ -148,21 +147,18 @@ export class ColorComponent {
       );
       if (gradient) {
         console.log(gradient);
-        if (this.config.text == 'text_bg')
-        {
+        if (this.config.text == 'text_bg') {
           obj.set('backgroundColor', gradient);
         } else {
-           obj.set('fill', gradient);
+          obj.set('fill', gradient);
         }
-
       }
     } else {
-        if (this.config.text == 'text_bg') {
-          obj.set('backgroundColor', input);
-        } else {
-          obj.set('fill', input);
-        }
-
+      if (this.config.text == 'text_bg') {
+        obj.set('backgroundColor', input);
+      } else {
+        obj.set('fill', input);
+      }
     }
 
     obj.canvas?.requestRenderAll();
@@ -206,5 +202,9 @@ export class ColorComponent {
       gradientUnits: 'pixels',
       colorStops,
     });
+  }
+
+  closeSidebar() {
+    this.sidebarStateService.close("color");
   }
 }

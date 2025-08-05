@@ -1,45 +1,42 @@
-<div id="layer" class="bg-white text-gray-900 p-2 max-h-[calc(100vh-300px)] right-0 scrollbar-hide  overflow-y-auto shadow-md border-r border-gray-200 cursor-pointer">
-  <h2 class="text-lg font-bold mb-2">
-    <button (click)="toggleLayerPanel()" class="flex items-center gap-2 cursor-pointer">
-      <img src="assets/icons/layers.svg" alt="layers"  class="w-4 h-4">
-      {{layerText}}
-    </button>
-  </h2>
-<div id="draggable" *ngIf="isLayerPanelVisible">
+<!-- LAYERS TAB -->
+<div class="space-y-2 max-h-96 overflow-y-auto pr-1">
   <div *ngFor="let layer of canvasService.layersSignal(); let i = index"
-    class="bg-white w-24 h-24 flex justify-center rounded hover:bg-neutral-100 cursor-pointer border
-     border-gray-200 dragaable"
-    (click)="selectLayer(layer)"
-class="draggable"
-  [attr.data-index]="i"
-  draggable="true"
-  (dragstart)="onDragStart($event, i)"
-  (dragover)="onDragOver($event)"
-  (drop)="onDrop($event, i)"
-  (dragenter)="onDragEnter(i)"
-  (dragleave)="onDragLeave(i)"
-  [class.drag-over]="dragOverIndex === i"
+    class="flex items-center justify-between bg-gray-100 rounded px-2 py-2 hover:bg-gray-200 border cursor-pointer relative"
+    [class.border-purple-500]="selectedLayer === layer" [attr.data-index]="i" draggable="true"
+    (dragstart)="onDragStart($event, i)" (dragover)="onDragOver($event)" (drop)="onDrop($event, i)"
+    (dragenter)="onDragEnter(i)" (dragleave)="onDragLeave(i)" [class.drag-over]="dragOverIndex === i"
+    (click)="selectLayer(layer)">
 
-    cdkDrag>
+    <!-- Drag Handle -->
+    <div class="flex items-center justify-center pr-2 cursor-grab">
+      <img src="assets/icons/draggable-svgrepo-com.svg" style="transform: rotate(90deg);" class="w-4 h-4 opacity-70" />
+    </div>
 
-    <div class="relative w-24 h-24 rounded overflow-hidden bg-checkerboard  shadow-sm">
-      <img [src]="layer.preview" class="w-full h-full object-cover" />
+    <!-- Layer Preview -->
+    <div class="flex-1 flex items-center justify-center gap-2">
+      <img [src]="layer.preview" class="w-10 h-10 object-cover rounded" />
+      <!-- <span class="text-sm truncate max-w-[100px]">{{ layer.name || 'Layer ' + (i + 1) }}</span> -->
+    </div>
 
-      <!-- Visibility Button -->
-      <button (click)="toggleVisibility(layer, $event)"
-        class="absolute top-1 right-1 bg-white bg-opacity-70 hover:bg-opacity-100 p-1 rounded"
-        title="Toggle Visibility">
+    <!-- Right Side Icons -->
+    <div class="flex items-center gap-1">
+      <!-- Visibility Toggle -->
+      <button (click)="toggleVisibility(layer, $event)" title="Toggle Visibility"
+        class="p-1 hover:bg-white/60 rounded transition">
         <img [src]="!layer.hidden ? 'assets/icons/eye.svg' : 'assets/icons/eye-crossed.svg'" class="w-4 h-4" />
       </button>
 
-      <!-- Lock/Unlock Button -->
-      <button (click)="toggleLock(layer, $event)"
-        class="absolute bottom-1 right-1 bg-white bg-opacity-70 hover:bg-opacity-100 p-1 rounded" title="Toggle Lock">
+      <!-- Lock/Unlock -->
+      <button (click)="toggleLock(layer, $event)" title="Toggle Lock" class="p-1 hover:bg-white/60 rounded transition">
         <img [src]="layer.locked ? 'assets/icons/padlock-check.svg' : 'assets/icons/lock-open-alt.svg'"
           class="w-4 h-4" />
+      </button>
+
+      <!-- More Context (optional dropdown or actions) -->
+      <button title="More Options" class="p-1 hover:bg-white/60 rounded transition">
+        <img src="assets/icons/more-horizontal-svgrepo-com.svg" class="w-4 h-4" />
       </button>
     </div>
 
   </div>
-</div>
 </div>

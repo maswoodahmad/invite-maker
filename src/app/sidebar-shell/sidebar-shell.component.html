@@ -18,6 +18,7 @@
         <app-font-selector *ngSwitchCase="'fonts'"></app-font-selector>
         <app-upload *ngSwitchCase="'uploads'"></app-upload>
         <app-color   *ngSwitchCase="'color'" [config]="config"></app-color>
+        <app-position *ngSwitchCase="'position'"></app-position>
         <div *ngSwitchDefault class="text-gray-400 p-4">Select a tool</div>
       </ng-container>
     </div>
@@ -37,6 +38,7 @@
         <app-font-selector *ngSwitchCase="'fonts'"></app-font-selector>
         <app-upload *ngSwitchCase="'uploads'"></app-upload>
         <app-color *ngSwitchCase="'color'" [config]="config"></app-color>
+        <app-position *ngSwitchCase="'position'"></app-position>
         <div *ngSwitchDefault class="text-gray-400 p-4">Select a tool</div>
       </ng-container>
     </div>

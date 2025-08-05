@@ -1,3 +1,4 @@
+import { CanvasManagerService } from './../services/canvas-manager.service';
 import { Component, inject, Input, Signal, computed, effect } from '@angular/core';
 import { CanvasService } from '../services/canvas.service';
 import { CanvasLayer, CustomFabricObject } from '../interface/interface';
@@ -17,11 +18,11 @@ export class LayerPanelComponent {
   isVisible = true;
   layerItems: CanvasLayer[] | undefined = [];
 
-  constructor() {
+  constructor(private canvasManagerService: CanvasManagerService) {
     effect(() => {
       this.layerItems = this.canvasService.layersSignal();
-    //  console.log("lassyrs items", this.layerItems);
-    })
+      //  console.log("lassyrs items", this.layerItems);
+    });
   }
   layerText = '';
 
@@ -29,6 +30,8 @@ export class LayerPanelComponent {
 
   draggedIndex: number | null = null;
   dragOverIndex: number | null = null;
+
+  selectedLayer: any;
 
   onDragStart(event: DragEvent, index: number) {
     this.draggedIndex = index;
@@ -49,20 +52,34 @@ export class LayerPanelComponent {
   }
 
   onDrop(event: DragEvent, dropIndex: number) {
-    if (this.draggedIndex === null || !this.layersSignal()) return;
+    const canvas = this.canvasManagerService.getActiveCanvas();
+    if (
+      this.draggedIndex === null ||
+      !this.layersSignal() ||
+      !canvas ||
+      !this.layerItems
+    )
+      return;
 
+    // Move layer in the array
+    const draggedItem = this.layerItems[this.draggedIndex];
+    this.layerItems.splice(this.draggedIndex, 1);
+    this.layerItems.splice(dropIndex, 0, draggedItem);
 
-    if (this.layerItems) {
-      const draggedItem = this.layerItems[this.draggedIndex];
-      this.layerItems.splice(this.draggedIndex, 1);
-      this.layerItems.splice(dropIndex, 0, draggedItem);
+    // Rebuild canvas stacking order (reversed because of LIFO)
+    const reversedLayers = [...this.layerItems].reverse();
 
-      this.draggedIndex = null;
-      this.dragOverIndex = null;
-    }
+    // Clear canvas and re-add objects in the reversed order
+    canvas.clear();
+    reversedLayers.forEach((item) => {
+      canvas.add(item.object); // assuming each item has `.object` (FabricObject)
+    });
+
+    this.draggedIndex = null;
+    this.dragOverIndex = null;
+
+    canvas.renderAll();
   }
-
-
 
   toggleLayerPanel() {
     this.isLayerPanelVisible = !this.isLayerPanelVisible;
@@ -74,6 +91,7 @@ export class LayerPanelComponent {
   }
 
   selectLayer(layer: CanvasLayer) {
+    this.selectedLayer = layer;
     this.canvasService.selectObject(layer.object);
   }
 

@@ -8,12 +8,16 @@ export interface ToolbarItem {
     | 'toggle'
     | 'align'
     | 'button'
-  | 'slider'
-  | 'font-size';
+    | 'slider'
+    | 'font-size';
   label: string;
   icon: string;
   key: string;
-  action?: (key:string) => void;
+  action?: (key: string) => void;
+  active?: boolean;
+  options?: {
+    value: string; icon: string
+  }[]
 }
 
 export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
@@ -57,13 +61,46 @@ export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
     {
       type: 'toggle',
       label: 'Strikethrough',
-      icon: './assets/icons/strike.svg',
+      icon: './assets/icons/strikethrough.svg',
       key: 'linethrough',
       action: undefined,
     },
-    { type: 'align', label: 'Alignment', icon: 'align.svg', key: 'textAlign' },
+    {
+      type: 'align',
+      label: 'Alignment',
+      icon: 'align.svg', // Optional base icon
+      key: 'textAlign',
+      options: [
+        { value: 'left', icon: 'align-left.svg' },
+        { value: 'center', icon: 'align-center.svg' },
+        { value: 'right', icon: 'align-right.svg' },
+        { value: 'justify', icon: 'align-justify.svg' },
+      ],
+    },
+
     { type: 'button', label: 'Effects', icon: '', key: 'effects' },
-    { type: 'button', label: 'Animate', icon: '', key: 'animate' },
+    {
+      type: 'button',
+      label: 'Subscript',
+      icon: './assets/icons/subscript.svg',
+      key: 'sub',
+      action: undefined,
+    },
+    {
+      type: 'button',
+      label: 'Superscript',
+      icon: './assets/icons/superscript.svg',
+      key: 'super',
+      action: undefined,
+    },
+    {
+      type: 'stepper',
+      label: 'Transparency',
+      icon: './assets/icons/transparency.svg',
+      key: 'transparency',
+      action: undefined,
+    },
+
     { type: 'button', label: 'Position', icon: '', key: 'position' },
     {
       type: 'button',

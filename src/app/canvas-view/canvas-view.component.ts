@@ -150,6 +150,9 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       canvas: this.canvas,
     });
 
+
+    
+
     // this.canvas.setDimensions({
     //   width: this.canvas.getWidth() * (scale || 1),
     //   height: this.canvas.getHeight() * (scale || 1),

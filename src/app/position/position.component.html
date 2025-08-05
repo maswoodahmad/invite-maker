@@ -1,0 +1,173 @@
+<!--  -->
+
+
+<div #container class="z-50 bg-white p-4 max-w-md mx-auto pb-24 relative">
+  <!-- Tabs Header -->
+  <div class="flex border-b mb-4">
+    <button class="px-4 py-2 text-sm font-medium border-b-2" [class.border-purple-600]="activeTab === 'position'"
+      [class.text-purple-600]="activeTab === 'position'" (click)="activeTab = 'position'">
+      Position
+    </button>
+    <button class="px-4 py-2 text-sm font-medium border-b-2" [class.border-purple-600]="activeTab === 'layers'"
+      [class.text-purple-600]="activeTab === 'layers'" (click)="activeTab = 'layers'">
+      Layers
+    </button>
+  </div>
+
+  <!-- Position Tab Content -->
+  <ng-container *ngIf="activeTab === 'position'">
+    <!-- Arrange Buttons -->
+    <div class="mb-4">
+      <div class="text-sm font-medium mb-2">Arrange</div>
+      <div class="grid grid-cols-2 gap-2">
+
+        <button (click)="layerService.bringForward()"
+          class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border border-gray-300 hover:bg-gray-100">
+          <img class="w-4 h-4" src="./assets/icons/bring-bottom-svgrepo-com.svg" alt="Forward" />
+          Forward
+        </button>
+        <button (click)="layerService.sendBackward()"
+          class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border border-gray-300 hover:bg-gray-100">
+          <img class="w-4 h-4" src="./assets/icons/bring-bottom-svgrepo-com.svg" style="transform: rotate(180deg)"
+            alt="backward" />
+          Backward
+        </button>
+        <button (click)="layerService.bringToFront()"
+          class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border border-gray-300 hover:bg-gray-100">
+          <img class="w-4 h-4" src="./assets/icons/bring-forward-svgrepo-com.svg" alt="To front" />
+          To front
+        </button>
+        <button (click)="layerService.sendToBack()"
+          class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border border-gray-300 hover:bg-gray-100">
+          <img class="w-4 h-4" src="./assets/icons/bring-forward-svgrepo-com.svg" style="transform: rotate(180deg)"
+            alt="To back" />
+          To back
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Align to Page -->
+
+    <div class="text-sm font-medium mb-2">Align to page</div>
+    <div class="grid grid-flow-col grid-rows-3 gap-2">
+
+      <!-- Top -->
+      <button (click)="setVerticalAlignment('top')" [ngClass]="{
+          'bg-gray-200 border-blue-500': selectedVertical === 'top',
+          'border-gray-300': selectedVertical !== 'top'
+        }"
+        class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
+        <img class="w-4 h-4" src="./assets/icons/align-top-svgrepo-com.svg" alt="Top" />
+        Top
+      </button>
+
+      <!-- Middle -->
+      <button (click)="setVerticalAlignment('middle')" [ngClass]="{
+          'bg-gray-200 border-blue-500': selectedVertical === 'middle',
+          'border-gray-300': selectedVertical !== 'middle'
+        }"
+        class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
+        <img class="w-4 h-4" src="./assets/icons/align-middle-svgrepo-com.svg" alt="Middle" />
+        Middle
+      </button>
+
+      <!-- Bottom -->
+      <button (click)="setVerticalAlignment('bottom')" [ngClass]="{
+          'bg-gray-200 border-blue-500': selectedVertical === 'bottom',
+          'border-gray-300': selectedVertical !== 'bottom'
+        }"
+        class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
+        <img class="w-4 h-4" src="./assets/icons/align-bottom-svgrepo-com.svg" alt="Bottom" />
+        Bottom
+      </button>
+      <!-- Left -->
+      <button (click)="setAHorizontalAlignment('left')" [ngClass]="{
+                'bg-gray-200 border-blue-500': selectedHorizontal === 'left',
+                'border-gray-300': selectedHorizontal !== 'left'
+              }"
+        class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
+        <img class="w-4 h-4" src="./assets/icons/align-left-svgrepo-com.svg" alt="Left" />
+        Left
+      </button>
+
+      <!-- Center -->
+      <button (click)="setAHorizontalAlignment('center')" [ngClass]="{
+                'bg-gray-200 border-blue-500': selectedHorizontal === 'center',
+                'border-gray-300': selectedHorizontal !== 'center'
+              }"
+        class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
+        <img class="w-4 h-4" src="./assets/icons/align-center-svgrepo-com.svg" alt="Center" />
+        Center
+      </button>
+
+      <!-- Right -->
+      <button (click)="setAHorizontalAlignment('right')" [ngClass]="{
+                'bg-gray-200 border-blue-500': selectedHorizontal === 'right',
+                'border-gray-300': selectedHorizontal !== 'right'
+              }"
+        class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
+        <img class="w-4 h-4" src="./assets/icons/align-right-svgrepo-com.svg" alt="Right" />
+        Right
+      </button>
+    </div>
+
+    <!-- Advanced Section -->
+    <div>
+      <div class="text-sm font-medium mb-2">Advanced</div>
+      <div class="grid grid-cols-3 gap-2 mb-2">
+
+        <div>
+          <label class="label">Width</label>
+          <input (ngModelChange)="onChangeDimensionsAndPositions($event, 'Width')" type="number" [(ngModel)]="width"
+            class="input-field" />
+        </div>
+        <div>
+          <label class="label">Height</label>
+          <input type="number" (ngModelChange)="onChangeDimensionsAndPositions($event, 'Height')" [(ngModel)]="height"
+            class="input-field" [disabled]="isRatioLocked" />
+
+        </div>
+
+        <div>
+          <label class="label">Ratio</label>
+          <button (click)="isRatioLocked = !isRatioLocked" type="button" [(ngModel)]="height"
+            class="input-field flex items-center justify-center" [disabled]="!isRatioLocked">
+            <img class="w-6 h-6"
+              [src]="isRatioLocked ? './assets/icons/lock-open-svgrepo-com.svg' : './assets/icons/lock-closed-svgrepo-com.svg'"
+              alt="lock" />
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 mb-2">
+        <div>
+          <label class="label">X</label>
+          <input type="number" (ngModelChange)="onChangeDimensionsAndPositions($event, 'X')" [(ngModel)]="x"
+            class="input-field" />
+        </div>
+        <div>
+          <label class="label">Y</label>
+          <input type="number" (ngModelChange)="onChangeDimensionsAndPositions($event, 'Y')" [(ngModel)]="y"
+            class="input-field" />
+        </div>
+
+        <div>
+          <label class="label">Rotate</label>
+          <input type="number" (ngModelChange)="onChangeDimensionsAndPositions($event, 'Rotation')" [(ngModel)]="rotate"
+            class="input-field" />
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <!-- Layers Tab Content -->
+  <ng-container *ngIf="activeTab === 'layers'">
+    <div class="text-sm font-medium mb-2">Layers</div>
+    <div class="space-y-2 max-h-72 overflow-y-auto pr-1">
+      <app-layer-panel></app-layer-panel>
+    </div>
+  </ng-container>
+</div>

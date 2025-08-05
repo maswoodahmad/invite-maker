@@ -27,3 +27,19 @@ html, body {
   overscroll-behavior: contain; /* allows scroll only here, not globally */
   touch-action: pan-x pan-y;
 }
+
+
+
+
+  .btn-option {
+    @apply border rounded px-2 py-1 text-sm hover:bg-gray-100;
+  }
+
+  .input-field {
+    @apply w-full border rounded px-2 py-1 text-sm;
+  }
+
+  .label {
+    @apply block text-xs text-gray-600 mb-1;
+  }
+

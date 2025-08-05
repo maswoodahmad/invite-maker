@@ -11,6 +11,7 @@ import { PageNumberSettingsComponent } from '../page-number-settings/page-number
 import { FontSelectorComponent } from '../font-selector/font-selector.component';
 import { UploadComponent } from '../upload/upload.component';
 import { ColorComponent } from '../color/color.component';
+import { PositionComponent } from '../position/position.component';
 
 
 @Component({
@@ -23,7 +24,8 @@ import { ColorComponent } from '../color/color.component';
     PageNumberSettingsComponent,
     FontSelectorComponent,
     UploadComponent,
-     ColorComponent
+    ColorComponent,
+     PositionComponent
 
   ],
   templateUrl: './sidebar-shell.component.html',
@@ -86,7 +88,7 @@ export class SidebarShellComponent {
   }
 
   close() {
-    this.sidebarState.close(null); // Whatever your close logic is
+    this.sidebarState.close(this.activeSidebar); // Whatever your close logic is
   }
 
 
