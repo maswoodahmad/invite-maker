@@ -9,14 +9,15 @@ import {
   AfterViewInit,
   OnChanges,
   SimpleChanges,
+  effect,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LayerPanelComponent } from '../canvas/layer-panel.component';
 
 import { CanvasService } from '../services/canvas.service';
 
-
-import * as fabric from 'fabric'
+import * as fabric from 'fabric';
+import { CustomFabricObject } from '../interface/interface';
 
 @Component({
   selector: 'app-position',
@@ -29,8 +30,8 @@ export class PositionComponent implements AfterViewInit, OnChanges {
   @Input() triggerElement!: HTMLElement;
   @Input() visible = false;
   activeTab: 'position' | 'layers' = 'position';
-  width! :number ;
-  height! : number ;
+  width!: number;
+  height!: number;
   x = 0;
   y = 0;
   rotate = 0;
@@ -45,19 +46,26 @@ export class PositionComponent implements AfterViewInit, OnChanges {
     private renderer: Renderer2,
     protected layerService: LayerService,
     private canvasService: CanvasService
-  ) {}
+  ) {
+    effect(() => {
+      const { width, height } = this.canvasService.renderedDimensions();
+      this.width = Math.round(width);
+      this.height = Math.round(height);
+      this.ratio = width / height;
+    });
+  }
 
   ngAfterViewInit() {
     this.setPosition();
     const canvas = this.canvasService.getCanvas();
-    const activeObj = canvas?.getActiveObject();
+    const activeObj = canvas?.getActiveObject() as CustomFabricObject;
 
     if (!canvas || !activeObj) return;
-     this.width = activeObj.width;
-    this.height = activeObj.height;
+    this.width = Math.round( activeObj.renderedWidth || 0);
+    this.height = Math.round(activeObj.renderedHeight || 0);
     this.ratio = this.width / this.height;
-      this.x = activeObj.left ?? 0;
-     this.y = activeObj.top ?? 0;
+    this.x = activeObj.left ?? 0;
+    this.y = activeObj.top ?? 0;
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -142,7 +150,7 @@ export class PositionComponent implements AfterViewInit, OnChanges {
 
         if (this.isRatioLocked) {
           activeObj.set('scaleY', newScaleX);
-          this.height =Math.round(originalHeight * newScaleX);
+          this.height = Math.round(originalHeight * newScaleX);
         }
         break;
       }

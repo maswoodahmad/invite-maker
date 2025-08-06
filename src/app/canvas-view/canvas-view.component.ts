@@ -1,3 +1,4 @@
+import { CanvasObjectToolbarComponent } from './../canvas-object-toolbar/canvas-object-toolbar.component';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
@@ -24,11 +25,16 @@ import { CanvasClipboardService } from '../services/canvas-clipboard.service';
 import { ModeService } from '../services/mode.service';
 import { CanvasPage } from '../interface/interface';
 import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
+import { CanvasObjectContextMenuComponent } from '../canvas-object-context-menu/canvas-object-context-menu.component';
 
 @Component({
   selector: 'app-canvas-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    CanvasObjectToolbarComponent,
+    CanvasObjectContextMenuComponent,
+  ],
   templateUrl: './canvas-view.component.html',
   styleUrls: ['./canvas-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,8 +44,6 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
   canvasRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('canvasPorject', { static: true })
   canvasWrapperRef!: ElementRef<HTMLCanvasElement>;
-
-
 
   @Input() data!: CanvasPage;
 
@@ -74,7 +78,7 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private canvasService: CanvasService,
+    protected canvasService: CanvasService,
     private canvasManagerService: CanvasManagerService,
     private canvasClipboardService: CanvasClipboardService,
     private modeService: ModeService,
@@ -150,9 +154,6 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       canvas: this.canvas,
     });
 
-
-    
-
     // this.canvas.setDimensions({
     //   width: this.canvas.getWidth() * (scale || 1),
     //   height: this.canvas.getHeight() * (scale || 1),
@@ -174,21 +175,19 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       }
     });
 
-       this.canvas.on('mouse:down',  (e) => {
-         const activeObj = this.canvas.getActiveObject();
+    this.canvas.on('mouse:down', (e) => {
+      const activeObj = this.canvas.getActiveObject();
 
-         if (!e.target) {
-           // Clicked on empty space, clear selection
-           this.canvas.discardActiveObject();
-           this.canvas.requestRenderAll();
-         } else if (activeObj && activeObj !== e.target) {
-           // Clicked on a different object — manually switch selection
-           this.canvas.setActiveObject(e.target);
-           this.canvas.requestRenderAll();
-         }
-       });
-
-
+      if (!e.target) {
+        // Clicked on empty space, clear selection
+        this.canvas.discardActiveObject();
+        this.canvas.requestRenderAll();
+      } else if (activeObj && activeObj !== e.target) {
+        // Clicked on a different object — manually switch selection
+        this.canvas.setActiveObject(e.target);
+        this.canvas.requestRenderAll();
+      }
+    });
 
     this.canvas.on('selection:created', this.applySelectionStyle.bind(this));
     this.canvas.on('selection:updated', this.applySelectionStyle.bind(this));
@@ -346,5 +345,138 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       this.canvasService.activeCanvasId.set('');
       this.canvasService.activeCanvasId.set(this.data.id);
     });
+  }
+
+  contextMenuVisible = false;
+  contextMenuPosition = { top: 0, left: 0 };
+
+  toolbarPosition = { top: 0, left: 0 };
+
+  @ViewChild('canvasWrapeprEl', { static: true })
+  canvasScrollWrapperRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('canvaswrapper', { static: true })
+  canvasOuterRef!: ElementRef<HTMLDivElement>;
+
+  openContextMenu(event: MouseEvent): void {
+    const wrapper = document.getElementById('canvas-wrapper');
+    if (!wrapper) return;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const menuWidth = 256;
+    const estimatedMenuHeight = 220;
+    const padding = 8;
+
+    let left = event.clientX - wrapperRect.left;
+    let top = event.clientY - wrapperRect.top;
+
+    // Clamp horizontally
+    if (left + menuWidth > wrapperRect.width) {
+      left = wrapperRect.width - menuWidth - padding;
+    }
+
+    // Clamp vertically
+    const maxTop = wrapperRect.height - estimatedMenuHeight - padding;
+    top = Math.min(top, maxTop);
+    top = Math.max(top, padding); // prevent going above too
+
+    this.contextMenuPosition = { top, left };
+    this.contextMenuVisible = true;
+
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  updateToolbarPosition(object: fabric.Object) {
+    if (!this.canvasScrollWrapperRef?.nativeElement || !object || !this.canvas)
+      return;
+
+    const wrapper = this.canvasScrollWrapperRef.nativeElement as HTMLElement;
+    const zoom = this.canvas.getZoom();
+
+    const objRect = object.getBoundingRect(); // ✅ true = absolute on canvas
+    const wrapperRect = wrapper.getBoundingClientRect();
+
+    const scrollLeft = wrapper.scrollLeft;
+    const scrollTop = wrapper.scrollTop;
+
+    const toolbarHeight = 40;
+    const gap = 8;
+
+    // ✅ Convert object position to wrapper-relative
+    const topInWrapper = objRect.top * zoom - scrollTop;
+    const leftInWrapper =
+      (objRect.left + objRect.width / 2) * zoom - scrollLeft;
+
+    const topAbove = topInWrapper - toolbarHeight - gap;
+    const topBelow = topInWrapper + objRect.height * zoom + gap;
+
+    const isAboveVisible = topAbove > 0;
+    const isBelowVisible = topBelow + toolbarHeight < wrapper.clientHeight;
+
+    const top = isAboveVisible
+      ? topAbove
+      : isBelowVisible
+      ? topBelow
+      : Math.max(0, topAbove);
+
+    // ✅ Set centered, visible position
+    this.toolbarPosition = {
+      top,
+      left: leftInWrapper,
+    };
+  }
+
+  onCopy(): void {
+    console.log('copy triggered');
+  }
+
+  onPaste(): void {
+    console.log('paste triggered');
+  }
+
+  onAlign(): void {
+    console.log('align triggered');
+  }
+
+  onComment(): void {
+    console.log('comment triggered');
+  }
+
+  onLink(): void {
+    console.log('link triggered');
+  }
+
+  onSetBackground(): void {
+    console.log('background triggered');
+  }
+
+  onApplyColors(): void {
+    console.log('color triggered');
+  }
+
+  onInfo(): void {
+    console.log('info triggered');
+  }
+
+  deleteObject() {
+    //throw new Error('Method not implemented.');
+  }
+  lockObject() {
+   // throw new Error('Method not implemented.');
+  }
+  duplicateObject() {
+   // throw new Error('Method not implemented.');
+  }
+  sendBackward() {
+   // throw new Error('Method not implemented.');
+  }
+  sendToBack() {
+   // throw new Error('Method not implemented.');
+  }
+  bringForward() {
+   // throw new Error('Method not implemented.');
+  }
+  bringToFront() {
+    //throw new Error('Method not implemented.');
   }
 }

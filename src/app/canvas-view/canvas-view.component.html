@@ -1,3 +1,21 @@
 
   <canvas #canvasEl [attr.id]="data.id" class="block" id="canvas-id"></canvas>
 
+
+  <app-canvas-object-toolbar *ngIf="canvasService.activeObjectSignal()" [object]="canvasService.activeObjectSignal()"
+    class="fixed z-50 transform -translate-x-1/2"
+    [ngStyle]="{ top: toolbarPosition.top + 'px', left: toolbarPosition.left + 'px' }" (onDelete)="deleteObject()"
+    (onDuplicate)="duplicateObject()" (onLock)="lockObject()" (onUnlock)="lockObject()"
+    (onContextMenu)="openContextMenu($event)" />
+
+
+
+
+
+
+  <!-- Context Menu Component -->
+  <app-canvas-object-context-menu class="absolute z-50" [visible]="contextMenuVisible" [position]="contextMenuPosition"
+    (onCopy)="onCopy()" (onPaste)="onPaste()" (onAlign)="onAlign()" (onComment)="onComment()" (onLink)="onLink()"
+    (onSetBackground)="onSetBackground()" (onApplyColors)="onApplyColors()" (onInfo)="onInfo()"
+    (onBringToFront)="bringToFront()" (onBringForward)="bringForward()" (onSendToBack)="sendToBack()"
+    (onSendBackward)="sendBackward()" />

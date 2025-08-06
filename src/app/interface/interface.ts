@@ -78,6 +78,9 @@ export interface CustomFabricObject extends fabric.Object {
   pageNumber?: number;
   tyep?: string;
   parentId?: string;
+  renderedWidth? : number,
+  renderedHeight? : number,
+
 
 }
 

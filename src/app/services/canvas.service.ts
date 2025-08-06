@@ -34,9 +34,27 @@ export class CanvasService {
   }
   private pageNumberPosition: PageNumberPosition = 'bottom-right';
 
+  readonly selectedObjectSignal = signal<fabric.Object | null>(null);
+
+  readonly renderedDimensions = signal({ width: 0, height: 0 });
+
+  updateRenderedDimensions(width: number, height: number) {
+    this.renderedDimensions.set({ width, height });
+  }
+
   private debouncedUpdate = debounce((canvas: fabric.Canvas) => {
     this.colorService.updateFromCanvas(canvas); // ✅ safe access
-  }, 100);
+    const activeObject = canvas.getActiveObject() as CustomFabricObject;
+
+    const scaleX = activeObject.scaleX ?? 1;
+    const scaleY = activeObject.scaleY ?? 1;
+
+    const renderedWidth = (activeObject.width ?? 0) * scaleX;
+    const renderedHeight = (activeObject.height ?? 0) * scaleY;
+    activeObject.renderedHeight = renderedHeight;
+    activeObject.renderedWidth = renderedWidth;
+    this.updateRenderedDimensions(renderedWidth, renderedHeight);
+  }, 100); // ✅ debounce interval in ms,
 
   private layersStore = signal<Map<string, CanvasLayer[]>>(new Map());
   private objectToLayerIdsMap = new Map<string, Set<string>>();
@@ -55,6 +73,10 @@ export class CanvasService {
   });
 
   readonly activeObjectSignal = signal<any>(null);
+
+  setActiveObjectSignal(obj:fabric.Object | null) {
+    this.activeObjectSignal.set(obj)
+  }
 
   readonly isActiveToolbarSignal = signal<boolean>(false);
 
@@ -75,6 +97,10 @@ export class CanvasService {
     scaleX: number;
     scaleY: number;
     opacity: number;
+    width: number;
+    height: number;
+    renderedWidth?: number;
+    renderedHeight?: number;
   } | null>(null);
 
   imageStyleSignal = signal<{
@@ -101,6 +127,8 @@ export class CanvasService {
     selectable: boolean;
     evented: boolean;
     src: string;
+    renderedWidth?: number;
+    renderedHeight?: number;
   }>({
     scaleX: 1,
     scaleY: 1,
@@ -296,17 +324,20 @@ export class CanvasService {
     canvas.on('object:removed', sync);
     canvas.on('object:modified', sync);
 
-    canvas.on('selection:created', (e) =>
-      this.syncToolbarWithActiveObject(e.selected?.[0])
-    );
+    canvas.on('selection:created', (e) => {
+      this.setActiveObjectSignal(e.selected?.[0]);
+      this.syncToolbarWithActiveObject(e.selected?.[0]);
+    });
 
-    canvas.on('selection:updated', (e) =>
-      this.syncToolbarWithActiveObject(e.selected?.[0])
-    );
+    canvas.on('selection:updated', (e) => {
+      this.setActiveObjectSignal(e.selected?.[0]);
+      this.syncToolbarWithActiveObject(e.selected?.[0]);
+    });
 
-    canvas.on('selection:cleared', () =>
-      this.syncToolbarWithActiveObject(null)
-    );
+    canvas.on('selection:cleared', () => {
+      this.setActiveObjectSignal(null);
+      this.syncToolbarWithActiveObject(null);
+    });
 
     canvas.on('mouse:down', (e) => {
       setToolbarVisible(true);
@@ -316,8 +347,8 @@ export class CanvasService {
     canvas.on('object:added', () => this.debouncedUpdate(canvas));
     canvas.on('object:modified', () => this.debouncedUpdate(canvas));
     canvas.on('object:removed', () => this.debouncedUpdate(canvas));
-    canvas.on('object:scaling', () => this.debouncedUpdate(canvas));
-    canvas.on('object:moving', () => this.debouncedUpdate(canvas));
+    // canvas.on('object:scaling', () => this.debouncedUpdate(canvas));
+    // canvas.on('object:moving', () => this.debouncedUpdate(canvas));
 
     // Optional: update when fill/stroke is changed programmatically
     canvas.on('after:render', () => this.debouncedUpdate(canvas));
@@ -548,6 +579,8 @@ export class CanvasService {
         scaleX: textbox.scaleX || 1,
         scaleY: textbox.scaleY || 1,
         opacity: textbox.opacity || 1,
+        width: textbox.width,
+        height: textbox.height,
       });
     } else if (target?.type === 'image') {
       const image = target as fabric.Image;
@@ -605,6 +638,8 @@ export class CanvasService {
         scaleX: textbox.scaleX,
         scaleY: textbox.scaleY,
         opacity: textbox.opacity || 0,
+        width: textbox.width,
+        height: textbox.height,
       });
     }
 
@@ -636,6 +671,8 @@ export class CanvasService {
           scaleX: textbox.scaleX,
           scaleY: textbox.scaleY,
           opacity: textbox.opacity || 1,
+          width: textbox.width,
+          height: textbox.height,
         });
         break;
 
@@ -971,6 +1008,32 @@ export class CanvasService {
         break;
       default:
         return;
+    }
+  }
+
+  updateSignalOnScale() {
+    const activeObject = this.getCanvas()?.getActiveObject();
+    if (!activeObject) return;
+
+    // Textbox update
+    if (activeObject.type === 'textbox') {
+      const style = this.textStyleSignal();
+      if (!style) return;
+
+      this.updateTextProperties({
+        width: (style.scaleX || 1) * (style.width || 1),
+        height: (style.scaleY || 1) * (style.height || 1),
+      });
+    }
+    // Image update
+    else if (activeObject.type === 'image') {
+      const style = this.imageStyleSignal();
+      if (!style) return;
+
+      this.updateImageProperties({
+        width: (style.scaleX || 1) * (style.width || 1),
+        height: (style.scaleY || 1) * (style.height || 1),
+      });
     }
   }
 }

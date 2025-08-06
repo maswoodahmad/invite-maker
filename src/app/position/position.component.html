@@ -129,12 +129,17 @@
 
         </div>
 
-        <div>
+        <div  >
           <label class="label">Ratio</label>
-          <button (click)="isRatioLocked = !isRatioLocked" type="button" [(ngModel)]="height"
+          <button  [ngClass]="{
+                'border-blue-500 border-8': !isRatioLocked ,
+
+              }"
+              [class.overlay] = "!isRatioLocked"
+              (click)="isRatioLocked = !isRatioLocked" type="button" [(ngModel)]="height"
             class="input-field flex items-center justify-center" [disabled]="!isRatioLocked">
             <img class="w-6 h-6"
-              [src]="isRatioLocked ? './assets/icons/lock-open-svgrepo-com.svg' : './assets/icons/lock-closed-svgrepo-com.svg'"
+              [src]="isRatioLocked ? './assets/icons/lock-open-svgrepo-com.svg' : './assets/icons/lock-closed-svgrepo-com-copy.svg'"
               alt="lock" />
           </button>
         </div>
@@ -170,4 +175,8 @@
       <app-layer-panel></app-layer-panel>
     </div>
   </ng-container>
+
+  <div class=" w-4 h-4 text-borders-primary">
+fsdf
+  </div>
 </div>
