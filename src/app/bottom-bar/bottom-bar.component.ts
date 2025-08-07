@@ -1,20 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { SidebarStateService } from './../services/sidebar-state.service';
+import { Component, Input, OnInit } from '@angular/core';
 import { CanvasZoomService } from '../services/canvas-zoom.service';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { LayerPanelComponent } from '../canvas/layer-panel.component';
 
 @Component({
   selector: 'app-bottom-bar',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './bottom-bar.component.html',
   styleUrl: './bottom-bar.component.scss'
 })
 export class BottomBarComponent implements OnInit {
   zoomPercent: number = 100;
 
-  constructor(public zoomService: CanvasZoomService) {}
+
+  @Input() isMobile = false;
+
+  constructor(public zoomService: CanvasZoomService, protected sidebarService : SidebarStateService) {}
 
   ngOnInit(): void {
     const currentZoom = this.zoomService.getZoom();

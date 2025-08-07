@@ -1,80 +1,79 @@
 <!-- Sticky Header -->
-<div class="sticky top-0 z-50 w-full bg-white px-4 py-2 shadow-sm">
-  <div class="flex items-center justify-between sm:justify-between">
+<div style="background-image: var(--fancy-violet);" class="text-white font-normal top-0 z-50 w-full px-4 py-2.5 shadow-sm">
+  <div class="flex flex-wrap items-center justify-between gap-y-2 gap-x-4">
 
-    <!-- Left Section (mobile: menu + mode + undo/redo/share) -->
-    <div class="flex items-center gap-2 sm:gap-4">
-      <!-- Mobile: Burger Menu -->
-      <button class="p-2" (click)="toggleMenu()">
+    <!-- Left Section -->
+    <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+      <!-- Burger Menu -->
+      <button class="px-3.5" (click)="toggleMenu()">
         <img src="assets/icons/menu-burger.svg" alt="Menu" class="w-4 h-4" />
       </button>
 
-      <!-- Mode Dropdown (visible always) -->
-    <select [(ngModel)]="mode" (ngModelChange)="onModeChange($event)" class="border px-2 py-1 rounded text-sm focus:outline-none">
-      <option value="viewing">Viewing</option>
-      <option value="editing">Editing</option>
-    </select>
+      <!-- Mode Dropdown -->
+      <select [(ngModel)]="mode" (ngModelChange)="onModeChange($event)"
+        class="border px-2 py-1 rounded text-sm focus:outline-none">
+        <option value="viewing">Viewing</option>
+        <option value="editing">Editing</option>
+      </select>
 
-    <span class="hidden sm:block text-sm text-gray-500 text-bold">|</span>
+      <!-- Vertical Divider -->
+      <div *ngIf="!isMobile" class="w-px h-8 bg-black"></div>
 
+      <!-- Undo/Redo/Save -->
+      <button appTooltip="Undo" class="hover:bg-gray-300 p-1.5 rounded" (click)="undo()">
+        <img class="w-5 h-6" src="./assets/icons/undo-left-round-svgrepo-com.svg" alt="Undo">
+      </button>
+      <button appTooltip="Redo" class="hover:bg-gray-300 p-1.5 rounded" (click)="redo()">
+        <img class="w-5 h-6" src="./assets/icons/undo-right-round-svgrepo-com.svg" alt="Redo">
+      </button>
 
+      <!-- Vertical Divider -->
+      <div *ngIf="!isMobile" class="w-px h-8 bg-black"></div>
 
-      <!-- Undo/Redo/Share (mobile only) -->
-      <button class="text-sm text-blue-600" (click)="undo()">Undo</button>
-      <button class="text-sm text-blue-600" (click)="redo()">Redo</button>
-      <span class="hidden sm:block text-sm text-gray-500 text-bold">|</span>
-      <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded" (click)="saveProject()">Save</button>
-      <span class="hidden sm:block text-sm text-gray-500">Last saved: {{ lastSaved | date: 'short' }}</span>
+      <button [appTooltip]="'Save'" class="hover:bg-gray-300 p-1.5 rounded" (click)="saveProject()">
+        <img class="w-5 h-6" src="./assets/icons/cloud-save-svgrepo-com.svg" alt="Save">
+      </button>
     </div>
 
-    <!-- Temporary Banner -->
-    <div *ngIf="showModeBanner"
-      class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-100 text-blue-800 border border-blue-300 px-4 py-2 rounded shadow-md z-50 transition-all duration-300">
-      {{ modeLabel }} Enabled
-    </div>
+    <!-- Right Section -->
+    <div *ngIf="!isMobile" class="flex items-center gap-2 flex-wrap flex-shrink-0 text-sm">
+      <!-- Project Name Input -->
+      <div class="w-fit max-w-full overflow-hidden">
+        <input [(ngModel)]="projectName" (blur)="renameProject()"
+          class="text-base sm:text-lg font-semibold border-none focus:outline-none focus:ring-0 bg-transparent w-[15ch] overflow-x-auto whitespace-nowrap"
+          placeholder="Untitled Project" />
+      </div>
 
-    <!-- Right Section (desktop only) -->
-    <div class="hidden sm:flex items-center flex-wrap gap-2 text-sm">
-      <!-- Project Name + Rename -->
-      <input [(ngModel)]="projectName"
-        class="text-base sm:text-lg font-semibold border-none focus:outline-none focus:ring-0 bg-transparent"
-        placeholder="Untitled Project" />
-      <button (click)="renameProject()" class="text-blue-600 hover:underline">Rename</button>
-
-      <span class="text-gray-300">|</span>
-
-      <!-- Save Button -->
+      <!-- Divider -->
 
 
-      <!-- Extra Options -->
-      <button class="hover:underline" (click)="duplicateProject()">Duplicate</button>
-      <button class="hover:underline text-red-500" (click)="deleteProject()">Delete</button>
-      <button class="hover:underline" (click)="toggleShareMenu()">Share</button>
+      <!-- Share Button -->
+      <button appTooltip="Share" class=" text-black font-normal px-1.5 py-0.5 bg-white rounded border-transparent flex items-center gap-1 hover:underline" (click)="toggleShareMenu()">
+        <img class="w-5 h-6" src="./assets/icons/share-svgrepo-com.svg" alt="Share">
+        Share
+      </button>
 
-      <!-- Last Saved -->
-<button class="sm:hidden text-sm text-blue-600" (click)="toggleShareMenu()">Share</button>
-
-      <!-- User Info -->
-      <div class="hidden sm:flex  items-center gap-2">
+      <!-- User Avatar -->
+      <div class="flex items-center gap-2">
         <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" class="w-6 h-6 rounded-full" />
-        <!-- <span class="text-gray-600">User Name</span> -->
       </div>
     </div>
 
-
-    <!-- Mobile: Bottom Sheet Trigger -->
-    <button class="sm:hidden" (click)="mobileMenuOpen = !mobileMenuOpen">
-      <img class="w-5 h-6" src="assets/icons/more-horizontal-svgrepo-com.svg"  alt="" srcset="">
-
+    <!-- Mobile Menu Trigger -->
+    <button *ngIf="isMobile" (click)="mobileMenuOpen = !mobileMenuOpen">
+      <img class="w-5 h-6" src="assets/icons/more-horizontal-svgrepo-com.svg" alt="More" />
     </button>
-
-
-
   </div>
 
-  <!-- Mobile Slide-Up Bottom Menu -->
-  <div *ngIf="mobileMenuOpen"
-    class="fixed bottom-0 left-0 w-full bg-white border-t shadow-xl p-4 z-50 sm:hidden animate-slide-up">
+  <!-- Temporary Mode Banner -->
+  <div *ngIf="showModeBanner"
+    class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-100 text-blue-800 border border-blue-300 px-4 py-2 rounded shadow-md z-50 transition-all duration-300">
+    {{ modeLabel }} Enabled
+  </div>
+
+  <!-- Mobile Bottom Sheet -->
+  <div *ngIf="mobileMenuOpen && isMobile"
+    class="fixed bottom-0 left-0 w-full bg-white border-t shadow-xl p-4 z-50 animate-slide-up">
     <div class="flex flex-col gap-3 text-sm">
       <input [(ngModel)]="projectName" class="text-base font-semibold border rounded px-2 py-1 focus:outline-none" />
       <button (click)="renameProject()" class="text-left text-blue-600">Rename</button>
@@ -83,8 +82,6 @@
       <button (click)="deleteProject()" class="text-left text-red-500">Delete</button>
       <button (click)="toggleShareMenu()" class="text-left">Share</button>
       <button (click)="mobileMenuOpen = false" class="text-left text-gray-500">Close</button>
-      <button class="hover:underline" (click)="toggleShareMenu()">Share</button>
-
     </div>
   </div>
 </div>

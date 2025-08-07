@@ -1,9 +1,10 @@
 <div class="overflow-hidden" [ngClass]="{
+    'bg-white' : isSidebarOpen,
 
-    'fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-20 flex-col py-4': position === 'left',
+    'fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-18 flex-col pt-2': position === 'left',
 
     'fixed bottom-0 left-0 right-0 w-full h-16 flex-row px-4 py-2 z-100 justify-around': position === 'bottom'
-  }" class="bg-gray-100 flex items-center shadow z-40">
+  }" class="bg-gray-200 flex items-center  z-40">
   <div
     [ngClass]="position === 'left' ? 'flex flex-col gap-6 items-center' : 'flex flex-row gap-4 justify-around w-full'">
     <ng-container *ngFor="let item of sidebarItems">

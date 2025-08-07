@@ -1,4 +1,10 @@
-<div class="flex items-center justify-between p-2 gap-4 text-sm w-full">
+<div class="flex items-center justify-between p-2 gap-4 text-sm fixed bottom-0 h-10 transition-all duration-300"
+  [ngStyle]="{
+    'left': !isMobile && sidebarService.isOpen ? 'clamp(352px, 23vw, 432px)' : '0',
+    'width': !isMobile && sidebarService.isOpen ? 'calc(100% - clamp(352px, 23vw, 432px))' : '100%',
+    'background': 'white',
+    'z-index': 50
+  }">
   <div class="flex items-center gap-2">
     <label for="zoomRange">Zoom:</label>
     <input id="zoomRange" type="range" min="10" max="500" step="5" [(ngModel)]="zoomPercent"
@@ -12,5 +18,4 @@
     <button (click)="resetZoom()" class="px-2 py-1 bg-gray-200 rounded">Reset</button>
     <button (click)="zoomToFit()" class="px-2 py-1 bg-blue-500 text-white rounded">Fit</button>
   </div>
-
 </div>

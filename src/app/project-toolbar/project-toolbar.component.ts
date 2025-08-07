@@ -4,11 +4,12 @@ import { Component, EventEmitter, Input, Output, computed } from '@angular/core'
 import { FormsModule } from '@angular/forms';
 import { DesignSize } from '../interface/interface';
 import { SidebarStateService } from '../services/sidebar-state.service';
+import { TooltipDirective } from '../shared/tooltip.directive';
 
 @Component({
   selector: 'app-project-toolbar',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, TooltipDirective],
   templateUrl: './project-toolbar.component.html',
 })
 export class ProjectToolbarComponent {
@@ -23,6 +24,7 @@ export class ProjectToolbarComponent {
   @Output() redoAction = new EventEmitter<void>();
   @Output() menuOpen = new EventEmitter<boolean>();
   @Output() modeChange = new EventEmitter<'viewing' | 'editing'>();
+  @Input() isMobile: boolean = false;
 
   mode: 'viewing' | 'editing' = 'editing';
   mobileMenuOpen = false;
@@ -100,7 +102,6 @@ export class ProjectToolbarComponent {
     this.mobileMenuOpen = !this.mobileMenuOpen;
   }
   onModeChange(newMode: 'editing' | 'viewing') {
-
     this.modeService.setMode(newMode);
     setTimeout(() => {
       this.showModeBanner = false;

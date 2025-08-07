@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --color-violet-b : oklch(61.06% 0.217 301.47);
+
+
+  --backgroundImage-fancy-purple-bg :linear-gradient(90deg, hsla(263, 42%, 65%, 1) 0%, hsla(319, 77%, 86%, 1) 100%);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -43,3 +50,8 @@ html, body {
     @apply block text-xs text-gray-600 mb-1;
   }
 
+
+ :root {
+  --fancy-purple: linear-gradient(90deg, hsla(263, 42%, 65%, 1) 0%, hsla(319, 77%, 86%, 1) 100%);
+  --fancy-violet :linear-gradient(90deg, hsla(197, 100%, 63%, 1) 0%, hsla(294, 100%, 55%, 1) 100%);
+}

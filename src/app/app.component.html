@@ -1,30 +1,25 @@
-<!-- Fixed Header -->
-<app-project-toolbar  (menuOpen) = "onMenuOpen($event)" id="app-header" class="fixed top-0 border-b left-0 right-0 z-50 h-14" />
 
-<!-- Layout shell -->
-<div class="flex h-scr een pt-14 overflow-hidden">
 
-  <!-- Left Sidebar for Desktop -->
-<!-- Desktop Sidebar (LEFT) -->
-<app-sidebar *ngIf="!isMobile && !isViewOnly" [position]="'left'"></app-sidebar>
+  <app-project-toolbar [isMobile]="isMobile" (menuOpen)="onMenuOpen($event)" id="app-header" class="shrink-0 h-14 z-50"
+    style="background-image: var(--fancy-violet);"></app-project-toolbar>
 
-<!-- Mobile Sidebar (BOTTOM) -->
-<app-sidebar *ngIf="isMobile && !isViewOnly" [position]="'bottom'"></app-sidebar>
+  <div class="flex-1 flex overflow-hidden">
 
-  <!-- Dynamic Sidebar Shell -->
-<app-sidebar-shell [isMobile]="isMobile" id="side-nav-bar" *ngIf="sidebarService.isOpen && !isViewOnly" [ngClass]="{
-  'fixed left-20 top-14 bottom-10 w-[clamp(280px,18vw,360px)] bg-white shadow z-40': !isMobile,
-  'fixed inset-x-0 bottom-0 top-auto w-full top-5 h-[85vh] bg-white z-50 overflow-y-auto rounded-t-xl transform transition-transform duration-300 ease-out translate-y-0': isMobile && sidebarService.isOpen,
-  'translate-y-full': isMobile && !sidebarService.isOpen
-}"
->
-</app-sidebar-shell>
+    <app-sidebar *ngIf="!isMobile && !isViewOnly" [position]="'left'" class="shrink-0 w-18 bg-white"></app-sidebar>
 
-  <!-- Routed Canvas & Content Area -->
-  <div  class="root flex-1 relative overflow-hidden transition-all duration-300">
-    <router-outlet></router-outlet>
+    <app-sidebar-shell *ngIf="sidebarService.isOpen && !isViewOnly" [isMobile]="isMobile" id="side-nav-bar" [ngClass]="{
+        'fixed top-14 bottom-10 left-18 w-[clamp(280px,18vw,360px)] bg-white z-40 flex flex-col h-max overflow-y-auto': !isMobile,
+        'fixed inset-x-0 bottom-0 top-auto w-full top-5 h-[85vh] bg-white z-50 overflow-y-auto rounded-t-xl transform transition-transform duration-300 ease-out translate-y-0': isMobile && sidebarService.isOpen,
+        'translate-y-full': isMobile && !sidebarService.isOpen
+      }"></app-sidebar-shell>
+
+    <div class="flex-1 relative overflow-hidden transition-all duration-300">
+      <router-outlet></router-outlet>
+    </div>
+
+    <app-sidebar *ngIf="isMobile && !isViewOnly" [position]="'bottom'"></app-sidebar>
+
   </div>
-</div>
 
-<!-- Footer -->
-<app-bottom-bar *ngIf="!isMobile" id="app-footer" class="fixed bottom-0 left-20 right-0 z-50 h-10 bg-white border-t" />
+  <app-bottom-bar *ngIf="!isMobile" id="app-footer" class="shrink-0 h-10 bg-gray-200" />
+

@@ -54,7 +54,7 @@
 
       <!-- Top -->
       <button (click)="setVerticalAlignment('top')" [ngClass]="{
-          'bg-gray-200 border-blue-500': selectedVertical === 'top',
+          'bg-gray-200 border-violet-b': selectedVertical === 'top',
           'border-gray-300': selectedVertical !== 'top'
         }"
         class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
@@ -64,7 +64,7 @@
 
       <!-- Middle -->
       <button (click)="setVerticalAlignment('middle')" [ngClass]="{
-          'bg-gray-200 border-blue-500': selectedVertical === 'middle',
+          'bg-gray-200 border-violet-b': selectedVertical === 'middle',
           'border-gray-300': selectedVertical !== 'middle'
         }"
         class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
@@ -74,7 +74,7 @@
 
       <!-- Bottom -->
       <button (click)="setVerticalAlignment('bottom')" [ngClass]="{
-          'bg-gray-200 border-blue-500': selectedVertical === 'bottom',
+          'bg-gray-200 border-violet-b': selectedVertical === 'bottom',
           'border-gray-300': selectedVertical !== 'bottom'
         }"
         class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
@@ -83,7 +83,7 @@
       </button>
       <!-- Left -->
       <button (click)="setAHorizontalAlignment('left')" [ngClass]="{
-                'bg-gray-200 border-blue-500': selectedHorizontal === 'left',
+                'bg-gray-200 border-violet-b': selectedHorizontal === 'left',
                 'border-gray-300': selectedHorizontal !== 'left'
               }"
         class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
@@ -93,7 +93,7 @@
 
       <!-- Center -->
       <button (click)="setAHorizontalAlignment('center')" [ngClass]="{
-                'bg-gray-200 border-blue-500': selectedHorizontal === 'center',
+                'bg-gray-200 border-violet-b': selectedHorizontal === 'center',
                 'border-gray-300': selectedHorizontal !== 'center'
               }"
         class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
@@ -103,7 +103,7 @@
 
       <!-- Right -->
       <button (click)="setAHorizontalAlignment('right')" [ngClass]="{
-                'bg-gray-200 border-blue-500': selectedHorizontal === 'right',
+                'bg-gray-200 border-violet-b': selectedHorizontal === 'right',
                 'border-gray-300': selectedHorizontal !== 'right'
               }"
         class="btn-option flex items-center gap-2 px-3 py-2 text-sm font-medium w-full h-10 rounded border hover:bg-gray-100">
@@ -132,7 +132,7 @@
         <div  >
           <label class="label">Ratio</label>
           <button  [ngClass]="{
-                'border-blue-500 border-8': !isRatioLocked ,
+                'border-violet-b border-8': !isRatioLocked ,
 
               }"
               [class.overlay] = "!isRatioLocked"
@@ -176,7 +176,5 @@
     </div>
   </ng-container>
 
-  <div class=" w-4 h-4 text-borders-primary">
-fsdf
-  </div>
+
 </div>

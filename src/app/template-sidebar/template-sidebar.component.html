@@ -1,16 +1,16 @@
 <!-- DO NOT set h-full here -->
-<div class="template-sidebar flex flex-col w-full  h-full  bg-white relative z-10">
+<div class="template-sidebar flex flex-col w-full h-full bg-white relative z-10">
 
   <!-- 🔒 Fixed Header: Tabs, Search, Tags -->
-  <div class="shrink-0 p-4 border-b bg-white z-20">
+  <div class="shrink-0 p-4  bg-white z-20">
     <!-- Tabs -->
-    <div class="flex gap-4 border-b pb-2">
+    <div class="flex gap-4 border-b pb-2 overflow-x-auto custom-scroll">
       <button (click)="activeTab = 'templates'"
-        [ngClass]="{'font-bold border-b-2 border-blue-600': activeTab === 'templates'}" class="pb-1">
+        [ngClass]="{'font-bold border-b-2 border-blue-600': activeTab === 'templates'}" class="pb-1 whitespace-nowrap">
         Templates
       </button>
       <button (click)="activeTab = 'myDesigns'"
-        [ngClass]="{'font-bold border-b-2 border-blue-600': activeTab === 'myDesigns'}" class="pb-1">
+        [ngClass]="{'font-bold border-b-2 border-blue-600': activeTab === 'myDesigns'}" class="pb-1 whitespace-nowrap">
         My Designs
       </button>
     </div>
@@ -19,8 +19,14 @@
     <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search templates..."
       class="border rounded px-2 py-1 text-sm w-full mt-2" />
 
+
+  </div>
+
+  <!-- Scrollable content starts here -->
+  <div class="flex-1 overflow-y-auto px-4 py-2 space-y-3 custom-scroll">
+
     <!-- Tags -->
-    <div class="flex gap-2 overflow-x-auto p-1 mt-2">
+    <div class="flex gap-2 overflow-x-auto p-1 mt-2 custom-scroll">
       <button *ngFor="let tag of availableTags" (click)="filterTemplatesByTag(tag)"
         [class.bg-blue-600]="selectedTag === tag" [class.text-white]="selectedTag === tag"
         class="px-3 py-1 border rounded text-sm whitespace-nowrap">
@@ -31,18 +37,16 @@
         ✕ Clear
       </button>
     </div>
-  </div>
 
-  <app-page-size-popup *ngIf="showPagePopup" (close)="showPagePopup = false" />
+    <app-page-size-popup *ngIf="showPagePopup" (close)="showPagePopup = false" />
 
-  <button class="w-full px-4 py-2 bg-blue-200 text-blue-800 rounded mb-2 flex items-center justify-center gap-2"
-    (click)="showPagePopup = true">
-    <img src="../../assets/icons/add-document.svg" class="w-4 h-4" alt="Text" />
-    Add a custom size page
-  </button>
+    <button class="w-full px-4 py-2 bg-blue-200 text-blue-800 rounded flex items-center justify-center gap-2"
+      (click)="showPagePopup = true">
+      <img src="../../assets/icons/add-document.svg" class="w-4 h-4" alt="Text" />
+      Add a custom size page
+    </button>
 
-  <!-- 🧩 Scrollable Templates Grid -->
-  <div class="flex-1 overflow-y-auto h-full  px-4 py-2">
+    <!-- 🧩 Templates Grid -->
     <div class="grid grid-cols-2 gap-2 pr-2">
       <div *ngFor="let template of filteredTemplates" class="relative group">
         <!-- Preview -->
@@ -54,7 +58,7 @@
 
         <!-- Context Button -->
         <button (click)="toggleContextMenu($event, template)" class="absolute top-2 right-2 rounded-md p-1.5 cursor-pointer
-          text-gray-500 bg-gray-100 hover:bg-gray-200 hover:text-gray-700 transition">
+            text-gray-500 bg-gray-100 hover:bg-gray-200 hover:text-gray-700 transition">
           ⋮
         </button>
 
@@ -82,8 +86,8 @@
             </button>
           </div>
         </div>
-
       </div>
     </div>
+
   </div>
 </div>

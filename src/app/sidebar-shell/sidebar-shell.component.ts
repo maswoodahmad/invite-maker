@@ -31,9 +31,7 @@ import { PositionComponent } from '../position/position.component';
   templateUrl: './sidebar-shell.component.html',
 
   styleUrl: './sidebar-shell.component.scss',
-  host: {
-    'class': 'fixed top-14 bottom-10 left-20 w-[340px] z-40 bg-white shadow overflow-y-auto'
-  }
+  
 })
 export class SidebarShellComponent {
 

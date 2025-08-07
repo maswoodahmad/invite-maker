@@ -17,9 +17,12 @@ export class SidebarComponent {
   @Input() active: SidebarView | undefined;
   sidebarItems = SIDEBAR_ITEMS;
 
+  isSidebarOpen = false;
+
   constructor(private sidebarService: SidebarStateService) { }
 
   toggle(view: any) {
+    this.isSidebarOpen = view != null ? true : false;
     this.sidebarService.toggleSidebar(view);
   }
 
