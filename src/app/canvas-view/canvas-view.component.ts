@@ -83,7 +83,23 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
     private canvasClipboardService: CanvasClipboardService,
     private modeService: ModeService,
     private renderer: Renderer2
-  ) {}
+  ) {
+    fabric.Canvas.prototype.toJSON = (function (
+      toJSON: (this: fabric.Canvas, propertiesToInclude?: string[]) => any
+    ) {
+      return function (this: fabric.Canvas, propertiesToInclude?: string[]) {
+        return toJSON.call(this, [
+          'backgroundColor',
+          'backgroundImage',
+          'clipPath',
+          'overlayImage',
+          'overlayColor',
+          ...(propertiesToInclude || []),
+        ]);
+      };
+    })(fabric.Canvas.prototype.toJSON as any);
+  }
+
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -154,6 +170,8 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       canvas: this.canvas,
     });
 
+    //pushing it into undo stack;
+    this.canvasService.saveState();
     // this.canvas.setDimensions({
     //   width: this.canvas.getWidth() * (scale || 1),
     //   height: this.canvas.getHeight() * (scale || 1),
@@ -462,19 +480,19 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
     //throw new Error('Method not implemented.');
   }
   lockObject() {
-   // throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
   duplicateObject() {
-   // throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
   sendBackward() {
-   // throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
   sendToBack() {
-   // throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
   bringForward() {
-   // throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
   bringToFront() {
     //throw new Error('Method not implemented.');

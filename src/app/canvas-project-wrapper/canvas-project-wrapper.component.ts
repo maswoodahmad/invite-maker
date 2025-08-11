@@ -34,7 +34,7 @@ import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
     CanvasViewComponent,
     AppToolbarComponent,
     PagesToolbarComponent,
-    LayerPanelComponent,
+
   ],
   templateUrl: './canvas-project-wrapper.component.html',
   styleUrl: './canvas-project-wrapper.component.scss',
@@ -147,6 +147,7 @@ export class CanvasProjectWrapperComponent {
       this.activePageIndex = this.pages.length - 1;
       this.focusedCanvasId.set(id);
     }
+    this.canvasService.saveState();
   }
 
   shiftLayout(offset: number) {
@@ -276,17 +277,20 @@ export class CanvasProjectWrapperComponent {
     if (this.pages.length <= 1) return;
     this.pages.splice(this.activePageIndex, 1);
     this.activePageIndex = Math.max(0, this.activePageIndex - 1);
+     this.canvasService.saveState();
   }
 
   onDuplicatePage(updatedPage: CanvasPage) {
     if (this.isViewOnly) return;
     console.log('📥 Received duplicated page in parent:', updatedPage);
     this.addPage(updatedPage);
+
   }
 
   onRenamePage(): void {
     if (this.isViewOnly) return;
     this.pageNames[this.activePageIndex] = 'newName';
+     this.canvasService.saveState();
   }
 
   @HostListener('window:resize')
@@ -302,6 +306,7 @@ export class CanvasProjectWrapperComponent {
         this.pages[index - 1],
       ];
     }
+     this.canvasService.saveState();
   }
 
   onPageDown(index: number) {
@@ -312,6 +317,7 @@ export class CanvasProjectWrapperComponent {
         this.pages[index + 1],
       ];
     }
+     this.canvasService.saveState();
   }
 
   onLockToggle(updatedCanvas: CanvasPage) {

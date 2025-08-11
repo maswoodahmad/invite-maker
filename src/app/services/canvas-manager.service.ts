@@ -9,6 +9,11 @@ export class CanvasManagerService {
   private canvasMap = new Map<string, fabric.Canvas>();
   private activeCanvasId$ = new BehaviorSubject<string | null>(null);
   private focusState: 'object' | 'full' = 'object';
+  private activeCanvas: fabric.Canvas | null = null;
+
+  setActiveCanvas(canvas: fabric.Canvas) {
+    this.activeCanvas = canvas;
+  }
 
   constructor() {
     this.patchFabricToObject();
@@ -118,7 +123,6 @@ export class CanvasManagerService {
     });
     this.canvasMap.clear();
   }
-
 }
 function toSignal(arg0: Observable<string | null>, arg1: { initialValue: null; }) {
   throw new Error('Function not implemented.');

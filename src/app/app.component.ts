@@ -25,6 +25,7 @@ import { Subscription } from 'rxjs';
 import { SidebarView } from './interface/interface';
 
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import * as fabric from 'fabric';
 
 
 
@@ -80,7 +81,22 @@ export class AppComponent implements AfterViewInit {
     private breakpointObserver: BreakpointObserver,
     private canvasService: CanvasService,
     private modeService: ModeService
-  ) {}
+  ) {
+     fabric.Canvas.prototype.toJSON = (function (
+          toJSON: (this: fabric.Canvas, propertiesToInclude?: string[]) => any
+        ) {
+          return function (this: fabric.Canvas, propertiesToInclude?: string[]) {
+            return toJSON.call(this, [
+              'backgroundColor',
+              'backgroundImage',
+              'clipPath',
+              'overlayImage',
+              'overlayColor',
+              ...(propertiesToInclude || []),
+            ]);
+          };
+        })(fabric.Canvas.prototype.toJSON as any);
+  }
 
   ngAfterViewInit(): void {
     // Wait for sidebar to render
@@ -129,7 +145,19 @@ export class AppComponent implements AfterViewInit {
   @HostListener('wheel', ['$event'])
   onWheel(event: WheelEvent) {
     if (event.ctrlKey) {
-    //  event.preventDefault(); // always block browser zoom
+      //  event.preventDefault(); // always block browser zoom
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (event.ctrlKey && event.key.toLowerCase() === 'z') {
+      if (event.shiftKey) {
+        this.canvasService.redo();
+      } else {
+        this.canvasService.undo();
+      }
+      event.preventDefault();
     }
   }
 }

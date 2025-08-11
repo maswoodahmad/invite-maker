@@ -1,3 +1,4 @@
+import { UndoRedoService } from './undo-redo.service';
 import { title } from 'process';
 import {
   computed,
@@ -5,6 +6,7 @@ import {
   signal,
   PLATFORM_ID,
   Inject,
+  HostListener,
 } from '@angular/core';
 import * as fabric from 'fabric';
 import { v4 as uuidv4 } from 'uuid';
@@ -26,7 +28,8 @@ export class CanvasService {
   constructor(
     @Inject(PLATFORM_ID) private platformId: any,
     private canvasManager: CanvasManagerService,
-    private colorService: ColorPaletteService
+    private colorService: ColorPaletteService,
+    private undoRedoService: UndoRedoService
   ) {
     this.canvasManager.getActiveCanvasId$().subscribe((id) => {
       if (id) this.activeCanvasId.set(id);
@@ -45,15 +48,16 @@ export class CanvasService {
   private debouncedUpdate = debounce((canvas: fabric.Canvas) => {
     this.colorService.updateFromCanvas(canvas); // ✅ safe access
     const activeObject = canvas.getActiveObject() as CustomFabricObject;
+    if (activeObject) {
+      const scaleX = activeObject?.scaleX ?? 1;
+      const scaleY = activeObject?.scaleY ?? 1;
 
-    const scaleX = activeObject.scaleX ?? 1;
-    const scaleY = activeObject.scaleY ?? 1;
-
-    const renderedWidth = (activeObject.width ?? 0) * scaleX;
-    const renderedHeight = (activeObject.height ?? 0) * scaleY;
-    activeObject.renderedHeight = renderedHeight;
-    activeObject.renderedWidth = renderedWidth;
-    this.updateRenderedDimensions(renderedWidth, renderedHeight);
+      const renderedWidth = (activeObject?.width ?? 0) * scaleX;
+      const renderedHeight = (activeObject.height ?? 0) * scaleY;
+      activeObject.renderedHeight = renderedHeight;
+      activeObject.renderedWidth = renderedWidth;
+      this.updateRenderedDimensions(renderedWidth, renderedHeight);
+    }
   }, 100); // ✅ debounce interval in ms,
 
   private layersStore = signal<Map<string, CanvasLayer[]>>(new Map());
@@ -74,8 +78,8 @@ export class CanvasService {
 
   readonly activeObjectSignal = signal<any>(null);
 
-  setActiveObjectSignal(obj:fabric.Object | null) {
-    this.activeObjectSignal.set(obj)
+  setActiveObjectSignal(obj: fabric.Object | null) {
+    this.activeObjectSignal.set(obj);
   }
 
   readonly isActiveToolbarSignal = signal<boolean>(false);
@@ -311,46 +315,68 @@ export class CanvasService {
     });
   }
 
+  undoStack: any[] = [];
+  redoStack: any[] = [];
+  isRestoringState = false; // prevents loop when loading JSON
+
+  saveState(): void {
+    if (this.isRestoringState) return; // don't save when loading history
+    const canvas = this.getCanvas();
+    if (!canvas) return;
+
+    const json = canvas.toJSON();
+    this.undoStack.push(json);
+    // Clear redo stack on new action
+    this.redoStack = [];
+  }
+
   initCanvasEvents(
     canvas: fabric.Canvas,
     setToolbarVisible: (visible: boolean) => void
   ) {
-    const sync = () => {
+    const handleSync = () => {
       this.refreshLayers();
       this.syncToolbarWithActiveObject(canvas.getActiveObject());
     };
 
-    canvas.on('object:added', sync);
-    canvas.on('object:removed', sync);
-    canvas.on('object:modified', sync);
+    const handleSelection = (obj: fabric.Object | null) => {
+      this.setActiveObjectSignal(obj);
+      this.syncToolbarWithActiveObject(obj);
+    };
 
-    canvas.on('selection:created', (e) => {
-      this.setActiveObjectSignal(e.selected?.[0]);
-      this.syncToolbarWithActiveObject(e.selected?.[0]);
+    const handleChange = () => {
+      this.debouncedUpdate(canvas);
+      this.saveState(); // Undo/redo tracking
+    };
+
+    // Object lifecycle events
+    const objectEvents: (keyof fabric.CanvasEvents)[] = [
+      'object:added',
+      'object:modified',
+      'object:removed',
+    ];
+
+    objectEvents.forEach((evt) => {
+      canvas.on(evt, handleSync);
+      canvas.on(evt, handleChange);
     });
 
-    canvas.on('selection:updated', (e) => {
-      this.setActiveObjectSignal(e.selected?.[0]);
-      this.syncToolbarWithActiveObject(e.selected?.[0]);
-    });
+    // Selection events
+    canvas.on('selection:created', (e) =>
+      handleSelection(e.selected?.[0] || null)
+    );
+    canvas.on('selection:updated', (e) =>
+      handleSelection(e.selected?.[0] || null)
+    );
+    canvas.on('selection:cleared', () => handleSelection(null));
 
-    canvas.on('selection:cleared', () => {
-      this.setActiveObjectSignal(null);
-      this.syncToolbarWithActiveObject(null);
-    });
-
+    // Mouse events
     canvas.on('mouse:down', (e) => {
       setToolbarVisible(true);
-      this.syncToolbarWithActiveObject(e.target);
+      this.syncToolbarWithActiveObject(e.target || null);
     });
 
-    canvas.on('object:added', () => this.debouncedUpdate(canvas));
-    canvas.on('object:modified', () => this.debouncedUpdate(canvas));
-    canvas.on('object:removed', () => this.debouncedUpdate(canvas));
-    // canvas.on('object:scaling', () => this.debouncedUpdate(canvas));
-    // canvas.on('object:moving', () => this.debouncedUpdate(canvas));
-
-    // Optional: update when fill/stroke is changed programmatically
+    // Optional: keep UI in sync after programmatic changes
     canvas.on('after:render', () => this.debouncedUpdate(canvas));
   }
 
@@ -1034,6 +1060,65 @@ export class CanvasService {
         width: (style.scaleX || 1) * (style.width || 1),
         height: (style.scaleY || 1) * (style.height || 1),
       });
+    }
+  }
+
+  undo(): void {
+    const canvas = this.getCanvas();
+    if (!canvas || this.undoStack.length < 1) return; // allow restoring even the first state
+
+    const currentState = this.undoStack.pop();
+    if (currentState) this.redoStack.push(currentState);
+
+    const prevState = this.undoStack[this.undoStack.length - 1];
+    this.isRestoringState = true;
+
+   canvas.loadFromJSON(prevState, () => {
+     if (!canvas.backgroundColor) {
+       canvas.backgroundColor = '#ffffff';
+     }
+     canvas.renderAll();
+
+     setTimeout(() => {
+       this.isRestoringState = false;
+       this.setLastObjectActive(canvas);
+       this.canvasManager.setActiveCanvas(canvas);
+       console.log('length', canvas.getObjects().length);
+       this.canvasManager.setCanvasFocusState('full');
+     }, 0);
+   });
+    
+  }
+  redo(): void {
+    const canvas = this.getCanvas();
+    if (!canvas || !this.redoStack.length) return;
+
+    const nextState = this.redoStack.pop();
+    this.undoStack.push(nextState);
+
+    this.isRestoringState = true;
+    canvas.loadFromJSON(nextState, () => {
+      this.isRestoringState = false;
+      if (!canvas.backgroundColor) {
+        canvas.backgroundColor = '#ffffff';
+        canvas.renderAll.bind(canvas);
+      }
+      this.setLastObjectActive(canvas);
+
+      this.canvasManager.setActiveCanvas(canvas);
+      console.log('length', canvas.getObjects()?.length);
+
+      this.canvasManager.setCanvasFocusState('full');
+      canvas.renderAll();
+    });
+  }
+
+  private setLastObjectActive(canvas: fabric.Canvas): void {
+    const objects = canvas.getObjects();
+    if (objects.length > 0) {
+      const lastObj = objects[objects.length - 1];
+      canvas.setActiveObject(lastObj);
+      this.setActiveObjectSignal(lastObj); // keep your Angular signals in sync
     }
   }
 }

@@ -1,3 +1,4 @@
+import { CanvasService } from './../services/canvas.service';
 import { ModeService } from './../services/mode.service';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, computed } from '@angular/core';
@@ -57,7 +58,8 @@ export class ProjectToolbarComponent {
 
   constructor(
     private sidebarService: SidebarStateService,
-    private modeService: ModeService
+    private modeService: ModeService,
+    private canvasService : CanvasService
   ) {}
 
   saveProject() {
@@ -77,11 +79,11 @@ export class ProjectToolbarComponent {
   }
 
   undo() {
-    this.undoAction.emit();
+    this.canvasService.undo();
   }
 
   redo() {
-    this.redoAction.emit();
+    this.canvasService.redo();
   }
 
   toggleShareMenu() {

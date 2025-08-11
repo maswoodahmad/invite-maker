@@ -9,7 +9,6 @@ import { CanvasManagerService } from './../services/canvas-manager.service';
 import { SidebarStateService } from '../services/sidebar-state.service';
 
 import { TextPreset, TextPresets } from '../../assets/textPresets';
-import { v4 as uuidv4 } from 'uuid';
 import { assignMetadata } from '../utils/fabric-object-utils';
 
 @Component({
@@ -22,7 +21,7 @@ import { assignMetadata } from '../utils/fabric-object-utils';
 export class TextSidebarComponent {
   searchQuery: string = '';
   activeFilter: string | null = null;
-  fontSettings!: TextPreset;
+  fontSettings = TextPresets['paragraph'];
 
   textItems = [
     { name: 'Heading', category: 'Default' },
@@ -58,44 +57,76 @@ export class TextSidebarComponent {
     );
   }
 
-  addTextBox(): void {
+  private measureTextWidth(
+    canvas: fabric.Canvas,
+    text: string,
+    fontSize: number,
+    fontFamily: string,
+    fontWeight?: string
+  ): number {
+    const ctx = canvas.getContext();
+    ctx.font = `${fontWeight || ''} ${fontSize}px ${fontFamily}`;
+    return Math.max(
+      ...text.split('\n').map((line) => ctx.measureText(line).width)
+    );
+  }
+
+  addTextBox(text?: string): void {
     const canvas = this.canvasManagerService.getActiveCanvas();
     if (!canvas) return;
 
     const lastPosition = this.canvasService.getAndUpdateObjectPosition(canvas);
-    const textbox = new fabric.Textbox('Birthday', {
+    const defaultText = text || 'Your paragraph text';
+
+    // Apply font settings with fallbacks
+    const fontFamily = this.fontSettings?.fontFamily || 'PlayList Script';
+    const fontWeight = this.fontSettings?.fontWeight || '900';
+    const fontSize = this.fontSettings?.fontSize || 50;
+
+    // Measure required width
+    const textWidth = this.measureTextWidth(
+      canvas,
+      defaultText,
+      fontSize,
+      fontFamily,
+      fontWeight
+    );
+
+    // Create textbox
+    const textbox = new fabric.Textbox(defaultText, {
+      ...this.fontSettings,
+      width: textWidth + 10, // padding
       left: lastPosition.x,
       top: lastPosition.y,
-      fontFamily:this.fontSettings?.fontFamily || 'PlayList Script',
-      fontWeight: this.fontSettings.fontWeight || '900',
-      fontSize: this.fontSettings.fontSize|| 50,
+      fontFamily,
+      fontWeight,
+      fontSize,
       textTransform: 'uppercase',
       editable: true,
       selectable: true,
       evented: true,
-    });
-
-    assignMetadata(textbox, { name: 'my-text' });
-    textbox.set({
       objectCaching: false,
     });
+
+    assignMetadata(textbox, {
+      name: this.fontSettings?.defaultText || 'my-text',
+    });
+
     canvas.add(textbox);
     canvas.setActiveObject(textbox);
-
     canvas.requestRenderAll();
 
+    // Debug click logging (optional)
     canvas.getObjects().forEach((obj) => {
       obj.on('mousedown', () => {
         console.log('Object clicked:', obj.type, obj, obj.left, obj.top);
       });
     });
 
+    // Sync active object after render
     requestAnimationFrame(() => {
-      this.canvasService.syncActiveObject(); // inside it, it gets canvas.getActiveObject()
+      this.canvasService.syncActiveObject();
     });
-
-    // console.log('Object:', textbox);
-    // console.log('Selectable:', textbox.selectable, 'Has controls:', textbox.hasControls);
   }
 
   chooseFontWeight(event: MouseEvent) {
@@ -104,18 +135,8 @@ export class TextSidebarComponent {
 
     this.fontSettings = preset;
 
-    const canvas = this.canvasService.getCanvas();
-    const active = canvas?.getActiveObject() as fabric.Textbox;
-
-    if (!canvas || !active || !preset) return;
-
-    active.set({
-      fontSize: preset.fontSize,
-      fontWeight: preset.fontWeight,
-      fontStyle: preset.fontStyle,
-    });
-
-    canvas.requestRenderAll();
+    this.addTextBox(this.fontSettings.defaultText);
+    this.fontSettings = TextPresets['paragraph'];
   }
 
   // Sidebar interactions
