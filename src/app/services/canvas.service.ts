@@ -41,6 +41,8 @@ export class CanvasService {
 
   readonly renderedDimensions = signal({ width: 0, height: 0 });
 
+  isLoadingCanvasData: boolean = false;
+
   updateRenderedDimensions(width: number, height: number) {
     this.renderedDimensions.set({ width, height });
   }
@@ -314,21 +316,12 @@ export class CanvasService {
       });
     });
   }
-
-  undoStack: any[] = [];
-  redoStack: any[] = [];
-  isRestoringState = false; // prevents loop when loading JSON
-
-  saveState(): void {
-    if (this.isRestoringState) return; // don't save when loading history
-    const canvas = this.getCanvas();
-    if (!canvas) return;
-
-    const json = canvas.toJSON();
-    this.undoStack.push(json);
-    // Clear redo stack on new action
-    this.redoStack = [];
-  }
+  private debouncedSaveState = debounce(
+    (id: string, canvas: fabric.Canvas) => {
+      this.undoRedoService.saveState(id, canvas);
+    },
+    300 // ms debounce to avoid undo spam
+  );
 
   initCanvasEvents(
     canvas: fabric.Canvas,
@@ -346,7 +339,15 @@ export class CanvasService {
 
     const handleChange = () => {
       this.debouncedUpdate(canvas);
-      this.saveState(); // Undo/redo tracking
+
+      // Avoid saving state during undo/redo or initial load
+      if (this.undoRedoService.isRestoringState || this.isLoadingCanvasData)
+        return;
+
+      const id = this.activeCanvasId();
+      if (!id) return;
+
+      this.debouncedSaveState(id, canvas);
     };
 
     // Object lifecycle events
@@ -357,8 +358,10 @@ export class CanvasService {
     ];
 
     objectEvents.forEach((evt) => {
-      canvas.on(evt, handleSync);
-      canvas.on(evt, handleChange);
+      canvas.on(evt, () => {
+        handleSync();
+        handleChange();
+      });
     });
 
     // Selection events
@@ -379,34 +382,6 @@ export class CanvasService {
     // Optional: keep UI in sync after programmatic changes
     canvas.on('after:render', () => this.debouncedUpdate(canvas));
   }
-
-  // initCanvas(canvasInstance: fabric.Canvas) {
-  //   const sync = () => this.refreshLayers();
-
-  //   canvasInstance.on('object:added', sync);
-  //   canvasInstance.on('object:removed', sync);
-  //   canvasInstance.on('object:modified', sync);
-
-  //   canvasInstance.on('selection:created', (e) =>
-  //     this.activeObjectSignal.set(e.selected?.[0] || null)
-  //   );
-  //   canvasInstance.on('selection:updated', (e) =>
-  //     this.activeObjectSignal.set(e.selected?.[0] || null)
-  //   );
-  //   canvasInstance.on('selection:cleared', () =>
-  //     this.activeObjectSignal.set(null)
-  //   );
-
-  //   canvasInstance.on('mouse:down', (e) => {
-  //     this.showToolbar = true;
-  //     if (!e.target) {
-  //       console.log('🟦 Empty canvas clicked');
-  //       this.showToolbarFor('background');
-  //     } else {
-  //       this.showToolbarFor(e.target.type); // your method to update selection
-  //     }
-  //   });
-  // }
 
   toggleVisibility(obj: fabric.Object) {
     obj.visible = !obj.visible;
@@ -1063,62 +1038,36 @@ export class CanvasService {
     }
   }
 
-  undo(): void {
-    const canvas = this.getCanvas();
-    if (!canvas || this.undoStack.length < 1) return; // allow restoring even the first state
-
-    const currentState = this.undoStack.pop();
-    if (currentState) this.redoStack.push(currentState);
-
-    const prevState = this.undoStack[this.undoStack.length - 1];
-    this.isRestoringState = true;
-
-   canvas.loadFromJSON(prevState, () => {
-     if (!canvas.backgroundColor) {
-       canvas.backgroundColor = '#ffffff';
-     }
-     canvas.renderAll();
-
-     setTimeout(() => {
-       this.isRestoringState = false;
-       this.setLastObjectActive(canvas);
-       this.canvasManager.setActiveCanvas(canvas);
-       console.log('length', canvas.getObjects().length);
-       this.canvasManager.setCanvasFocusState('full');
-     }, 0);
-   });
-    
-  }
-  redo(): void {
-    const canvas = this.getCanvas();
-    if (!canvas || !this.redoStack.length) return;
-
-    const nextState = this.redoStack.pop();
-    this.undoStack.push(nextState);
-
-    this.isRestoringState = true;
-    canvas.loadFromJSON(nextState, () => {
-      this.isRestoringState = false;
-      if (!canvas.backgroundColor) {
-        canvas.backgroundColor = '#ffffff';
-        canvas.renderAll.bind(canvas);
-      }
-      this.setLastObjectActive(canvas);
-
-      this.canvasManager.setActiveCanvas(canvas);
-      console.log('length', canvas.getObjects()?.length);
-
-      this.canvasManager.setCanvasFocusState('full');
-      canvas.renderAll();
-    });
+  onUndo() {
+    const id = this.canvasManager.getActiveCanvasId();
+    const canvas = this.canvasManager.getActiveCanvas();
+    if (id && canvas) this.undoRedoService.undo(id, canvas);
   }
 
-  private setLastObjectActive(canvas: fabric.Canvas): void {
-    const objects = canvas.getObjects();
-    if (objects.length > 0) {
-      const lastObj = objects[objects.length - 1];
-      canvas.setActiveObject(lastObj);
-      this.setActiveObjectSignal(lastObj); // keep your Angular signals in sync
-    }
+  onRedo() {
+    const id = this.canvasManager.getActiveCanvasId();
+    const canvas = this.canvasManager.getActiveCanvas();
+    if (id && canvas) this.undoRedoService.redo(id, canvas);
+  }
+
+  saveState() {
+    const id = this.canvasManager.getActiveCanvasId();
+    const canvas = this.canvasManager.getActiveCanvas();
+    if (id && canvas) this.undoRedoService.saveState(id, canvas);
+  }
+
+  loadCanvasData() {
+    this.isLoadingCanvasData = true;
+
+    // this.canvasService.getCanvasData().subscribe({
+    //   next: (data) => {
+    //     this.fabricCanvas.loadFromJSON(data, () => {
+    //       this.isLoadingCanvasData = false;
+    //     });
+    //   },
+    //   error: () => {
+    //     this.isLoadingCanvasData = false;
+    //   },
+    // });
   }
 }

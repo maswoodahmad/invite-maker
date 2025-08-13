@@ -153,9 +153,9 @@ export class AppComponent implements AfterViewInit {
   handleKeyDown(event: KeyboardEvent) {
     if (event.ctrlKey && event.key.toLowerCase() === 'z') {
       if (event.shiftKey) {
-        this.canvasService.redo();
+        this.canvasService.onRedo();
       } else {
-        this.canvasService.undo();
+        this.canvasService.onUndo();
       }
       event.preventDefault();
     }

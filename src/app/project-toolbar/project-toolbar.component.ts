@@ -79,11 +79,11 @@ export class ProjectToolbarComponent {
   }
 
   undo() {
-    this.canvasService.undo();
+    this.canvasService.onUndo();
   }
 
   redo() {
-    this.canvasService.redo();
+    this.canvasService.onRedo();
   }
 
   toggleShareMenu() {

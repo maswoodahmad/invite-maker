@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as fabric  from 'fabric';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { UndoRedoService } from './undo-redo.service';
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +39,10 @@ export class CanvasManagerService {
    */
   registerCanvas(id: string, canvas: fabric.Canvas): void {
     this.canvasMap.set(id, canvas);
+
+
+
+    // );
     if (!this.activeCanvasId$.value) {
       this.activeCanvasId$.next(id); // auto-activate first one
     }
@@ -123,8 +128,13 @@ export class CanvasManagerService {
     });
     this.canvasMap.clear();
   }
+
+  getActiveCanvasId(): string | null {
+    return this.activeCanvasId$.value;
+  }
 }
-function toSignal(arg0: Observable<string | null>, arg1: { initialValue: null; }) {
-  throw new Error('Function not implemented.');
-}
+
+
+
+
 

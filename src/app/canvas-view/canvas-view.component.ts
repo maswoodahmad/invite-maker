@@ -26,6 +26,7 @@ import { ModeService } from '../services/mode.service';
 import { CanvasPage } from '../interface/interface';
 import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
 import { CanvasObjectContextMenuComponent } from '../canvas-object-context-menu/canvas-object-context-menu.component';
+import { UndoRedoService } from '../services/undo-redo.service';
 
 @Component({
   selector: 'app-canvas-view',
@@ -82,7 +83,8 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
     private canvasManagerService: CanvasManagerService,
     private canvasClipboardService: CanvasClipboardService,
     private modeService: ModeService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private undoRedoService: UndoRedoService
   ) {
     fabric.Canvas.prototype.toJSON = (function (
       toJSON: (this: fabric.Canvas, propertiesToInclude?: string[]) => any
@@ -99,7 +101,6 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       };
     })(fabric.Canvas.prototype.toJSON as any);
   }
-
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -135,12 +136,23 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       this.canvas.skipTargetFind = false;
     });
   }
-
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const el = this.canvasRef.nativeElement;
+    this.setupCanvasElement();
+    this.initializeFabricCanvas();
+    this.setupViewport();
+    this.resizeAndCenter();
+    this.initializeHistory();
+    this.loadInitialData();
+    this.registerCanvasEvents();
+    this.applyFabricDefaults();
+    this.initializeCanvasServiceEvents();
+  }
 
+  /** Set native element dimensions */
+  private setupCanvasElement(): void {
+    const el = this.canvasRef.nativeElement;
     el.width = this.CANVAS_WIDTH;
     el.height = this.CANVAS_HEIGHT;
     el.style.width = `${this.CANVAS_WIDTH}px`;
@@ -150,7 +162,11 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       this.data.id
     );
     if (existingCanvas) existingCanvas.dispose();
+  }
 
+  /** Create and register the fabric.Canvas instance */
+  private initializeFabricCanvas(): void {
+    const el = this.canvasRef.nativeElement;
     this.canvas = new fabric.Canvas(el, {
       preserveObjectStacking: true,
       backgroundColor: 'white',
@@ -159,24 +175,32 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.canvasManagerService.registerCanvas(this.data.id, this.canvas);
     this.registerMouseClickOnCanvas();
+  }
 
+  /** Store viewport dimensions */
+  private setupViewport(): void {
     this.viewportWidth = window.innerWidth;
     this.viewportHeight = window.innerHeight;
+  }
 
+  /** Resize and center the canvas */
+  private resizeAndCenter(): void {
     this.canvasService.resizeAndCenterCanvas({
       ...this.tempData,
       viewportWidth: this.viewportWidth,
       viewportHeight: this.viewportHeight,
       canvas: this.canvas,
     });
+  }
 
-    //pushing it into undo stack;
+  /** Initialize undo/redo history */
+  private initializeHistory(): void {
+    this.undoRedoService.initCanvasHistory(this.data.id, this.canvas.toJSON());
     this.canvasService.saveState();
-    // this.canvas.setDimensions({
-    //   width: this.canvas.getWidth() * (scale || 1),
-    //   height: this.canvas.getHeight() * (scale || 1),
-    // });
+  }
 
+  /** Load initial data if available */
+  private loadInitialData(): void {
     if (this.data.data) {
       this.loadCanvasFromExistingData();
     } else {
@@ -184,8 +208,10 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       this.canvas.selection = !this.isViewOnly;
       this.canvas.renderAll();
     }
+  }
 
-    // In your Angular component or JS setup
+  /** Register mouse and selection events */
+  private registerCanvasEvents(): void {
     this.canvas.on('mouse:down', (event) => {
       if (!event.target) {
         this.canvas.discardActiveObject();
@@ -195,13 +221,10 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.canvas.on('mouse:down', (e) => {
       const activeObj = this.canvas.getActiveObject();
-
       if (!e.target) {
-        // Clicked on empty space, clear selection
         this.canvas.discardActiveObject();
         this.canvas.requestRenderAll();
       } else if (activeObj && activeObj !== e.target) {
-        // Clicked on a different object — manually switch selection
         this.canvas.setActiveObject(e.target);
         this.canvas.requestRenderAll();
       }
@@ -209,7 +232,10 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
 
     this.canvas.on('selection:created', this.applySelectionStyle.bind(this));
     this.canvas.on('selection:updated', this.applySelectionStyle.bind(this));
+  }
 
+  /** Apply Fabric default styles */
+  private applyFabricDefaults(): void {
     fabric.InteractiveFabricObject.ownDefaults = {
       ...fabric.InteractiveFabricObject.ownDefaults,
       cornerStyle: 'circle',
@@ -241,12 +267,16 @@ export class CanvasViewComponent implements AfterViewInit, OnInit, OnDestroy {
       lockSkewingY: false,
       lockScalingFlip: false,
     };
+  }
 
+  /** Initialize CanvasService event bindings */
+  private initializeCanvasServiceEvents(): void {
     this.canvasService.initCanvasEvents(
       this.canvas,
       (visible) => (this.showToolbar = visible)
     );
   }
+  
 
   ngOnDestroy(): void {
     this.canvas?.dispose();

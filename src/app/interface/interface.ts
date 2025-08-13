@@ -193,3 +193,8 @@ export interface ColorResponse {
   brandColors: string[];
   documentColors: string[];
 }
+
+export interface HistoryStack {
+  undoStack: any[];
+  redoStack: any[];
+}

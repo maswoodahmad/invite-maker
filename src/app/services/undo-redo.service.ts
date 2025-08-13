@@ -1,98 +1,96 @@
+import { CanvasManagerService } from './canvas-manager.service';
+import { CanvasLayer } from './../interface/interface';
 import { Injectable } from '@angular/core';
 import * as fabric from 'fabric';
-
-@Injectable({
-  providedIn: 'root'
-})
+import { HistoryStack } from '../interface/interface';
+@Injectable({ providedIn: 'root' })
 export class UndoRedoService {
+  constructor(private canvasManagerService: CanvasManagerService) {}
 
-  private undoStack: string[] = [];
-  private redoStack: string[] = [];
-  private canvas!: fabric.Canvas;
+  private historyMap = new Map<string, HistoryStack>();
+  private readonly MAX_HISTORY = 50; // prevent memory blowup
+  isRestoringState = false;
 
-  private debounceTimer: any;
-
-  // Local Storage keys (can be made project-specific if needed)
-  private readonly LS_KEY_UNDO = 'inviteapp-undo-stack';
-  private readonly LS_KEY_REDO = 'inviteapp-redo-stack';
-
-  init(canvas: fabric.Canvas) {
-    this.canvas = canvas;
-
-    this.loadLocalStorage();
-
-    if (this.undoStack.length === 0) {
-      this.saveState();
-    }
-
-  }
-
-  loadLocalStorage() {
-    const undo = localStorage.getItem('inviteapp-undo-stack');
-    const redo = localStorage.getItem('inviteapp-redo-stack');
-
-    this.undoStack = undo ? JSON.parse(undo) : [];
-    this.redoStack = redo ? JSON.parse(redo) : [];
-
-    if (this.undoStack.length > 0) {
-      this.loadState(this.undoStack[this.undoStack.length - 1]);
-    }
-
-  }
-  loadState(state: string) {
-    if (!this.canvas) return;
-
-    this.canvas.loadFromJSON(state, () => {
-      this.canvas.renderAll();
+  initCanvasHistory(canvasId: string, initialState: any) {
+    this.historyMap.set(canvasId, {
+      undoStack: [initialState],
+      redoStack: [],
     });
   }
 
+  saveState(canvasId: string, canvas: fabric.Canvas) {
+    if (this.isRestoringState) return; // do nothing while restoring
 
-  saveState() {
-    if (!this.canvas) return;
+    let history = this.historyMap.get(canvasId);
+    if (!history) {
+      history = { undoStack: [], redoStack: [] };
+      this.historyMap.set(canvasId, history);
+    }
 
-    clearTimeout(this.debounceTimer);
-    this.debounceTimer = setTimeout(() => {
-      const json = this.canvas.toJSON();
-      this.undoStack.push(JSON.stringify(json));
-      this.redoStack = [];
-      this.persistStacks();
-    }, 250); // debounce delay
+    history.redoStack = []; // branching, so clear redo
+    history.undoStack.push(canvas.toJSON());
+
+    // Enforce max stack size
+    if (history.undoStack.length > this.MAX_HISTORY) {
+      history.undoStack.shift();
+    }
   }
 
-  undo() {
-    if (this.undoStack.length < 2) return;
+  undo(canvasId: string, canvas: fabric.Canvas) {
+    const history = this.historyMap.get(canvasId);
+    if (!history || history.undoStack.length < 2) return;
 
-    const current = this.undoStack.pop()!;
-    this.redoStack.push(current);
+    const currentState = history.undoStack.pop();
+    if (currentState) history.redoStack.push(currentState);
 
-    const prev = this.undoStack[this.undoStack.length - 1];
-    this.loadState(prev);
-    this.persistStacks();
+    const prevState = history.undoStack[history.undoStack.length - 1];
+    this.restoreState(canvasId, canvas, prevState);
   }
 
-  redo() {
-    if (this.redoStack.length === 0) return;
+  redo(canvasId: string, canvas: fabric.Canvas) {
+    const history = this.historyMap.get(canvasId);
+    if (!history || history.redoStack.length < 1) return;
 
-    const state = this.redoStack.pop()!;
-    this.undoStack.push(state);
+    const nextState = history.redoStack.pop();
+    if (!nextState) return;
 
-    this.loadState(state);
-    this.persistStacks();
+    history.undoStack.push(nextState);
+    this.restoreState(canvasId, canvas, nextState);
   }
 
-  clear() {
-    this.undoStack = [];
-    this.redoStack = [];
-    localStorage.removeItem(this.LS_KEY_UNDO);
-    localStorage.removeItem(this.LS_KEY_REDO);
+  private restoreState(canvasId: string, canvas: fabric.Canvas, state: any) {
+    this.isRestoringState = true;
+
+    // Freeze rendering during load to avoid flashes
+    canvas.renderOnAddRemove = false;
+
+    // Ensure background color is already there before loading objects
+    if (!canvas.backgroundColor) {
+      canvas.backgroundColor = '#ffffff';
+    }
+
+    // Load JSON without intermediate rendering
+    canvas.loadFromJSON(state, () => {
+      this.setLastObjectActive(canvas);
+
+      this.canvasManagerService.setActiveCanvas(canvas);
+      this.canvasManagerService.setCanvasFocusState('full');
+
+      // Resume rendering & force paint
+      canvas.renderOnAddRemove = true;
+      canvas.requestRenderAll();
+
+      setTimeout(() => {
+        this.isRestoringState = false;
+      }, 0);
+    });
   }
 
-
-  private persistStacks() {
-    localStorage.setItem(this.LS_KEY_UNDO, JSON.stringify(this.undoStack));
-    localStorage.setItem(this.LS_KEY_REDO, JSON.stringify(this.redoStack));
+  private setLastObjectActive(canvas: fabric.Canvas) {
+    const objects = canvas.getObjects();
+    if (objects.length) {
+      const lastObj = objects[objects.length - 1];
+      canvas.setActiveObject(lastObj);
+    }
   }
-
-  constructor() { }
 }
