@@ -1,82 +1,57 @@
-<!-- Main Layout Wrapper -->
+<div class="flex flex-col align-center min-h-screen">
 
-<div  class="flex flex-col align-center min-h-screen"> <!-- Adjust padding as per your fixed header/footer -->
+  <!-- Desktop Toolbar -->
+  <div *ngIf="!isViewOnly && isToolbarVisible"
+    class="hidden sm:flex fixed z-30 transition-all duration-300 flex-row items-center justify-center gap-2 sm:gap-4 left-1/2 -translate-x-1/2 top-24 sm:top-20 max-w-full"
+    [ngStyle]="transformStyleForToolbar">
+    <app-app-toolbar #toolbar [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
+  </div>
 
-<!-- Desktop Toolbar -->
-<div *ngIf="!isViewOnly && isToolbarVisible"
-  class="hidden sm:flex fixed z-30 transition-all duration-300 flex-row items-center justify-center gap-2 sm:gap-4 left-1/2 -translate-x-1/2 top-24 sm:top-20 max-w-full"
-  [ngStyle]="transformStyleForToolbar">
-  <app-app-toolbar #toolbar [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
-</div>
-
-<!-- Mobile Bottom Toolbar -->
-<div *ngIf="!isViewOnly && isToolbarVisible"
-  class="sm:hidden fixed bottom-0 left-0 right-0 w-full z-100 p-2 bg-white border-t shadow-md flex justify-around overflow-x-auto">
-  <app-app-toolbar #toolbar [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
-</div>
-
+  <!-- Mobile Bottom Toolbar -->
+  <div *ngIf="!isViewOnly && isToolbarVisible"
+    class="sm:hidden fixed bottom-0 left-0 right-0 w-full z-100 p-2 bg-white border-t shadow-md flex justify-around overflow-x-auto">
+    <app-app-toolbar #toolbar [mode]="canvasService.activeObjectSignal()"></app-app-toolbar>
+  </div>
+ <!-- Scrollable Canvas Area -->
   <!-- Scrollable Canvas Area -->
-  <div #canvasWrapeprEl
-       id="canvas-wrapper-parent"
-       class="overflow-auto bg-gray-200"
-      style="height: calc(100vh - 96px); scroll-padding-top: 6rem; touch-action: none;">
+  <div #canvasWrapeprEl id="canvas-wrapper-parent" class="overflow-auto bg-gray-200 w-full h-full"
+    style="height: calc(100vh - 96px); scroll-padding-top: 6rem; touch-action: none;">
 
-  <div  id="canvas-zoomable"
-  class="inline-block"
-  [ngStyle]="{
-    'transform': 'scale(' + zoomLevel + ')',
-    'transform-origin': 'top center',
-
-  }"
-
-  >
+    <!-- Zoomable Wrapper -->
+    <div id="canvas-zoomable" class="flex flex-col items-center w-full" [ngStyle]="{
+           'transform': 'scale(' + zoomLevel + ')',
+           'transform-origin': 'top center'
+         }">
 
       <!-- Content Wrapper -->
-      <div class="flex items-center justify-center  min-h-screen mt-16 mb-16">
-        <div id="canvas-wrapper"
-        #canvaswrapper
-             class="canvas-project-container relative mb-12"
-             style="touch-action: pan-x pan-y ; width: auto; max-width: 100%;">
+      <div id="canvas-wrapper" #canvaswrapper
+        class="canvas-project-container relative flex flex-col items-center w-full max-w-full"
+        style="touch-action: pan-x pan-y;">
 
-
-          <!-- Pages Toolbar + Canvas -->
-          <ng-container *ngFor="let page of pages; let i = index">
-            <div class="flex flex-col flex-1 mb-6">
-            <app-pages-toolbar
-              [pageInfo]="page"
-              [totalPages]="pages.length"
-              [pageNumber]="i + 1"
-              (addPage)="addPage()"
-              (deletePage)="onDeletePage()"
-              (duplicate)="onDuplicatePage($event)"
-              (titleChange)="onTitleUpdated($event)"
-              (hide)="onHidePage($event)"
-              (moveDown)="onPageDown(i)"
-              (moveUp)="onPageUp(i)"
-              (lock)="onLockToggle($event)">
+        <!-- Pages Toolbar + Canvas -->
+        <ng-container *ngFor="let page of pages; let i = index">
+          <div class="flex flex-col items-center mb-12 w-full">
+            <app-pages-toolbar [pageInfo]="page" [totalPages]="pages.length" [pageNumber]="i + 1" (addPage)="addPage()"
+              (deletePage)="onDeletePage()" (duplicate)="onDuplicatePage($event)" (titleChange)="onTitleUpdated($event)"
+              (hide)="onHidePage($event)" (moveDown)="onPageDown(i)" (moveUp)="onPageUp(i)" (lock)="onLockToggle($event)">
             </app-pages-toolbar>
 
-            <div (click)="focusCanvas(page.id, $event)" class="flex justify-center"
-
-                 [ngClass]="
-                   'touch-action: pan-x pan-y pinch-zoom, transition-all duration-300 rounded-sm border-3 ' +
-                   (isFocused(page.id) ? 'border-blue-500 p-1' : 'border-transparent')">
-              <app-canvas-view #canvasElement  [data]="page"></app-canvas-view>
+            <!-- Canvas Border Wrapper -->
+            <div (click)="focusCanvas(page.id, $event)"
+              class="flex justify-center transition-all duration-300 rounded-sm border-3"
+              [ngClass]="isFocused(page.id) ? 'border-blue-500' : 'border-transparent'">
+              <app-canvas-view #canvasElement [data]="page"></app-canvas-view>
             </div>
-            </div>
-          </ng-container>
-
-
-          <!-- Add Page Button -->
-          <div *ngIf="!isViewOnly" class="flex justify-center mt-6">
-            <button (click)="addPage()" class="add-btn w-full bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
-              ➕ Add Page
-            </button>
           </div>
+        </ng-container>
 
+        <!-- Add Page Button -->
+        <div *ngIf="!isViewOnly" class="flex justify-center mt-6 w-full">
+          <button (click)="addPage()" class="add-btn w-full bg-white border px-4 py-2 rounded shadow hover:bg-gray-100">
+            ➕ Add Page
+          </button>
         </div>
-      </div>
 
+      </div>
     </div>
   </div>
-</div>

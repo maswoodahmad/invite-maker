@@ -1,14 +1,21 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import * as shapes from '../../assets/shapes';
+import { SidebarStateService } from '../services/sidebar-state.service';
+import { ShapeItem } from '../interface/interface';
 
 @Component({
   selector: 'app-element-sidebar',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './element-sidebar.component.html',
-  styleUrls: ['./element-sidebar.component.scss']
+  styleUrls: ['./element-sidebar.component.scss'],
 })
 export class ElementSidebarComponent {
+
+  constructor(private sidebarState: SidebarStateService) {
+
+  }
   tabs = ['Frame', 'Shape', 'Circle', 'Line', 'Logo'];
   activeTab = 'Shape';
 
@@ -32,5 +39,9 @@ export class ElementSidebarComponent {
   selectShape(shape: string) {
     console.log('Selected shape:', shape);
     // Add to canvas logic here
+  }
+
+  openShapeComp() {
+    this.sidebarState.open('shapes');
   }
 }

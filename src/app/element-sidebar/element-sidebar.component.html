@@ -21,12 +21,17 @@
   </div>
 
   <!-- Shapes -->
-  <div>
-    <h2 class="text-sm font-medium mb-2">Shapes</h2>
-    <div class="flex gap-2 flex-wrap">
-      <div *ngFor="let shape of shapes" class="w-10 h-10 bg-black cursor-pointer" (click)="selectShape(shape)"></div>
+<div class="mb-4">
+  <div class="flex justify-between items-center">
+    <p class="text-sm font-medium">Shapes</p>
+    <button (click)="openShapeComp()" class="text-xs cursor-pointer  text-gray-600 font-light">See all</button>
+  </div>
+
+  <div class="flex gap-2 flex-wrap mt-2">
+    <div *ngFor="let shape of shapes" class="w-10 h-10 bg-black cursor-pointer" (click)="selectShape(shape)">
     </div>
   </div>
+</div>
 
   <!-- Graphics -->
   <div>

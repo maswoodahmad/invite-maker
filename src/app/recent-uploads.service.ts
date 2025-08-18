@@ -12,21 +12,28 @@ export class RecentUploadsService {
   private maxImages = 10;
   private ttlMs = 2 * 24 * 60 * 60 * 1000;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   private isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
   }
 
-  save(dataUrl: string, naturalHeight: number, naturalWidth: number, name?: string, tags?: string[]): void {
+  save(uploaded: UploadedImage): void {
     if (!this.isBrowser()) return;
 
     const now = Date.now();
-    const aspect = naturalWidth / naturalHeight;
-    const image: UploadedImage = { dataUrl, selected: false, name, tags, addedAt: now, naturalWidth, naturalHeight, aspect };
+    const aspect = uploaded.naturalWidth / uploaded.naturalHeight;
+
+    // Rebuild object to ensure consistency
+    const image: UploadedImage = {
+      ...uploaded,
+      selected: false, // always reset on save
+      addedAt: uploaded.addedAt ?? now,
+      aspect,
+    };
 
     const existing: UploadedImage[] = this.loadRaw().filter(
-      img => now - img.addedAt < this.ttlMs
+      (img) => now - img.addedAt < this.ttlMs
     );
 
     const updated = [image, ...existing.slice(0, this.maxImages - 1)];
@@ -36,7 +43,7 @@ export class RecentUploadsService {
   get(): UploadedImage[] {
     if (!this.isBrowser()) return [];
     const now = Date.now();
-    return this.loadRaw().filter(img => now - img.addedAt < this.ttlMs);
+    return this.loadRaw().filter((img) => now - img.addedAt < this.ttlMs);
   }
 
   clear(): void {

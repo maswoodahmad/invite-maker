@@ -41,6 +41,18 @@ export class CanvasService {
 
   readonly renderedDimensions = signal({ width: 0, height: 0 });
 
+  canvasWidthSignal = signal<number>(0);
+
+  scaleSignal = signal<number>(1);
+
+  updateCanvasWidth(width: number) {
+    this.canvasWidthSignal.set(width);
+  }
+
+  updateScaleSignal(scale: number) {
+    this.scaleSignal.set(scale);
+  }
+
   isLoadingCanvasData: boolean = false;
 
   updateRenderedDimensions(width: number, height: number) {
@@ -364,6 +376,8 @@ export class CanvasService {
       });
     });
 
+   // canvas.on('mouse:wheel', (e) => this.__onMouseWheel(e.e)); // note: e.e is the native DOM WheelEvent
+
     // Selection events
     canvas.on('selection:created', (e) =>
       handleSelection(e.selected?.[0] || null)
@@ -504,7 +518,8 @@ export class CanvasService {
     wrapper.style.transform = `scale(${scale})`;
     wrapper.style.transformOrigin = 'top center';
     wrapper.style.marginTop = `${(vh - config.height * scale) / 2}px`;
-
+    this.updateCanvasWidth(config.width + 2);
+    this.updateScaleSignal(scale);
     return scale;
   }
 
@@ -1070,4 +1085,27 @@ export class CanvasService {
     //   },
     // });
   }
+
+  // __onMouseWheel(e: WheelEvent) {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+
+  //   const canvas = this.getCanvas();
+  //   if (!canvas) return;
+
+  //   // Get pointer in canvas coordinates (correct for zoom/pan)
+  //   const pointer = canvas.getScenePoint(e);
+
+  //   let zoom = canvas.getZoom();
+  //   const zoomStep = 0.05;
+
+  //   // Adjust zoom based on wheel delta
+  //   zoom *= e.deltaY < 0 ? 1 + zoomStep : 1 - zoomStep;
+  //   zoom = Math.max(0.1, Math.min(zoom, 10)); // clamp zoom
+
+  //   // Zoom canvas around pointer
+  //   canvas.zoomToPoint(pointer, zoom);
+
+  //   canvas.requestRenderAll();
+  // }
 }

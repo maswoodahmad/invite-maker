@@ -5,6 +5,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   computed,
+  effect,
   ElementRef,
   HostListener,
   Inject,
@@ -34,7 +35,6 @@ import { TOOLBAR_CONFIG, ToolbarMode } from '../../assets/toolbar-config';
     CanvasViewComponent,
     AppToolbarComponent,
     PagesToolbarComponent,
-
   ],
   templateUrl: './canvas-project-wrapper.component.html',
   styleUrl: './canvas-project-wrapper.component.scss',
@@ -48,6 +48,7 @@ export class CanvasProjectWrapperComponent {
 
   focusedCanvasId = signal<string | null>(null);
   isTouchScrolling!: boolean;
+  canvasWidth!: number;
 
   constructor(
     private canvasControlService: CanvasControlService,
@@ -56,7 +57,9 @@ export class CanvasProjectWrapperComponent {
     @Inject(PLATFORM_ID) private platformId: Object,
     private canvasManagerService: CanvasManagerService,
     private modeService: ModeService
-  ) {}
+  ) {
+
+  }
 
   isSidebarOpen = false;
 
@@ -243,7 +246,7 @@ export class CanvasProjectWrapperComponent {
     this.toolbarOffset = 0;
     this.sidebarWidth = 340;
 
-   // console.log('Applied transform:', this.transformStyle);
+    // console.log('Applied transform:', this.transformStyle);
   }
 
   restoreCanvasTransform(): void {
@@ -277,20 +280,19 @@ export class CanvasProjectWrapperComponent {
     if (this.pages.length <= 1) return;
     this.pages.splice(this.activePageIndex, 1);
     this.activePageIndex = Math.max(0, this.activePageIndex - 1);
-     this.canvasService.saveState();
+    this.canvasService.saveState();
   }
 
   onDuplicatePage(updatedPage: CanvasPage) {
     if (this.isViewOnly) return;
     console.log('📥 Received duplicated page in parent:', updatedPage);
     this.addPage(updatedPage);
-
   }
 
   onRenamePage(): void {
     if (this.isViewOnly) return;
     this.pageNames[this.activePageIndex] = 'newName';
-     this.canvasService.saveState();
+    this.canvasService.saveState();
   }
 
   @HostListener('window:resize')
@@ -306,7 +308,7 @@ export class CanvasProjectWrapperComponent {
         this.pages[index - 1],
       ];
     }
-     this.canvasService.saveState();
+    this.canvasService.saveState();
   }
 
   onPageDown(index: number) {
@@ -317,7 +319,7 @@ export class CanvasProjectWrapperComponent {
         this.pages[index + 1],
       ];
     }
-     this.canvasService.saveState();
+    this.canvasService.saveState();
   }
 
   onLockToggle(updatedCanvas: CanvasPage) {
@@ -465,16 +467,30 @@ export class CanvasProjectWrapperComponent {
     if (event.ctrlKey && zoomable) {
       event.preventDefault();
 
+   const  canvas = this.canvasService.getCanvas()
+
+      if (
+        !canvas) return;
       const delta = event.deltaY > 0 ? -0.1 : 0.1;
       this.zoomLevel = Math.min(Math.max(this.zoomLevel + delta, 0.2), 3); // Clamp zoom
+
+
+      const objets = canvas.getObjects().filter(obj =>
+        obj.type === 'iamge') as fabric.FabricImage[];
+
+        objets.forEach((img) => {
+          img.scaleX = (img.scaleX ?? 1) * (1 + delta);
+          img.scaleY = (img.scaleY ?? 1) * (1 + delta);
+          img.setCoords(); // Important! updates bounding box
+        });
+
+      canvas.requestRenderAll();
+
     }
   }
 
   private disposeAllCanvases(): void {
-
-    this.canvasManagerService
-    .getAllCanvases()
-    .forEach((canvas, canvasId) => {
+    this.canvasManagerService.getAllCanvases().forEach((canvas, canvasId) => {
       // 1. Remove all objects from the canvas
 
       // 2. Dispose any Fabric event handlers (like mouse, touch)

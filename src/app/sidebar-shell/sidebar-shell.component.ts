@@ -12,26 +12,25 @@ import { FontSelectorComponent } from '../font-selector/font-selector.component'
 import { UploadComponent } from '../upload/upload.component';
 import { ColorComponent } from '../color/color.component';
 import { PositionComponent } from '../position/position.component';
+import { ShapesComponent } from "../shapes/shapes.component";
 
 
 @Component({
   selector: 'app-sidebar-shell',
   imports: [NgSwitch,
-     TemplateSidebarComponent,
-     ElementSidebarComponent,
-     CommonModule,
+    TemplateSidebarComponent,
+    ElementSidebarComponent,
+    CommonModule,
     TextSidebarComponent,
     PageNumberSettingsComponent,
     FontSelectorComponent,
     UploadComponent,
     ColorComponent,
-     PositionComponent
-
-  ],
+    PositionComponent, ShapesComponent],
   templateUrl: './sidebar-shell.component.html',
 
   styleUrl: './sidebar-shell.component.scss',
-  
+
 })
 export class SidebarShellComponent {
 

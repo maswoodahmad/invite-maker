@@ -1,5 +1,6 @@
 
 // Core types representing a multi-page design project
+import { SafeHtml } from '@angular/platform-browser';
 import * as fabric from 'fabric';
 export interface DesignProject {
   id: string;
@@ -96,6 +97,7 @@ export type SidebarView =
   | 'menu'
   | 'color'
   | 'position'
+  | 'shapes'
   | null;
 
 export interface CustomCanvasObject extends fabric.Canvas {
@@ -163,17 +165,17 @@ export interface CanvasPage  {
   background? :string// to check if object is modifiable
 }
 
-
 export interface UploadedImage {
-  dataUrl: string;
+  dataUrl: string;          // original full image data
+  thumbnail?: string;       // 👈 small preview
   selected: boolean;
   name?: string;
+  extension: string;       // 👈 jpg, png, svg etc
   tags?: string[];
   addedAt: number;
   naturalWidth: number;
   naturalHeight: number;
   aspect: number;
-
 }
 
 
@@ -197,4 +199,24 @@ export interface ColorResponse {
 export interface HistoryStack {
   undoStack: any[];
   redoStack: any[];
+}
+
+
+// Single shape item
+export interface ShapeItem {
+  id: string;
+  name: string;
+  svg: string ;
+  svgHtml?: SafeHtml;
+}
+
+// Category (e.g., Basic, Arrows, Stars, etc.)
+export interface ShapeCategory {
+  category: string;
+  items: ShapeItem[];
+}
+
+// The complete library
+export interface ShapeLibrary {
+  shapes: ShapeCategory[];
 }
