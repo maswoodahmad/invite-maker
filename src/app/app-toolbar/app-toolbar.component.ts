@@ -43,6 +43,7 @@ export class AppToolbarComponent implements OnInit, OnChanges, OnDestroy {
   italic: string = 'normal';
   underLine: boolean = false;
   linethrough: boolean = false;
+  fontFamily='PlayList Script';
 
   fontSize: number = 16;
   scaleY: number = 1;
@@ -59,7 +60,7 @@ export class AppToolbarComponent implements OnInit, OnChanges, OnDestroy {
       const style = this.canvasService.textStyleSignal();
       this.fontSize = this.roundOff(style?.fontSize || 16);
       this.scaleY = style?.scaleY ?? 1;
-
+      this.fontFamily = style?.fontFamily || this.fontFamily;
       this.bold = style?.fontWeight || 'normal';
       this.italic = style?.fontStyle || 'normal';
       this.underLine = style?.underline ?? false;
@@ -107,6 +108,9 @@ export class AppToolbarComponent implements OnInit, OnChanges, OnDestroy {
       }
       if (item.key === 'position') {
         item.action = (key: string) => this.openPositionSidebar();
+      }
+      if (item.key === 'fontFamily') {
+        item.action = (key: string) => this.openFontSelection();
       }
       return item;
     });
@@ -239,5 +243,9 @@ export class AppToolbarComponent implements OnInit, OnChanges, OnDestroy {
 
   openPositionSidebar() {
     this.sidebarState.open('position');
+  }
+
+  openFontSelection(){
+      this.sidebarState.open('fonts');
   }
 }

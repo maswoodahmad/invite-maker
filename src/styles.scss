@@ -55,3 +55,23 @@ html, body {
   --fancy-purple: linear-gradient(90deg, hsla(263, 42%, 65%, 1) 0%, hsla(319, 77%, 86%, 1) 100%);
   --fancy-violet :linear-gradient(90deg, hsla(197, 100%, 63%, 1) 0%, hsla(294, 100%, 55%, 1) 100%);
 }
+
+/* global styles.css or component stylesheet */
+::-webkit-scrollbar {
+  width: 6px;   /* thin vertical scrollbar */
+  height: 6px;  /* thin horizontal scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2); /* scrollbar color */
+  border-radius: 9999px; /* fully rounded */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* no background */
+}
+
+* {
+  scrollbar-width: thin;      /* makes it thinner */
+  scrollbar-color: #ccc transparent; /* thumb + track */
+}

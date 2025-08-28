@@ -1,22 +1,46 @@
-<div class="w-68 h-full overflow-y-auto bg-white border-gray-200 flex flex-col relative">
+<div class="w-full h-full overflow-y-auto bg-white border-gray-200 flex flex-col relative">
   <!-- Close Button -->
   <button (click)="onClose()" class="absolute top-2 right-2 text-gray-500 hover:text-black text-xl">
     &times;
   </button>
 
   <!-- Header -->
-  <div class="p-4 border-b">
+  <div class="p-4">
     <h2 class="text-lg font-semibold">Fonts</h2>
   </div>
 
-  <!-- Search + Language Filter -->
-  <div class="px-4 py-2 space-y-3 border-b">
-    <input type="text" [(ngModel)]="searchText" placeholder="Search fonts..."
-      class="w-full p-2 border border-gray-300 rounded-md text-sm" />
+<!-- Search + Filter Row -->
+<div class="px-4 py-4 border-b">
+  <div class="flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2">
+    <!-- Search Icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+      stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
+    </svg>
 
+    <!-- Search Input -->
+    <input type="text" [(ngModel)]="searchText" (ngModelChange)="onSearchChange($event)" placeholder="Search fonts..."
+      class="flex-1 outline-none text-sm" />
+
+    <!-- Filter Toggle Icon -->
+    <button (click)="showFilters = !showFilters" class="focus:outline-none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 hover:text-black" fill="none"
+        viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L15 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 019 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Collapsible Filter Section -->
+  <div *ngIf="showFilters" class="mt-4 space-y-3">
+    <!-- Language Dropdown -->
     <select [(ngModel)]="selectedLanguage" class="w-full p-2 border border-gray-300 rounded-md text-sm">
       <option value="">All Languages</option>
-      <option *ngFor="let lang of languageOptions" [value]="lang.code">{{ lang.label }}</option>
+      <option *ngFor="let lang of languageOptions | keyvalue" [ngValue]="lang">
+        {{ lang.key }}
+      </option>
     </select>
 
     <!-- Price Filter -->
@@ -36,7 +60,7 @@
       Apply Filters
     </button>
   </div>
-
+</div>
   <!-- Category Tabs -->
   <!-- <div class="flex overflow-x-auto border-b text-sm font-medium">
     <button *ngFor="let cat of categories" (click)="selectedCategory = cat"
@@ -46,22 +70,21 @@
   </div> -->
 
   <!-- Font List -->
-  <div class="flex-1 overflow-y-auto divide-y divide-gray-100">
-    <div *ngFor="let font of filteredFonts" class="p-3 hover:bg-gray-50 cursor-pointer" (click)="onFontSelect(font)">
-      <div class="flex justify-between items-center">
-        <div>
-          <p [ngStyle]="{ fontFamily: font.name }" class="text-base leading-snug truncate">
-            {{ font.previewText || font.name }}
-          </p>
-          <p class="text-xs text-gray-500">{{ font.name }}</p>
-        </div>
-        <!-- <span *ngIf="font.price === 'Pro'" class="text-yellow-500 text-xs font-semibold">👑</span> -->
-      </div>
-    </div>
-
-    <!-- Loading Spinner -->
-    <div *ngIf="isLoadingMore" class="py-4 text-center text-sm text-gray-500">
-      Loading more fonts...
-    </div>
+<div class="flex-1 overflow-y-auto space-y-2 p-4">
+  <div *ngFor="let font of filteredFonts" (click)="onFontSelect(font)"
+    class="p-3 rounded-lg border cursor-pointer text-center transition" [ngClass]="{
+      'border-blue-500 bg-blue-50 shadow-md': selectedFont?.name === font.name,
+      'border-gray-200 bg-white shadow-sm hover:shadow-md': selectedFont?.name !== font.name
+    }">
+    <p #fontPreview [attr.data-font-url]="font.url" [attr.data-font-name]="font.name"
+      class="text-2xl leading-snug truncate">
+      {{ font.previewText || font.name }}
+    </p>
   </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoadingMore" class="py-4 text-center text-sm text-gray-500">
+    Loading more fonts...
+  </div>
+</div>
 </div>

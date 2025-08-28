@@ -58,7 +58,9 @@ export class CanvasProjectWrapperComponent {
     private canvasManagerService: CanvasManagerService,
     private modeService: ModeService
   ) {
-
+    effect(() => {
+      this.canvasWidth = this.canvasService.canvasWidthSignal();
+    });
   }
 
   isSidebarOpen = false;
@@ -474,18 +476,14 @@ export class CanvasProjectWrapperComponent {
       const delta = event.deltaY > 0 ? -0.1 : 0.1;
       this.zoomLevel = Math.min(Math.max(this.zoomLevel + delta, 0.2), 3); // Clamp zoom
 
+  const canvasCenter = new fabric.Point(
+    canvas?.getWidth() / 2,
+    canvas?.getHeight() / 2
+  );
 
-      const objets = canvas.getObjects().filter(obj =>
-        obj.type === 'iamge') as fabric.FabricImage[];
+  canvas?.zoomToPoint(canvasCenter, this.zoomLevel);
 
-        objets.forEach((img) => {
-          img.scaleX = (img.scaleX ?? 1) * (1 + delta);
-          img.scaleY = (img.scaleY ?? 1) * (1 + delta);
-          img.setCoords(); // Important! updates bounding box
-        });
-
-      canvas.requestRenderAll();
-
+      canvas?.requestRenderAll();
     }
   }
 

@@ -7,11 +7,11 @@
 
   <!-- Document Colors -->
   <div class="mb-4">
-    <h3 class="font-medium mb-1">Document colors</h3>
-    <div class="flex gap-2 flex-wrap items-center">
+    <h3 class="font-medium  text-lg mb-1">Document colors</h3>
+    <div class="flex gap-2 mt-3.5 flex-wrap items-center">
 
 
-<span class="inline-flex items-center justify-center w-10 h-10 bg-cover bg-center rounded relative overflow-hidden"
+<span class="inline-flex items-center justify-center w-16 h-16 bg-cover bg-center rounded relative overflow-hidden"
   style="background-image: url('assets/icons/select-circle.png');">
 
   <!-- Hidden but functional input -->
@@ -29,7 +29,7 @@
 
 
       <ng-container *ngFor="let color of documentColors">
-        <div class="w-10 h-10 rounded-full border-2 cursor-pointer transition-all duration-150" [ngStyle]="{
+        <div class="w-16 h-16 rounded-full border-2 cursor-pointer transition-all duration-150" [ngStyle]="{
             'background': color,
             'border-color': selectedColor === color ? '#3b82f6' : '#d1d5db'
           }" [ngClass]="{
@@ -40,11 +40,11 @@
   </div>
 
   <!-- Default Solid Colors -->
-  <div class="mb-4">
-    <h3 class="font-medium mb-1">Default solid colors</h3>
-    <div class="flex flex-wrap gap-2">
+  <div class="mb-4 mt-3.5">
+    <h3 class="font-medium text-lg mb-3.5">Default solid colors</h3>
+    <div class="flex flex-wrap gap-3">
       <ng-container *ngFor="let color of defaultSolidColors">
-        <div [appTooltip]="color.name" class="w-10 h-10 rounded-full border-2 cursor-pointer transition-all duration-150" [ngStyle]="{
+        <div [appTooltip]="color.name" class="w-16 h-16 rounded-full border-2 cursor-pointer transition-all duration-150" [ngStyle]="{
             'background': color.value,
             'border-color': selectedColor === color.value ? '#3b82f6' : '#d1d5db'
           }" [ngClass]="{

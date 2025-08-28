@@ -1,95 +1,58 @@
 <!-- Toolbar container -->
-<div class="flex items-center gap-2 px-4 py-2 shadow rounded-lg bg-white">
-  <!-- Existing loop for tools -->
-  <ng-container *ngFor="let tool of toolbarConfig">
+<div class="flex font-semibold items-center gap-2 px-4 py-2 shadow rounded-lg bg-white">
+  <ng-container *ngFor="let tool of toolbarConfig; let index = index">
     <ng-container [ngSwitch]="tool.type">
+
       <!-- Font Size Stepper -->
-      <div
-        *ngSwitchCase="'font-size'"
-        class="flex items-center border rounded px-2 py-1 gap-1"
-      >
-        <button class="min-w-[36px] min-h-[36px] px-2 py-1" (click)="reducefontSizeChange()" class="px-1 text-sm">-</button>
+      <div *ngSwitchCase="'font-size'" class="flex items-center border rounded px-2 gap-1 h-[36px]">
+        <button appTooltip="Increase font size" (click)="reducefontSizeChange()" class="w-8 h-[28px] flex items-center cursor-pointer justify-center text-sm">
+          -
+        </button>
 
-        <input
-          type="number"
-          [(ngModel)]="fontSize"
-          (blur)="onStyleChange()"
-          class="w-12 text-center text-sm appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          style="-moz-appearance: textfield"
-        />
+        <input [appTooltip]="tool.label" type="number" [(ngModel)]="fontSize" (blur)="onStyleChange()"
+          class="w-12 h-[28px] text-center text-m
+                 appearance-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" style="-moz-appearance: textfield" />
 
-        <button (click)="increaseFontSize()" class="min-w-[36px] min-h-[36px] px-2 py-1"  class="px-1 text-sm">+</button>
+        <button appTooltip="Decrease font size" (click)="increaseFontSize()" class="w-8 h-[28px] flex items-center cursor-pointer justify-center text-sm ">
+          +
+        </button>
+      </div>
+
+      <!-- Font Family Button (same height) -->
+      <div *ngSwitchCase="'font-family'" [appTooltip]="tool.label">
+        <button (click)="onToolbarItemClick(tool)" class="min-w-[120px] max-w-[150px] h-[36px] px-3 text-m  border rounded cursor-pointer
+                 overflow-hidden text-ellipsis whitespace-nowrap bg-gray-200">
+          {{ fontFamily }}
+        </button>
       </div>
 
       <!-- Alignment Button -->
-      <ng-container *ngIf="tool.type === 'align'">
-        <button
-          [appTooltip]="
-            tool.label + ' - ' + (alignmentArray[index] | titlecase)
-          "
-          (click)="applyTextAlign()"
-          class="min-w-[36px] min-h-[36px] px-2 py-1"
-        >
-          <img
-            class="w-5 h-5 sm:w-4 sm:h-4"
-            [src]="'/assets/icons/align-' + alignmentArray[index] + '.svg'"
-          />
+      <ng-container *ngSwitchCase="'align'">
+        <button [appTooltip]="tool.label + ' - ' + (alignmentArray[index] | titlecase)" (click)="applyTextAlign()"
+          class="min-w-[36px] min-h-[36px] px-2 py-1">
+          <img class="w-5 h-5 sm:w-4 sm:h-4" [src]="'/assets/icons/align-' + alignmentArray[index] + '.svg'" />
         </button>
       </ng-container>
 
-      <!-- Default buttons -->
-      <button
-        [class.active]="tool.active"
-        [appTooltip]="tool.label"
-        *ngSwitchDefault
+      <!-- Default Buttons -->
+      <button *ngSwitchDefault id="default-button" [class.active]="tool.active" [appTooltip]="tool.label"
         (click)="onToolbarItemClick(tool)"
-        class="rounded px-2 py-1 hover:bg-gray-100 cursor-pointer"
-        class="min-w-[36px] min-h-[36px] px-2 py-1"
-      >
-        <img
-          *ngIf="tool.icon"
-          [src]="tool.icon"
-          alt="{{ tool.label }}"
-          class="w-5 h-5 sm:w-4 sm:h-4"
-        />
+        class="min-w-[36px] min-h-[36px] px-2 py-1 rounded hover:bg-gray-100 cursor-pointer">
+        <img *ngIf="tool.icon" [src]="tool.icon" alt="{{ tool.label }}" class="w-5 h-5 sm:w-4 sm:h-4" />
         <span *ngIf="!tool.icon">{{ tool.label }}</span>
       </button>
-      <!-- <div *ngSwitchCase="'stepper'" class="flex items-center gap-2 px-2 py-1 border rounded">
-    <label class="text-sm text-gray-700">Transparency</label>
 
-    <input type="range" min="0" max="100" step="1" [value]="currentTransparency" (input)="onTransparencyInput($event)"
-      class="w-28 accent-purple-600" />
-
-    <input type="number" min="0" max="100" step="1" [(ngModel)]="currentTransparency"
-      (ngModelChange)="onTransparencyChange($event)" class="w-12 text-center border rounded text-sm" />
-  </div> -->
-      <div
-        *ngIf="showSeekbarForOpacity"
-        class="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-2 bg-white rounded shadow z-50 w-65"
-      >
+      <!-- Transparency Seekbar -->
+      <div *ngIf="showSeekbarForOpacity"
+        class="absolute top-full left-1/2 -translate-x-1/2 mt-2 p-2 bg-white rounded shadow z-50 w-65">
         <label class="text-sm text-gray-700">Transparency</label>
 
-        <input
-          type="range"
-          min="0"
-          max="100"
-          step="1"
-          [value]="currentTransparency"
-          (input)="onTransparencyInput($event)"
-          class="w-40 accent-purple-600"
-        />
+        <input type="range" min="0" max="100" step="1" [value]="currentTransparency"
+          (input)="onTransparencyInput($event)" class="w-40 accent-purple-600" />
 
-        <input
-          type="number"
-          min="0"
-          max="100"
-          step="1"
-          [(ngModel)]="currentTransparency"
-          (ngModelChange)="onTransparencyChange($event)"
-          class="w-12 ml-2 text-center border rounded text-sm"
-        />
+        <input type="number" min="0" max="100" step="1" [(ngModel)]="currentTransparency"
+          (ngModelChange)="onTransparencyChange($event)" class="w-12 ml-2 text-center border rounded text-sm" />
       </div>
     </ng-container>
-    <!-- Transparency Control -->
   </ng-container>
 </div>

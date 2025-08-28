@@ -96,8 +96,7 @@ export class TextSidebarComponent {
     const textbox = new fabric.Textbox(defaultText, {
       ...this.fontSettings,
       width: textWidth + 10, // padding
-      left: lastPosition.x,
-      top: lastPosition.y,
+
       fontFamily,
       fontWeight,
       fontSize,
@@ -112,6 +111,7 @@ export class TextSidebarComponent {
       name: this.fontSettings?.defaultText || 'my-text',
     });
 
+    canvas.centerObject(textbox);
     canvas.add(textbox);
     canvas.setActiveObject(textbox);
     canvas.requestRenderAll();

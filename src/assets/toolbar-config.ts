@@ -9,20 +9,28 @@ export interface ToolbarItem {
     | 'align'
     | 'button'
     | 'slider'
-    | 'font-size';
+    | 'font-size'
+    | 'font-family';
   label: string;
   icon: string;
   key: string;
   action?: (key: string) => void;
   active?: boolean;
   options?: {
-    value: string; icon: string
-  }[]
+    value: string;
+    icon: string;
+  }[];
 }
 
 export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
   text: [
-    { type: 'dropdown', label: 'Font', icon: '', key: 'fontFamily' },
+    {
+      type: 'font-family',
+      label: 'Font',
+      icon: '',
+      key: 'fontFamily',
+      action: undefined,
+    },
     { type: 'font-size', label: 'Size', icon: '', key: 'fontSize' },
     {
       type: 'color',
@@ -132,6 +140,3 @@ export const TOOLBAR_CONFIG: Record<ToolbarMode, ToolbarItem[]> = {
     },
   ],
 };
-
-
-

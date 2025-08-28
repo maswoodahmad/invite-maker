@@ -1,0 +1,52 @@
+export const LanguageSubsetMap: Record<string, string> = {
+  English: 'latin',
+  French: 'latin',
+  German: 'latin',
+  Spanish: 'latin',
+  Portuguese: 'latin',
+  Italian: 'latin',
+  Polish: 'latin-ext',
+  Czech: 'latin-ext',
+  Slovak: 'latin-ext',
+  Hungarian: 'latin-ext',
+  Romanian: 'latin-ext',
+  Turkish: 'latin-ext',
+  Croatian: 'latin-ext',
+  'Serbian (Latin)': 'latin-ext',
+
+  Russian: 'cyrillic',
+  Ukrainian: 'cyrillic',
+  Bulgarian: 'cyrillic',
+  'Serbian (Cyrillic)': 'cyrillic',
+
+  Greek: 'greek',
+  'Greek (Extended)': 'greek-ext',
+
+  Hebrew: 'hebrew',
+  Arabic: 'arabic',
+  'Persian (Farsi)': 'arabic',
+  Urdu: 'arabic',
+
+  Hindi: 'devanagari',
+  Marathi: 'devanagari',
+  Nepali: 'devanagari',
+  Sanskrit: 'devanagari',
+
+  Bengali: 'bengali',
+  Gujarati: 'gujarati',
+  'Gurmukhi (Punjabi)': 'gurmukhi',
+  Kannada: 'kannada',
+  Malayalam: 'malayalam',
+  'Oriya (Odia)': 'oriya',
+  Tamil: 'tamil',
+  Telugu: 'telugu',
+  Sinhala: 'sinhala',
+
+  Thai: 'thai',
+  Vietnamese: 'vietnamese',
+
+  Korean: 'korean',
+  Japanese: 'japanese',
+  'Chinese (Simplified)': 'chinese-simplified',
+  'Chinese (Traditional)': 'chinese-traditional',
+};
